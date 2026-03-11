@@ -52,7 +52,18 @@ public class DataModel {
     }
 
     public void addRow(String[] row) {
-        rows.add(row);
+    if (row == null || row.length != columns.length) {
+        throw new IllegalArgumentException("Invalid row data");
+    }
+
+    for (int i = 0; i < row.length; i++) {
+        if (row[i] == null || row[i].trim().isEmpty()) {
+            row[i] = "N/A";
+        }
+    }
+
+    rows.add(row);
+
     }
 
     public void updateRow(int index, String[] row) {
