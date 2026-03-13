@@ -3,15 +3,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DataModel {
+    // Stores the CSV header row
     private String[] columns;
+
+    // Stores all data rows from the CSV
     private final List<String[]> rows = new ArrayList<>();
+
+    // Stores the file currently being edited
     private File currentFile;
 
     /**
-     * Loads CSV data from the given file.
-     * The first line is treated as the column header row.
+     * Loads CSV data from a file.
+     * The first line is treated as the header row.
      *
-     * @param file the CSV file to load
+     * @param file the CSV file to read
      * @throws IOException if the file cannot be read
      */
     public void loadFromFile(File file) throws IOException {
@@ -21,17 +26,15 @@ public class DataModel {
         BufferedReader reader = new BufferedReader(new FileReader(file));
         String line;
 
-        // Read the header row first to get the column names.
+        // Read the first line as column headers
         line = reader.readLine();
         if (line != null) {
             columns = line.split(",");
         } else {
-            // If the file is empty, set columns to an empty array
-            // so the program does not crash later.
             columns = new String[0];
         }
 
-        // Read each remaining line as a row of CSV data.
+        // Read remaining lines as data rows
         while ((line = reader.readLine()) != null) {
             rows.add(line.split(","));
         }
@@ -40,7 +43,7 @@ public class DataModel {
     }
 
     /**
-     * Saves the current data back into the currently loaded CSV file.
+     * Saves the current in-memory data back to the current CSV file.
      *
      * @throws IOException if the file cannot be written
      */
@@ -51,32 +54,37 @@ public class DataModel {
 
         PrintWriter writer = new PrintWriter(new FileWriter(currentFile));
 
-        // Write the column headers first.
+        // Write the header row first
         writer.println(String.join(",", columns));
 
-        // Write each row of data.
+        // Write each row, padding missing cells with empty strings
         for (String[] row : rows) {
-            writer.println(String.join(",", row));
+            String[] outputRow = new String[columns.length];
+
+            for (int i = 0; i < columns.length; i++) {
+                outputRow[i] = (i < row.length) ? row[i] : "";
+            }
+
+            writer.println(String.join(",", outputRow));
         }
 
         writer.close();
     }
 
     /**
-     * Returns the column headers.
+     * Returns the column header names.
      *
-     * @return the array of column names
+     * @return array of column names
      */
     public String[] getColumns() {
         return columns;
     }
 
     /**
-     * Returns the table data in Object[][] format for JTable.
-     * This version safely handles rows that may have fewer values
-     * than the number of columns.
+     * Returns all data as a 2D Object array for JTable use.
+     * Missing values in short rows are padded with empty strings.
      *
-     * @return 2D object array of row data
+     * @return all table data
      */
     public Object[][] getData() {
         if (columns == null) {
@@ -97,37 +105,63 @@ public class DataModel {
     }
 
     /**
-     * Adds a new row to the data set.
+     * Returns a single row, padded to the full number of columns.
      *
-     * @param row the row to add
+     * @param index row index
+     * @return padded row data
+     */
+    public String[] getRow(int index) {
+        String[] original = rows.get(index);
+        String[] padded = new String[columns.length];
+
+        for (int i = 0; i < columns.length; i++) {
+            padded[i] = (i < original.length) ? original[i] : "";
+        }
+
+        return padded;
+    }
+
+    /**
+     * Returns the number of rows in the dataset.
+     *
+     * @return row count
+     */
+    public int getRowCount() {
+        return rows.size();
+    }
+
+    /**
+     * Adds a new row to the dataset.
+     *
+     * @param row new row data
      */
     public void addRow(String[] row) {
         rows.add(row);
     }
 
     /**
-     * Replaces an existing row with updated values.
+     * Updates an existing row.
      *
-     * @param index the row index to update
-     * @param row   the new row data
+     * @param index row index to update
+     * @param row new row contents
      */
     public void updateRow(int index, String[] row) {
         rows.set(index, row);
     }
 
     /**
-     * Removes a row from the data set.
+     * Removes a row from the dataset.
      *
-     * @param index the row index to remove
+     * @param index row index to remove
      */
     public void removeRow(int index) {
         rows.remove(index);
     }
 
     /**
-     * Returns true if column headers are loaded.
+     * Checks whether valid column headers were loaded.
      *
-     * @return true if columns exist, false otherwise
+     * @return true if valid header data exists
      */
     public boolean hasValidData() {
         return columns != null && columns.length > 0;
