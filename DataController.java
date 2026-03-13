@@ -8,20 +8,72 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DataController {
-    // Reference to the model (data) and view (GUI)
+    // Reference to the model (data), view (GUI), and current user session
     private final DataModel model;
     private final DataView view;
+    private final AuthManager.UserSession session;
 
     // Tracks whether all columns are currently being shown
     private boolean showingAllColumns = false;
 
-    public DataController(DataModel model, DataView view) {
+    // Maps visible row indexes back to the real model row indexes
+    private final List<Integer> visibleRowIndexes = new ArrayList<>();
+
+    public DataController(DataModel model, DataView view, AuthManager.UserSession session) {
         this.model = model;
         this.view = view;
+        this.session = session;
 
         // Load CSV data first, then attach button/listener behavior
         loadFile();
         attachHandlers();
+        applyPermissionsToView();
+        updateWindowTitle();
+    }
+
+    /**
+     * Opens the main table UI for the logged-in user.
+     *
+     * @param session active login session
+     */
+    public static void launchMainUI(AuthManager.UserSession session) {
+        SwingUtilities.invokeLater(() -> {
+            DataView view = new DataView();
+            DataModel model = new DataModel();
+            new DataController(model, view, session);
+        });
+    }
+
+    /**
+     * Updates the window title to show the active user role.
+     */
+    private void updateWindowTitle() {
+        String title = "Turn for Turn Co. - Database Editor";
+
+        if (session.isAdmin()) {
+            title += " [Admin]";
+        } else if (session.isPublisher()) {
+            title += " [Publisher: " + session.getPublisherName() + "]";
+        } else {
+            title += " [Guest]";
+        }
+
+        view.setTitle(title);
+    }
+
+    /**
+     * Enables or disables buttons depending on the user's permissions.
+     */
+    private void applyPermissionsToView() {
+        view.toggleColumnsBtn.setEnabled(true);
+        view.toggleThemeBtn.setEnabled(true);
+        view.logoutBtn.setEnabled(true);
+
+        boolean canModify = session.canModify();
+        view.addBtn.setEnabled(canModify);
+        view.editBtn.setEnabled(canModify);
+        view.deleteBtn.setEnabled(canModify);
+        view.saveBtn.setEnabled(canModify);
     }
 
     /**
@@ -62,9 +114,23 @@ public class DataController {
                 return;
             }
 
-            // Load the visible table normally
+            // Publisher accounts require a Publisher column
+            if (session.isPublisher() && getPublisherColumnIndex() == -1) {
+                JOptionPane.showMessageDialog(
+                        view,
+                        "Publisher login requires a Publisher column in data.csv.",
+                        "Missing Publisher Column",
+                        JOptionPane.ERROR_MESSAGE
+                );
+
+                view.setTableData(new Object[0][0], new String[0]);
+                view.setInteractionEnabled(false);
+                return;
+            }
+
             refreshVisibleTable();
             view.setInteractionEnabled(true);
+            applyPermissionsToView();
 
         } catch (IOException e) {
             JOptionPane.showMessageDialog(
@@ -86,14 +152,14 @@ public class DataController {
      */
     private void refreshVisibleTable() {
         String[] allColumns = model.getColumns();
-        Object[][] allData = model.getData();
+        visibleRowIndexes.clear();
 
         int[] visibleIndexes = showingAllColumns
                 ? getExpandedColumnIndexes(allColumns)
                 : getDefaultColumnIndexes(allColumns);
 
         String[] visibleColumns = new String[visibleIndexes.length];
-        Object[][] visibleData = new Object[allData.length][visibleIndexes.length];
+        List<Object[]> visibleRows = new ArrayList<>();
 
         // Build visible header list
         for (int i = 0; i < visibleIndexes.length; i++) {
@@ -101,26 +167,41 @@ public class DataController {
         }
 
         // Build visible row data
-        for (int row = 0; row < allData.length; row++) {
-            for (int col = 0; col < visibleIndexes.length; col++) {
-                visibleData[row][col] = allData[row][visibleIndexes[col]];
+        for (int rowIndex = 0; rowIndex < model.getRowCount(); rowIndex++) {
+            String[] fullRow = model.getRow(rowIndex);
+
+            if (!canViewRow(fullRow)) {
+                continue;
             }
+
+            Object[] visibleRow = new Object[visibleIndexes.length];
+
+            for (int col = 0; col < visibleIndexes.length; col++) {
+                visibleRow[col] = fullRow[visibleIndexes[col]];
+            }
+
+            visibleRows.add(visibleRow);
+            visibleRowIndexes.add(rowIndex);
+        }
+
+        Object[][] visibleData = new Object[visibleRows.size()][visibleIndexes.length];
+
+        for (int i = 0; i < visibleRows.size(); i++) {
+            visibleData[i] = visibleRows.get(i);
         }
 
         view.setTableData(visibleData, visibleColumns);
         view.resizeColumnsToFitContent();
         view.fitWindowToTable(showingAllColumns);
         view.toggleColumnsBtn.setText(showingAllColumns ? "Show Less" : "Show More");
+        applyPermissionsToView();
     }
 
     /**
-     * Returns indexes for the default visible columns:
-     * Title, Developer, Publisher, Rating, Platform, Genre
+     * Returns the default set of key columns for compact mode.
      *
-     * If none are found, fallback is the expanded non-ID column list.
-     *
-     * @param columns all available column names
-     * @return indexes of default visible columns
+     * @param columns all column headers
+     * @return indexes of key columns
      */
     private int[] getDefaultColumnIndexes(String[] columns) {
         String[] preferred = {"Title", "Developer", "Publisher", "Rating", "Platform", "Genre"};
@@ -143,10 +224,10 @@ public class DataController {
     }
 
     /**
-     * Returns indexes for all columns except hidden ID columns.
+     * Returns all non-ID columns for expanded mode.
      *
-     * @param columns all available column names
-     * @return indexes of expanded visible columns
+     * @param columns all column headers
+     * @return indexes of visible expanded columns
      */
     private int[] getExpandedColumnIndexes(String[] columns) {
         List<Integer> indexes = new ArrayList<>();
@@ -161,11 +242,10 @@ public class DataController {
     }
 
     /**
-     * Returns indexes used in the row detail popup.
-     * ID columns are also hidden here.
+     * Returns all non-ID columns for the details popup.
      *
-     * @param columns all available column names
-     * @return indexes for row detail display
+     * @param columns all column headers
+     * @return indexes used in the details view
      */
     private int[] getDetailColumnIndexes(String[] columns) {
         List<Integer> indexes = new ArrayList<>();
@@ -180,10 +260,10 @@ public class DataController {
     }
 
     /**
-     * Checks whether a column should be hidden as a game ID field.
+     * Checks whether a column is an ID-style column that should be hidden.
      *
-     * @param columnName the column name to test
-     * @return true if it is an ID column that should be hidden
+     * @param columnName column name
+     * @return true if the column is an ID field
      */
     private boolean isHiddenIdColumn(String columnName) {
         String normalized = columnName.trim().toLowerCase();
@@ -194,56 +274,193 @@ public class DataController {
     }
 
     /**
-     * Utility method to convert a list of Integer indexes into an int array.
+     * Converts a list of Integer indexes into a primitive int array.
      *
      * @param indexes list of indexes
-     * @return primitive int array of indexes
+     * @return primitive int array
      */
     private int[] toIntArray(List<Integer> indexes) {
         int[] result = new int[indexes.size()];
+
         for (int i = 0; i < indexes.size(); i++) {
             result[i] = indexes.get(i);
         }
+
         return result;
     }
 
     /**
-     * Attaches button and table event handlers.
+     * Finds the Publisher column index.
+     *
+     * @return Publisher column index, or -1 if not found
+     */
+    private int getPublisherColumnIndex() {
+        String[] columns = model.getColumns();
+
+        if (columns == null) {
+            return -1;
+        }
+
+        for (int i = 0; i < columns.length; i++) {
+            if (columns[i].trim().equalsIgnoreCase("Publisher")) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    /**
+     * Returns whether the current user is allowed to see a row.
+     *
+     * @param row row data
+     * @return true if visible to the current session
+     */
+    private boolean canViewRow(String[] row) {
+        if (session.isAdmin() || session.isGuest()) {
+            return true;
+        }
+
+        int publisherIndex = getPublisherColumnIndex();
+
+        if (publisherIndex == -1 || publisherIndex >= row.length) {
+            return false;
+        }
+
+        return row[publisherIndex].trim().equalsIgnoreCase(session.getPublisherName());
+    }
+
+    /**
+     * Returns whether the current user is allowed to modify a row.
+     *
+     * @param row row data
+     * @return true if editable/deletable by the current session
+     */
+    private boolean canModifyRow(String[] row) {
+        if (session.isAdmin()) {
+            return true;
+        }
+
+        if (session.isGuest()) {
+            return false;
+        }
+
+        int publisherIndex = getPublisherColumnIndex();
+
+        if (publisherIndex == -1 || publisherIndex >= row.length) {
+            return false;
+        }
+
+        return row[publisherIndex].trim().equalsIgnoreCase(session.getPublisherName());
+    }
+
+    /**
+     * Converts the selected visible table row into the real model row index.
+     *
+     * @return model row index, or -1 if invalid
+     */
+    private int getSelectedModelRowIndex() {
+        int selected = view.table.getSelectedRow();
+
+        if (selected == -1) {
+            return -1;
+        }
+
+        if (selected < 0 || selected >= visibleRowIndexes.size()) {
+            return -1;
+        }
+
+        return visibleRowIndexes.get(selected);
+    }
+
+    /**
+     * Logs the user out and returns to the startup screen.
+     */
+    private void logout() {
+        int confirm = JOptionPane.showConfirmDialog(
+                view,
+                "Are you sure you want to log out?",
+                "Confirm Logout",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            view.dispose();
+            SwingUtilities.invokeLater(StartUp::new);
+        }
+    }
+
+    /**
+     * Attaches all button and table listeners.
      */
     private void attachHandlers() {
-        // Add a new row
         view.addBtn.addActionListener(e -> {
+            if (!session.canModify()) {
+                JOptionPane.showMessageDialog(view, "Guest users cannot add entries.");
+                return;
+            }
+
             String[] row = promptRow("Add Entry", null);
+
             if (row != null) {
                 model.addRow(row);
                 refreshVisibleTable();
             }
         });
 
-        // Edit the currently selected row
         view.editBtn.addActionListener(e -> {
-            int selected = view.table.getSelectedRow();
+            if (!session.canModify()) {
+                JOptionPane.showMessageDialog(view, "Guest users cannot edit entries.");
+                return;
+            }
 
-            if (selected == -1) {
+            int selectedModelIndex = getSelectedModelRowIndex();
+
+            if (selectedModelIndex == -1) {
                 JOptionPane.showMessageDialog(view, "Select a row first");
                 return;
             }
 
-            String[] current = model.getRow(selected);
+            String[] current = model.getRow(selectedModelIndex);
+
+            // Publisher accounts can only edit their own games
+            if (!canModifyRow(current)) {
+                JOptionPane.showMessageDialog(
+                        view,
+                        "You can only edit games belonging to your publisher account."
+                );
+                return;
+            }
+
             String[] updated = promptRow("Edit Entry", current);
 
             if (updated != null) {
-                model.updateRow(selected, updated);
+                model.updateRow(selectedModelIndex, updated);
                 refreshVisibleTable();
             }
         });
 
-        // Delete the currently selected row after confirmation
         view.deleteBtn.addActionListener(e -> {
-            int selected = view.table.getSelectedRow();
+            if (!session.canModify()) {
+                JOptionPane.showMessageDialog(view, "Guest users cannot delete entries.");
+                return;
+            }
 
-            if (selected == -1) {
+            int selectedModelIndex = getSelectedModelRowIndex();
+
+            if (selectedModelIndex == -1) {
                 JOptionPane.showMessageDialog(view, "Select a row to delete");
+                return;
+            }
+
+            String[] current = model.getRow(selectedModelIndex);
+
+            // Publisher accounts can only delete their own games
+            if (!canModifyRow(current)) {
+                JOptionPane.showMessageDialog(
+                        view,
+                        "You can only delete games belonging to your publisher account."
+                );
                 return;
             }
 
@@ -255,13 +472,17 @@ public class DataController {
             );
 
             if (confirm == JOptionPane.YES_OPTION) {
-                model.removeRow(selected);
+                model.removeRow(selectedModelIndex);
                 refreshVisibleTable();
             }
         });
 
-        // Save current in-memory data back to data.csv
         view.saveBtn.addActionListener(e -> {
+            if (!session.canModify()) {
+                JOptionPane.showMessageDialog(view, "Guest users cannot save changes.");
+                return;
+            }
+
             try {
                 model.saveToFile();
                 JOptionPane.showMessageDialog(view, "Saved successfully");
@@ -270,37 +491,42 @@ public class DataController {
             }
         });
 
+        view.logoutBtn.addActionListener(e -> logout());
+
         // Toggle between default columns and expanded columns
         view.toggleColumnsBtn.addActionListener(e -> {
             showingAllColumns = !showingAllColumns;
             refreshVisibleTable();
         });
 
-        // Toggle between light and dark mode
         view.toggleThemeBtn.addActionListener(e -> view.toggleTheme());
 
-        // Click a row to show expanded details for only that row
         view.table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int selectedRow = view.table.rowAtPoint(e.getPoint());
+                int selectedVisibleRow = view.table.rowAtPoint(e.getPoint());
 
-                if (selectedRow >= 0 && e.getClickCount() == 1) {
-                    showDetailsForRow(selectedRow);
+                if (selectedVisibleRow >= 0 && e.getClickCount() == 1) {
+                    showDetailsForVisibleRow(selectedVisibleRow);
                 }
             }
         });
     }
 
     /**
-     * Builds and displays the detail view for one selected row.
+     * Builds and displays the detail view for one selected visible row.
      * Hidden ID columns are omitted.
      *
-     * @param rowIndex the selected row index
+     * @param visibleRowIndex selected visible row index
      */
-    private void showDetailsForRow(int rowIndex) {
+    private void showDetailsForVisibleRow(int visibleRowIndex) {
+        if (visibleRowIndex < 0 || visibleRowIndex >= visibleRowIndexes.size()) {
+            return;
+        }
+
+        int modelRowIndex = visibleRowIndexes.get(visibleRowIndex);
         String[] fullColumns = model.getColumns();
-        String[] fullRow = model.getRow(rowIndex);
+        String[] fullRow = model.getRow(modelRowIndex);
 
         int[] detailIndexes = getDetailColumnIndexes(fullColumns);
 
@@ -331,11 +557,26 @@ public class DataController {
 
         JPanel panel = new JPanel(new GridLayout(0, 2, 5, 5));
         JTextField[] fields = new JTextField[model.getColumns().length];
+        int publisherIndex = getPublisherColumnIndex();
 
         // Create one label/text field pair for each column
         for (int i = 0; i < fields.length; i++) {
             panel.add(new JLabel(model.getColumns()[i]));
-            fields[i] = new JTextField(defaults == null ? "" : defaults[i]);
+
+            String initialValue = defaults == null ? "" : defaults[i];
+
+            // Publisher accounts are locked to their own publisher name
+            if (session.isPublisher() && i == publisherIndex) {
+                initialValue = session.getPublisherName();
+            }
+
+            fields[i] = new JTextField(initialValue);
+
+            if (session.isPublisher() && i == publisherIndex) {
+                fields[i].setEditable(false);
+                fields[i].setBackground(new java.awt.Color(230, 230, 230));
+            }
+
             panel.add(fields[i]);
         }
 
@@ -353,6 +594,11 @@ public class DataController {
                 row[i] = fields[i].getText();
             }
 
+            // Enforce publisher ownership again before saving
+            if (session.isPublisher() && publisherIndex >= 0) {
+                row[publisherIndex] = session.getPublisherName();
+            }
+
             return row;
         }
 
@@ -361,10 +607,11 @@ public class DataController {
 
     /**
      * Program entry point.
+     * Opens the StartUp screen first.
      *
      * @param args command-line arguments
      */
     public static void main(String[] args) {
-        new DataController(new DataModel(), new DataView());
+        SwingUtilities.invokeLater(StartUp::new);
     }
 }

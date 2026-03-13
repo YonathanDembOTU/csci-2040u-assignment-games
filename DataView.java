@@ -6,24 +6,15 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 
 public class DataView extends JFrame {
-    // Main table used to display game data
     JTable table;
-
-    // Action buttons
-    JButton addBtn, editBtn, deleteBtn, saveBtn, toggleColumnsBtn, toggleThemeBtn;
-
-    // Table model controls the data shown in the JTable
+    JButton addBtn, editBtn, deleteBtn, saveBtn, logoutBtn, toggleColumnsBtn, toggleThemeBtn;
     DefaultTableModel tableModel;
-
-    // Scroll pane allows horizontal and vertical scrolling
     JScrollPane scrollPane;
 
-    // Panels used to organize the layout
     JPanel tablePanel;
     JPanel topBar;
     JPanel buttonPanel;
 
-    // Tracks whether dark mode is currently enabled
     private boolean darkMode = false;
 
     // Light mode colors
@@ -55,15 +46,13 @@ public class DataView extends JFrame {
     private final Color DARK_SCROLL_THUMB = new Color(180, 180, 180);
 
     public DataView() {
-        // Basic frame setup
-        setTitle("Database Editor");
+        setTitle("Turn for Turn Co. - Database Editor");
         setSize(700, 450);
         setMinimumSize(new Dimension(620, 420));
         setResizable(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
-        // Create a table model where cells cannot be edited directly in the table
         tableModel = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -71,13 +60,11 @@ public class DataView extends JFrame {
             }
         };
 
-        // Create the table and customize row coloring for light/dark mode
         table = new JTable(tableModel) {
             @Override
             public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
                 Component component = super.prepareRenderer(renderer, row, column);
 
-                // Apply alternating row colors when the row is not selected
                 if (!isRowSelected(row)) {
                     if (darkMode) {
                         component.setBackground(row % 2 == 0 ? DARK_ROW_EVEN : DARK_ROW_ODD);
@@ -87,7 +74,6 @@ public class DataView extends JFrame {
                         component.setForeground(LIGHT_TEXT);
                     }
                 } else {
-                    // Apply selection colors
                     component.setBackground(darkMode ? DARK_SELECTION : LIGHT_SELECTION);
                     component.setForeground(darkMode ? DARK_TEXT : LIGHT_TEXT);
                 }
@@ -96,84 +82,69 @@ public class DataView extends JFrame {
             }
         };
 
-        // Allow scrollbars when content exceeds visible area
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.setFillsViewportHeight(true);
         table.setRowHeight(24);
 
-        // Wrap the table in a scroll pane
         scrollPane = new JScrollPane(table);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        // Make scrollbars slightly thicker so the thumb is easier to see
         scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(18, 0));
         scrollPane.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 18));
 
-        // Create the top bar buttons
         toggleColumnsBtn = new JButton("Show More");
         toggleThemeBtn = new JButton("Dark Mode");
 
-        // Use a consistent wider button size
         Dimension wideButtonSize = new Dimension(140, 34);
         toggleColumnsBtn.setPreferredSize(wideButtonSize);
         toggleThemeBtn.setPreferredSize(wideButtonSize);
 
-        // Top bar holds the table-related controls
         topBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
         topBar.add(toggleColumnsBtn);
         topBar.add(toggleThemeBtn);
 
-        // Table panel contains the top bar and the scroll pane
         tablePanel = new JPanel(new BorderLayout());
         tablePanel.add(topBar, BorderLayout.NORTH);
         tablePanel.add(scrollPane, BorderLayout.CENTER);
 
         add(tablePanel, BorderLayout.CENTER);
 
-        // Right-side button panel contains CRUD actions
         buttonPanel = new JPanel(new GridLayout(0, 1, 8, 8));
 
         addBtn = new JButton("Add");
         editBtn = new JButton("Edit");
         deleteBtn = new JButton("Delete");
         saveBtn = new JButton("Save");
-
-        addBtn.setPreferredSize(wideButtonSize);
-        editBtn.setPreferredSize(wideButtonSize);
-        deleteBtn.setPreferredSize(wideButtonSize);
-        saveBtn.setPreferredSize(wideButtonSize);
+        logoutBtn = new JButton("Logout");
 
         buttonPanel.add(addBtn);
         buttonPanel.add(editBtn);
         buttonPanel.add(deleteBtn);
         buttonPanel.add(saveBtn);
+        buttonPanel.add(logoutBtn);
 
         add(buttonPanel, BorderLayout.EAST);
 
-        // Apply the current theme to all components
         applyTheme();
-
-        // Center the window on screen and show it
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
     /**
-     * Updates the table model with new data and columns.
+     * Replaces the visible table data with the provided rows and columns.
      *
-     * @param data row data to display
-     * @param columns column headers to display
+     * @param data visible row data
+     * @param columns visible column headers
      */
     public void setTableData(Object[][] data, String[] columns) {
         tableModel.setDataVector(data, columns);
-        applyTheme();
     }
 
     /**
-     * Enables or disables user interaction controls.
+     * Enables or disables all main interaction controls.
      *
-     * @param enabled true to enable controls, false to disable
+     * @param enabled true to enable interaction, false to disable it
      */
     public void setInteractionEnabled(boolean enabled) {
         table.setEnabled(enabled);
@@ -181,37 +152,26 @@ public class DataView extends JFrame {
         editBtn.setEnabled(enabled);
         deleteBtn.setEnabled(enabled);
         saveBtn.setEnabled(enabled);
+        logoutBtn.setEnabled(true);
         toggleColumnsBtn.setEnabled(enabled);
         toggleThemeBtn.setEnabled(enabled);
     }
 
     /**
-     * Resizes each visible column based on header width and widest cell content.
-     * Width is clamped between a minimum and maximum.
+     * Resizes each table column to fit its content with a reasonable maximum width.
      */
     public void resizeColumnsToFitContent() {
-        final int MIN_WIDTH = 90;
-        final int MAX_WIDTH = 240;
-        final int PADDING = 20;
+        final int PADDING = 24;
+        final int MAX_WIDTH = 260;
 
-        FontMetrics headerMetrics =
-                table.getTableHeader().getFontMetrics(table.getTableHeader().getFont());
-        FontMetrics cellMetrics =
-                table.getFontMetrics(table.getFont());
+        FontMetrics headerMetrics = table.getTableHeader().getFontMetrics(table.getTableHeader().getFont());
+        FontMetrics cellMetrics = table.getFontMetrics(table.getFont());
 
         for (int col = 0; col < table.getColumnCount(); col++) {
             TableColumn column = table.getColumnModel().getColumn(col);
 
-            int width = MIN_WIDTH;
+            int width = headerMetrics.stringWidth(table.getColumnName(col)) + PADDING;
 
-            // Check header width
-            Object headerValue = column.getHeaderValue();
-            if (headerValue != null) {
-                int headerWidth = headerMetrics.stringWidth(headerValue.toString()) + PADDING;
-                width = Math.max(width, headerWidth);
-            }
-
-            // Check widest cell content in this column
             for (int row = 0; row < table.getRowCount(); row++) {
                 Object value = table.getValueAt(row, col);
                 if (value != null) {
@@ -220,32 +180,23 @@ public class DataView extends JFrame {
                 }
             }
 
-            // Keep width within upper bound
             width = Math.min(width, MAX_WIDTH);
             column.setPreferredWidth(width);
         }
     }
 
-    /**
-     * Resizes the main window based on the visible columns.
-     *
-     * @param expanded true if all columns are being shown
-     */
     public void fitWindowToTable(boolean expanded) {
         int totalWidth = 80;
 
-        // Sum the preferred widths of all visible columns
         for (int col = 0; col < table.getColumnCount(); col++) {
             totalWidth += table.getColumnModel().getColumn(col).getPreferredWidth();
         }
 
-        // Add extra width for the side button panel
         totalWidth += 180;
 
         int targetWidth;
         int targetHeight = 450;
 
-        // Use a wider range when the expanded view is active
         if (expanded) {
             targetWidth = Math.min(Math.max(totalWidth, 820), 1150);
         } else {
@@ -258,26 +209,15 @@ public class DataView extends JFrame {
         repaint();
     }
 
-    /**
-     * Toggles between light mode and dark mode.
-     */
     public void toggleTheme() {
         darkMode = !darkMode;
         applyTheme();
     }
 
-    /**
-     * Returns whether dark mode is currently active.
-     *
-     * @return true if dark mode is enabled
-     */
     public boolean isDarkMode() {
         return darkMode;
     }
 
-    /**
-     * Applies the current theme colors to the whole UI.
-     */
     public void applyTheme() {
         Color windowBg = darkMode ? DARK_WINDOW_BG : LIGHT_WINDOW_BG;
         Color panelBg = darkMode ? DARK_PANEL_BG : LIGHT_PANEL_BG;
@@ -290,54 +230,41 @@ public class DataView extends JFrame {
         Color scrollTrack = darkMode ? DARK_SCROLL_TRACK : LIGHT_SCROLL_TRACK;
         Color scrollThumb = darkMode ? DARK_SCROLL_THUMB : LIGHT_SCROLL_THUMB;
 
-        // Backgrounds for the major layout panels
         getContentPane().setBackground(windowBg);
         tablePanel.setBackground(windowBg);
         topBar.setBackground(darkMode ? DARK_PANEL_BG : LIGHT_PANEL_BG);
         buttonPanel.setBackground(windowBg);
 
-        // Table colors
         table.setBackground(panelBg);
         table.setForeground(text);
         table.setGridColor(grid);
         table.setSelectionBackground(selection);
         table.setSelectionForeground(text);
 
-        // Header colors
         table.getTableHeader().setBackground(headerBg);
         table.getTableHeader().setForeground(headerText);
         table.getTableHeader().setOpaque(true);
 
-        // Scroll pane colors
         scrollPane.setBackground(panelBg);
         scrollPane.getViewport().setBackground(panelBg);
         scrollPane.setBorder(BorderFactory.createLineBorder(grid));
 
-        // Apply themed custom scrollbars
         applyScrollBarTheme(scrollPane.getVerticalScrollBar(), scrollTrack, scrollThumb);
         applyScrollBarTheme(scrollPane.getHorizontalScrollBar(), scrollTrack, scrollThumb);
 
-        // Style all buttons consistently
         styleButton(addBtn, buttonBg, text);
         styleButton(editBtn, buttonBg, text);
         styleButton(deleteBtn, buttonBg, text);
         styleButton(saveBtn, buttonBg, text);
+        styleButton(logoutBtn, buttonBg, text);
         styleButton(toggleColumnsBtn, buttonBg, text);
         styleButton(toggleThemeBtn, buttonBg, text);
 
-        // Update toggle theme button label
         toggleThemeBtn.setText(darkMode ? "Light Mode" : "Dark Mode");
 
         repaint();
     }
 
-    /**
-     * Styles a button for the current theme.
-     *
-     * @param button the button to style
-     * @param bg background color
-     * @param fg foreground/text color
-     */
     private void styleButton(JButton button, Color bg, Color fg) {
         button.setBackground(bg);
         button.setForeground(fg);
@@ -349,13 +276,6 @@ public class DataView extends JFrame {
         button.setPreferredSize(new Dimension(140, 34));
     }
 
-    /**
-     * Applies a custom theme to a scrollbar.
-     *
-     * @param scrollBar the scrollbar to theme
-     * @param trackColor background track color
-     * @param thumbColor draggable thumb color
-     */
     private void applyScrollBarTheme(JScrollBar scrollBar, Color trackColor, Color thumbColor) {
         scrollBar.setOpaque(true);
         scrollBar.setBackground(trackColor);
@@ -438,47 +358,36 @@ public class DataView extends JFrame {
         scrollBar.repaint();
     }
 
-    /**
-     * Shows expanded information for a single selected row.
-     *
-     * @param columns visible field names
-     * @param row visible field values
-     */
     public void showRowDetails(String[] columns, String[] row) {
         JTextArea textArea = new JTextArea(16, 40);
         textArea.setEditable(false);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
 
-        StringBuilder builder = new StringBuilder();
-
-        // Build the detail text one line per field
+        StringBuilder details = new StringBuilder();
         for (int i = 0; i < columns.length; i++) {
-            String value = i < row.length ? row[i] : "";
-            builder.append(columns[i]).append(": ").append(value).append("\n");
+            details.append(columns[i]).append(": ").append(row[i]).append("\n\n");
         }
 
-        textArea.setText(builder.toString());
+        textArea.setText(details.toString());
         textArea.setCaretPosition(0);
 
-        // Theme the text area to match current mode
         if (darkMode) {
             textArea.setBackground(DARK_PANEL_BG);
             textArea.setForeground(DARK_TEXT);
             textArea.setCaretColor(DARK_TEXT);
         } else {
-            textArea.setBackground(LIGHT_PANEL_BG);
-            textArea.setForeground(LIGHT_TEXT);
-            textArea.setCaretColor(LIGHT_TEXT);
+            textArea.setBackground(Color.WHITE);
+            textArea.setForeground(Color.BLACK);
+            textArea.setCaretColor(Color.BLACK);
         }
 
-        JScrollPane detailsScrollPane = new JScrollPane(textArea);
-        detailsScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        detailsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        JScrollPane detailScroll = new JScrollPane(textArea);
+        detailScroll.setPreferredSize(new Dimension(520, 320));
 
         JOptionPane.showMessageDialog(
                 this,
-                detailsScrollPane,
+                detailScroll,
                 "Game Details",
                 JOptionPane.INFORMATION_MESSAGE
         );
