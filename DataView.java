@@ -13,6 +13,8 @@ public class DataView extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
+        // Create a table model where cells cannot be edited directly.
+        // All editing must go through the Add/Edit buttons.
         tableModel = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -20,9 +22,11 @@ public class DataView extends JFrame {
             }
         };
 
+        // Create the table and place it inside a scroll pane.
         table = new JTable(tableModel);
         add(new JScrollPane(table), BorderLayout.CENTER);
 
+        // Create the side panel that holds the buttons.
         JPanel buttonPanel = new JPanel(new GridLayout(0, 1, 5, 5));
         addBtn = new JButton("Add");
         editBtn = new JButton("Edit");
@@ -36,11 +40,32 @@ public class DataView extends JFrame {
 
         add(buttonPanel, BorderLayout.EAST);
 
+        // Center the window on screen and make it visible.
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
+    /**
+     * Updates the table with new data and column headers.
+     *
+     * @param data    the row data to display
+     * @param columns the column names to display
+     */
     public void setTableData(Object[][] data, String[] columns) {
         tableModel.setDataVector(data, columns);
+    }
+
+    /**
+     * Enables or disables all user interaction controls.
+     * This is used when the CSV file fails to load or does not exist.
+     *
+     * @param enabled true to allow interaction, false to block it
+     */
+    public void setInteractionEnabled(boolean enabled) {
+        table.setEnabled(enabled);
+        addBtn.setEnabled(enabled);
+        editBtn.setEnabled(enabled);
+        deleteBtn.setEnabled(enabled);
+        saveBtn.setEnabled(enabled);
     }
 }
