@@ -6,15 +6,31 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 
 public class DataView extends JFrame {
+    // Main table and action buttons
     JTable table;
     JButton addBtn, editBtn, deleteBtn, saveBtn, logoutBtn, toggleColumnsBtn, toggleThemeBtn;
+    JButton advancedSearchBtn, searchClearBtn;
+
+    // Table model and scroll area
     DefaultTableModel tableModel;
     JScrollPane scrollPane;
 
+    // Main panels
     JPanel tablePanel;
     JPanel topBar;
     JPanel buttonPanel;
+    JPanel advancedSearchPanel;
 
+    // Search and filter controls
+    JTextField searchField;
+    JComboBox<String> searchColumnCombo;
+    JComboBox<String> genreFilterCombo;
+    JComboBox<String> ratingFilterCombo;
+    JComboBox<String> platformFilterCombo;
+    JComboBox<String> multiplayerFilterCombo;
+    JComboBox<String> singlePlayerFilterCombo;
+
+    // Tracks current theme mode
     private boolean darkMode = false;
 
     // Light mode colors
@@ -47,12 +63,13 @@ public class DataView extends JFrame {
 
     public DataView() {
         setTitle("Turn for Turn Co. - Database Editor");
-        setSize(700, 450);
-        setMinimumSize(new Dimension(620, 420));
+        setSize(880, 520);
+        setMinimumSize(new Dimension(760, 500));
         setResizable(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
+        // Create a non-editable table model
         tableModel = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -60,6 +77,7 @@ public class DataView extends JFrame {
             }
         };
 
+        // Create table with alternating row colors
         table = new JTable(tableModel) {
             @Override
             public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
@@ -86,6 +104,7 @@ public class DataView extends JFrame {
         table.setFillsViewportHeight(true);
         table.setRowHeight(24);
 
+        // Create scroll pane for the table
         scrollPane = new JScrollPane(table);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -93,23 +112,70 @@ public class DataView extends JFrame {
         scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(18, 0));
         scrollPane.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 18));
 
+        // Main top bar buttons
         toggleColumnsBtn = new JButton("Show More");
         toggleThemeBtn = new JButton("Dark Mode");
+        advancedSearchBtn = new JButton("Adv Search");
+        searchClearBtn = new JButton("Clear");
 
+        // Basic search controls
+        searchColumnCombo = new JComboBox<>(new String[]{"Title"});
+        searchField = new JTextField(16);
+
+        // Give controls consistent sizing
         Dimension wideButtonSize = new Dimension(140, 34);
         toggleColumnsBtn.setPreferredSize(wideButtonSize);
         toggleThemeBtn.setPreferredSize(wideButtonSize);
+        advancedSearchBtn.setPreferredSize(wideButtonSize);
+        searchClearBtn.setPreferredSize(new Dimension(100, 34));
+        searchColumnCombo.setPreferredSize(new Dimension(140, 34));
+        searchField.setPreferredSize(new Dimension(170, 34));
 
+        // Top bar for normal controls
         topBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
         topBar.add(toggleColumnsBtn);
         topBar.add(toggleThemeBtn);
+        topBar.add(searchColumnCombo);
+        topBar.add(searchField);
+        topBar.add(searchClearBtn);
+        topBar.add(advancedSearchBtn);
 
+        // Advanced search panel starts hidden
+        advancedSearchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        advancedSearchPanel.setVisible(false);
+
+        // Create dropdown filters
+        genreFilterCombo = createFilterCombo();
+        ratingFilterCombo = createFilterCombo();
+        platformFilterCombo = createFilterCombo();
+        multiplayerFilterCombo = createFilterCombo();
+        singlePlayerFilterCombo = createFilterCombo();
+
+        // Add advanced filter labels and dropdowns
+        advancedSearchPanel.add(new JLabel("Genre:"));
+        advancedSearchPanel.add(genreFilterCombo);
+        advancedSearchPanel.add(new JLabel("Age Rating:"));
+        advancedSearchPanel.add(ratingFilterCombo);
+        advancedSearchPanel.add(new JLabel("Platform:"));
+        advancedSearchPanel.add(platformFilterCombo);
+        advancedSearchPanel.add(new JLabel("Multiplayer:"));
+        advancedSearchPanel.add(multiplayerFilterCombo);
+        advancedSearchPanel.add(new JLabel("Single Player:"));
+        advancedSearchPanel.add(singlePlayerFilterCombo);
+
+        // Combine normal top bar and advanced search panel
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.add(topBar, BorderLayout.NORTH);
+        headerPanel.add(advancedSearchPanel, BorderLayout.CENTER);
+
+        // Main center panel containing controls + table
         tablePanel = new JPanel(new BorderLayout());
-        tablePanel.add(topBar, BorderLayout.NORTH);
+        tablePanel.add(headerPanel, BorderLayout.NORTH);
         tablePanel.add(scrollPane, BorderLayout.CENTER);
 
         add(tablePanel, BorderLayout.CENTER);
 
+        // Right-side action button panel
         buttonPanel = new JPanel(new GridLayout(0, 1, 8, 8));
 
         addBtn = new JButton("Add");
@@ -126,25 +192,30 @@ public class DataView extends JFrame {
 
         add(buttonPanel, BorderLayout.EAST);
 
+        // Apply starting theme and show the window
         applyTheme();
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
     /**
-     * Replaces the visible table data with the provided rows and columns.
-     *
-     * @param data visible row data
-     * @param columns visible column headers
+     * Creates a combo box used in the advanced filter section.
+     */
+    private JComboBox<String> createFilterCombo() {
+        JComboBox<String> combo = new JComboBox<>(new String[]{"All"});
+        combo.setPreferredSize(new Dimension(125, 34));
+        return combo;
+    }
+
+    /**
+     * Replaces the current table contents.
      */
     public void setTableData(Object[][] data, String[] columns) {
         tableModel.setDataVector(data, columns);
     }
 
     /**
-     * Enables or disables all main interaction controls.
-     *
-     * @param enabled true to enable interaction, false to disable it
+     * Enables or disables the main UI controls.
      */
     public void setInteractionEnabled(boolean enabled) {
         table.setEnabled(enabled);
@@ -155,10 +226,19 @@ public class DataView extends JFrame {
         logoutBtn.setEnabled(true);
         toggleColumnsBtn.setEnabled(enabled);
         toggleThemeBtn.setEnabled(enabled);
+        advancedSearchBtn.setEnabled(enabled);
+        searchClearBtn.setEnabled(enabled);
+        searchField.setEnabled(enabled);
+        searchColumnCombo.setEnabled(enabled);
+        genreFilterCombo.setEnabled(enabled);
+        ratingFilterCombo.setEnabled(enabled);
+        platformFilterCombo.setEnabled(enabled);
+        multiplayerFilterCombo.setEnabled(enabled);
+        singlePlayerFilterCombo.setEnabled(enabled);
     }
 
     /**
-     * Resizes each table column to fit its content with a reasonable maximum width.
+     * Resizes visible columns based on header and cell content.
      */
     public void resizeColumnsToFitContent() {
         final int PADDING = 24;
@@ -185,6 +265,10 @@ public class DataView extends JFrame {
         }
     }
 
+    /**
+     * Resizes the window depending on compact/expanded mode
+     * and whether advanced search is visible.
+     */
     public void fitWindowToTable(boolean expanded) {
         int totalWidth = 80;
 
@@ -192,32 +276,57 @@ public class DataView extends JFrame {
             totalWidth += table.getColumnModel().getColumn(col).getPreferredWidth();
         }
 
-        totalWidth += 180;
+        totalWidth += 200;
 
         int targetWidth;
-        int targetHeight = 450;
+        int targetHeight = advancedSearchPanel.isVisible() ? 580 : 520;
 
         if (expanded) {
-            targetWidth = Math.min(Math.max(totalWidth, 820), 1150);
+            targetWidth = Math.min(Math.max(totalWidth, 940), 1300);
         } else {
-            targetWidth = Math.min(Math.max(totalWidth, 700), 900);
+            targetWidth = Math.min(Math.max(totalWidth, 880), 1100);
         }
 
         setSize(targetWidth, targetHeight);
-        setMinimumSize(new Dimension(620, 420));
+        setMinimumSize(new Dimension(760, 500));
         revalidate();
         repaint();
     }
 
+    /**
+     * Switches between dark mode and light mode.
+     */
     public void toggleTheme() {
         darkMode = !darkMode;
         applyTheme();
     }
 
+    /**
+     * Returns true if dark mode is active.
+     */
     public boolean isDarkMode() {
         return darkMode;
     }
 
+    /**
+     * Returns whether the advanced search panel is visible.
+     */
+    public boolean isAdvancedSearchVisible() {
+        return advancedSearchPanel.isVisible();
+    }
+
+    /**
+     * Shows or hides the advanced search panel.
+     */
+    public void setAdvancedSearchVisible(boolean visible) {
+        advancedSearchPanel.setVisible(visible);
+        revalidate();
+        repaint();
+    }
+
+    /**
+     * Applies all colors and styles for the current theme.
+     */
     public void applyTheme() {
         Color windowBg = darkMode ? DARK_WINDOW_BG : LIGHT_WINDOW_BG;
         Color panelBg = darkMode ? DARK_PANEL_BG : LIGHT_PANEL_BG;
@@ -233,6 +342,7 @@ public class DataView extends JFrame {
         getContentPane().setBackground(windowBg);
         tablePanel.setBackground(windowBg);
         topBar.setBackground(darkMode ? DARK_PANEL_BG : LIGHT_PANEL_BG);
+        advancedSearchPanel.setBackground(darkMode ? DARK_PANEL_BG : LIGHT_PANEL_BG);
         buttonPanel.setBackground(windowBg);
 
         table.setBackground(panelBg);
@@ -249,9 +359,11 @@ public class DataView extends JFrame {
         scrollPane.getViewport().setBackground(panelBg);
         scrollPane.setBorder(BorderFactory.createLineBorder(grid));
 
+        // Theme the scrollbars
         applyScrollBarTheme(scrollPane.getVerticalScrollBar(), scrollTrack, scrollThumb);
         applyScrollBarTheme(scrollPane.getHorizontalScrollBar(), scrollTrack, scrollThumb);
 
+        // Theme buttons
         styleButton(addBtn, buttonBg, text);
         styleButton(editBtn, buttonBg, text);
         styleButton(deleteBtn, buttonBg, text);
@@ -259,12 +371,35 @@ public class DataView extends JFrame {
         styleButton(logoutBtn, buttonBg, text);
         styleButton(toggleColumnsBtn, buttonBg, text);
         styleButton(toggleThemeBtn, buttonBg, text);
+        styleButton(advancedSearchBtn, buttonBg, text);
+        styleButton(searchClearBtn, buttonBg, text);
 
+        // Theme inputs
+        styleInput(searchField, panelBg, text, grid);
+        styleCombo(searchColumnCombo, panelBg, text);
+        styleCombo(genreFilterCombo, panelBg, text);
+        styleCombo(ratingFilterCombo, panelBg, text);
+        styleCombo(platformFilterCombo, panelBg, text);
+        styleCombo(multiplayerFilterCombo, panelBg, text);
+        styleCombo(singlePlayerFilterCombo, panelBg, text);
+
+        // Update button labels based on current state
         toggleThemeBtn.setText(darkMode ? "Light Mode" : "Dark Mode");
+        advancedSearchBtn.setText(advancedSearchPanel.isVisible() ? "Hide Filters" : "Adv Search");
+
+        // Apply text color to advanced filter labels
+        Component[] advancedComponents = advancedSearchPanel.getComponents();
+        for (Component component : advancedComponents) {
+            component.setForeground(text);
+            component.setBackground(darkMode ? DARK_PANEL_BG : LIGHT_PANEL_BG);
+        }
 
         repaint();
     }
 
+    /**
+     * Styles a button for the current theme.
+     */
     private void styleButton(JButton button, Color bg, Color fg) {
         button.setBackground(bg);
         button.setForeground(fg);
@@ -273,9 +408,44 @@ public class DataView extends JFrame {
         button.setBorder(BorderFactory.createLineBorder(
                 darkMode ? new Color(90, 90, 90) : new Color(190, 190, 190)
         ));
-        button.setPreferredSize(new Dimension(140, 34));
+        button.setPreferredSize(button.getPreferredSize().width == 100
+                ? new Dimension(100, 34)
+                : new Dimension(140, 34));
     }
 
+    /**
+     * Styles a text field for the current theme.
+     */
+    private void styleInput(JTextField field, Color bg, Color fg, Color border) {
+        field.setBackground(bg);
+        field.setForeground(fg);
+        field.setCaretColor(fg);
+        field.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(border),
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)
+        ));
+    }
+
+    /**
+     * Styles a combo box for the current theme.
+     */
+    private void styleCombo(JComboBox<String> combo, Color bg, Color fg) {
+        combo.setBackground(bg);
+        combo.setForeground(fg);
+        combo.setFocusable(false);
+
+        ListCellRenderer<? super String> baseRenderer = combo.getRenderer();
+        combo.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
+            Component c = baseRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            c.setBackground(isSelected ? (darkMode ? DARK_SELECTION : LIGHT_SELECTION) : bg);
+            c.setForeground(fg);
+            return c;
+        });
+    }
+
+    /**
+     * Applies a custom themed scrollbar UI.
+     */
     private void applyScrollBarTheme(JScrollBar scrollBar, Color trackColor, Color thumbColor) {
         scrollBar.setOpaque(true);
         scrollBar.setBackground(trackColor);
@@ -345,6 +515,9 @@ public class DataView extends JFrame {
                 return createInvisibleButton();
             }
 
+            /**
+             * Creates invisible arrow buttons so only the custom thumb is shown.
+             */
             private JButton createInvisibleButton() {
                 JButton button = new JButton();
                 button.setPreferredSize(new Dimension(0, 0));
@@ -358,6 +531,9 @@ public class DataView extends JFrame {
         scrollBar.repaint();
     }
 
+    /**
+     * Shows a popup containing every field in the selected row.
+     */
     public void showRowDetails(String[] columns, String[] row) {
         JTextArea textArea = new JTextArea(16, 40);
         textArea.setEditable(false);
