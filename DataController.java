@@ -1,6 +1,7 @@
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -27,19 +28,10 @@ public class DataController {
         this.view = view;
         this.session = session;
 
-        // Set up search/filter controls first
         setupSearchAndFilterUI();
-
-        // Load CSV data into the model
         loadFile();
-
-        // Attach all button and table handlers
         attachHandlers();
-
-        // Apply permissions based on the current user role
         applyPermissionsToView();
-
-        // Update the title bar to show current session type
         updateWindowTitle();
     }
 
@@ -48,14 +40,12 @@ public class DataController {
      * clear button, and advanced search toggle button.
      */
     private void setupSearchAndFilterUI() {
-        // Re-filter the table whenever the search text changes
         view.searchField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { refreshVisibleTable(); }
             public void removeUpdate(DocumentEvent e) { refreshVisibleTable(); }
             public void changedUpdate(DocumentEvent e) { refreshVisibleTable(); }
         });
 
-        // Re-filter the table whenever a combo box changes
         view.searchColumnCombo.addActionListener(e -> refreshVisibleTable());
         view.genreFilterCombo.addActionListener(e -> refreshVisibleTable());
         view.ratingFilterCombo.addActionListener(e -> refreshVisibleTable());
@@ -63,10 +53,8 @@ public class DataController {
         view.multiplayerFilterCombo.addActionListener(e -> refreshVisibleTable());
         view.singlePlayerFilterCombo.addActionListener(e -> refreshVisibleTable());
 
-        // Clear all search and filter settings
         view.searchClearBtn.addActionListener(e -> clearAllFilters());
 
-        // Show or hide the advanced search panel
         view.advancedSearchBtn.addActionListener(e -> {
             boolean willShow = !view.isAdvancedSearchVisible();
             view.setAdvancedSearchVisible(willShow);
@@ -87,8 +75,7 @@ public class DataController {
     }
 
     /**
-     * Updates the window title depending on whether
-     * the user is Admin, Publisher, or Guest.
+     * Updates the window title depending on the current user role.
      */
     private void updateWindowTitle() {
         String title = "Turn for Turn Co. - Database Editor";
@@ -100,29 +87,27 @@ public class DataController {
 
     /**
      * Enables or disables buttons based on user permissions.
-     * Guests cannot modify rows. Admins and publishers can.
      */
     private void applyPermissionsToView() {
         view.toggleColumnsBtn.setEnabled(true);
         view.toggleThemeBtn.setEnabled(true);
         view.logoutBtn.setEnabled(true);
+        view.passwordMenuBtn.setVisible(session.isAdmin());
+        view.passwordMenuBtn.setEnabled(session.isAdmin());
 
         boolean canModify = session.canModify();
         view.addBtn.setEnabled(canModify);
         view.editBtn.setEnabled(canModify);
         view.deleteBtn.setEnabled(canModify);
         view.saveBtn.setEnabled(canModify);
-
         view.applyTheme();
     }
 
     /**
-     * Loads the CSV file into the model and then refreshes the UI.
+     * Loads the CSV file into the model and refreshes the UI.
      */
     private void loadFile() {
         File dataFile = new File("data.csv");
-
-        // Stop loading if the file does not exist
         if (!dataFile.exists()) {
             JOptionPane.showMessageDialog(view, "data.csv not found.");
             view.setInteractionEnabled(false);
@@ -131,13 +116,8 @@ public class DataController {
 
         try {
             model.loadFromFile(dataFile);
-
-            // Fill search/filter controls with CSV column info
             populateSearchControls();
-
-            // Show the current visible rows
             refreshVisibleTable();
-
             view.setInteractionEnabled(true);
             applyPermissionsToView();
         } catch (IOException e) {
@@ -146,8 +126,7 @@ public class DataController {
     }
 
     /**
-     * Fills the search column combo box and advanced filter combo boxes
-     * using the loaded CSV column names and unique values.
+     * Fills the search and filter combo boxes using CSV data.
      */
     private void populateSearchControls() {
         String[] columns = model.getColumns();
@@ -155,7 +134,6 @@ public class DataController {
             return;
         }
 
-        // Fill the basic "search by column" combo box
         view.searchColumnCombo.removeAllItems();
         for (String column : columns) {
             if (!isHiddenIdColumn(column)) {
@@ -163,10 +141,7 @@ public class DataController {
             }
         }
 
-        // Default search column should be Title if present
         selectComboValue(view.searchColumnCombo, "Title");
-
-        // Fill each advanced filter combo box with unique values
         populateFilterCombo(view.genreFilterCombo, "Genre");
         populateFilterCombo(view.ratingFilterCombo, "ESRBRating");
         populateFilterCombo(view.platformFilterCombo, "Platform");
@@ -186,13 +161,9 @@ public class DataController {
             return;
         }
 
-        // TreeSet avoids duplicates and sorts values automatically
         TreeSet<String> values = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-
         for (int rowIndex = 0; rowIndex < model.getRowCount(); rowIndex++) {
             String[] row = model.getRow(rowIndex);
-
-            // Only include rows the user is allowed to see
             if (!canViewRow(row)) continue;
 
             String value = row[columnIndex].trim();
@@ -240,22 +211,14 @@ public class DataController {
         view.platformFilterCombo.setSelectedIndex(0);
         view.multiplayerFilterCombo.setSelectedIndex(0);
         view.singlePlayerFilterCombo.setSelectedIndex(0);
-
         refreshVisibleTable();
     }
 
     /**
-     * Rebuilds the visible table based on:
-     * - current user permissions
-     * - search text
-     * - selected search column
-     * - advanced filter selections
-     * - compact or expanded column mode
+     * Rebuilds the visible table based on current filters and permissions.
      */
     private void refreshVisibleTable() {
         String[] allColumns = model.getColumns();
-
-        // If no columns exist yet, show an empty table
         if (allColumns == null || allColumns.length == 0) {
             view.setTableData(new Object[0][0], new String[0]);
             return;
@@ -263,12 +226,10 @@ public class DataController {
 
         visibleRowIndexes.clear();
 
-        // Read search text and search column
         String filterText = view.searchField.getText().trim().toLowerCase();
         String selectedSearchColumn = (String) view.searchColumnCombo.getSelectedItem();
         int filterColIdx = getColumnIndex(selectedSearchColumn);
 
-        // Choose which columns are visible based on compact/expanded mode
         int[] visibleIndexes = showingAllColumns
                 ? getExpandedColumnIndexes(allColumns)
                 : getDefaultColumnIndexes(allColumns);
@@ -276,29 +237,21 @@ public class DataController {
         String[] visibleColumns = new String[visibleIndexes.length];
         List<Object[]> visibleRows = new ArrayList<>();
 
-        // Build the visible column header array
         for (int i = 0; i < visibleIndexes.length; i++) {
             visibleColumns[i] = allColumns[visibleIndexes[i]];
         }
 
-        // Check every row in the model
         for (int rowIndex = 0; rowIndex < model.getRowCount(); rowIndex++) {
             String[] fullRow = model.getRow(rowIndex);
 
-            // Only allow rows visible to this user
             if (!canViewRow(fullRow)) continue;
-
-            // Apply basic search text filter
             if (!matchesTextFilter(fullRow, filterColIdx, filterText)) continue;
-
-            // Apply advanced combo box filters
             if (!matchesComboFilter(fullRow, "Genre", view.genreFilterCombo)) continue;
             if (!matchesComboFilter(fullRow, "ESRBRating", view.ratingFilterCombo)) continue;
             if (!matchesComboFilter(fullRow, "Platform", view.platformFilterCombo)) continue;
             if (!matchesComboFilter(fullRow, "Multiplayer", view.multiplayerFilterCombo)) continue;
             if (!matchesComboFilter(fullRow, "SinglePlayer", view.singlePlayerFilterCombo)) continue;
 
-            // Build only the currently visible columns for this row
             Object[] visibleRow = new Object[visibleIndexes.length];
             for (int col = 0; col < visibleIndexes.length; col++) {
                 visibleRow[col] = fullRow[visibleIndexes[col]];
@@ -308,13 +261,11 @@ public class DataController {
             visibleRowIndexes.add(rowIndex);
         }
 
-        // Convert list into array for the table model
         Object[][] visibleData = new Object[visibleRows.size()][visibleIndexes.length];
         for (int i = 0; i < visibleRows.size(); i++) {
             visibleData[i] = visibleRows.get(i);
         }
 
-        // Update the table display
         view.setTableData(visibleData, visibleColumns);
         view.resizeColumnsToFitContent();
         view.fitWindowToTable(showingAllColumns);
@@ -332,11 +283,10 @@ public class DataController {
     }
 
     /**
-     * Checks whether a row matches a selected advanced filter combo value.
+     * Checks whether a row matches one selected advanced filter value.
      */
     private boolean matchesComboFilter(String[] row, String columnName, JComboBox<String> combo) {
         String selectedValue = (String) combo.getSelectedItem();
-
         if (selectedValue == null || selectedValue.equalsIgnoreCase("All")) {
             return true;
         }
@@ -421,8 +371,6 @@ public class DataController {
 
     /**
      * Checks whether the current session is allowed to view a row.
-     * Admins and guests can view all rows.
-     * Publishers can only view rows matching their publisher name.
      */
     private boolean canViewRow(String[] row) {
         if (session.isAdmin() || session.isGuest()) return true;
@@ -443,8 +391,7 @@ public class DataController {
     }
 
     /**
-     * Returns the selected visible table row converted back
-     * into the real model row index.
+     * Returns the selected visible row converted back into the model row index.
      */
     private int getSelectedModelRowIndex() {
         int sel = view.table.getSelectedRow();
@@ -456,7 +403,6 @@ public class DataController {
      * Connects all buttons and row click behavior.
      */
     private void attachHandlers() {
-        // Add a new row
         view.addBtn.addActionListener(e -> {
             String[] row = promptRow("Add Entry", null);
             if (row != null) {
@@ -466,7 +412,6 @@ public class DataController {
             }
         });
 
-        // Edit selected row
         view.editBtn.addActionListener(e -> {
             int idx = getSelectedModelRowIndex();
             if (idx == -1) return;
@@ -480,7 +425,6 @@ public class DataController {
             }
         });
 
-        // Delete selected row
         view.deleteBtn.addActionListener(e -> {
             int idx = getSelectedModelRowIndex();
             if (idx == -1) return;
@@ -493,7 +437,6 @@ public class DataController {
             }
         });
 
-        // Save current data back into CSV
         view.saveBtn.addActionListener(e -> {
             try {
                 model.saveToFile();
@@ -503,22 +446,20 @@ public class DataController {
             }
         });
 
-        // Log out and return to startup screen
+        view.passwordMenuBtn.addActionListener(e -> openPasswordHandlingMenu());
+
         view.logoutBtn.addActionListener(e -> {
             view.dispose();
             SwingUtilities.invokeLater(StartUp::new);
         });
 
-        // Toggle between compact and expanded table view
         view.toggleColumnsBtn.addActionListener(e -> {
             showingAllColumns = !showingAllColumns;
             refreshVisibleTable();
         });
 
-        // Switch between light and dark theme
         view.toggleThemeBtn.addActionListener(e -> view.toggleTheme());
 
-        // Clicking a row once shows full details
         view.table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -526,6 +467,135 @@ public class DataController {
                 if (row >= 0 && e.getClickCount() == 1) showDetails(row);
             }
         });
+    }
+
+    /**
+     * Opens the admin-only password handling menu.
+     */
+    private void openPasswordHandlingMenu() {
+        if (!session.isAdmin()) {
+            return;
+        }
+
+        String[] options = {"View Publisher Passwords", "Change Publisher Password", "Add Publisher User"};
+        String choice = (String) JOptionPane.showInputDialog(
+                view,
+                "Choose a password handling option:",
+                "Password Handling",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                options,
+                options[0]
+        );
+
+        if (choice == null) {
+            return;
+        }
+
+        if (choice.equals(options[0])) {
+            showPublisherPasswordTable();
+        } else if (choice.equals(options[1])) {
+            changePublisherPassword();
+        } else if (choice.equals(options[2])) {
+            addPublisherUser();
+        }
+    }
+
+    /**
+     * Shows all publisher usernames, publisher names, and passwords.
+     */
+    private void showPublisherPasswordTable() {
+        Object[][] data = AuthManager.getPublisherAccountTableData();
+        String[] columns = {"Username", "Publisher", "Password"};
+
+        JTable passwordTable = new JTable(data, columns);
+        passwordTable.setEnabled(false);
+        JScrollPane pane = new JScrollPane(passwordTable);
+        pane.setPreferredSize(new java.awt.Dimension(620, 280));
+
+        JOptionPane.showMessageDialog(
+                view,
+                pane,
+                "Publisher Passwords",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    /**
+     * Lets the admin change one publisher password.
+     */
+    private void changePublisherPassword() {
+        String[] usernames = AuthManager.getPublisherUsernames();
+        if (usernames.length == 0) {
+            JOptionPane.showMessageDialog(view, "No publisher users found.");
+            return;
+        }
+
+        JComboBox<String> userCombo = new JComboBox<>(usernames);
+        JPasswordField passwordField = new JPasswordField();
+        JCheckBox showBox = new JCheckBox("Show Password");
+        showBox.addActionListener(e -> passwordField.setEchoChar(showBox.isSelected() ? (char) 0 : '•'));
+
+        JPanel panel = new JPanel(new GridLayout(0, 1, 6, 6));
+        panel.add(new JLabel("Select Publisher Username:"));
+        panel.add(userCombo);
+        panel.add(new JLabel("New Password:"));
+        panel.add(passwordField);
+        panel.add(showBox);
+
+        int result = JOptionPane.showConfirmDialog(view, panel, "Change Publisher Password", JOptionPane.OK_CANCEL_OPTION);
+        if (result != JOptionPane.OK_OPTION) {
+            return;
+        }
+
+        String username = (String) userCombo.getSelectedItem();
+        String newPassword = new String(passwordField.getPassword());
+
+        if (newPassword.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(view, "Password cannot be blank.");
+            return;
+        }
+
+        if (AuthManager.updatePublisherPassword(username, newPassword)) {
+            JOptionPane.showMessageDialog(view, "Publisher password updated.");
+        } else {
+            JOptionPane.showMessageDialog(view, "Could not update publisher password.");
+        }
+    }
+
+    /**
+     * Lets the admin add one new publisher user.
+     */
+    private void addPublisherUser() {
+        JTextField usernameField = new JTextField();
+        JTextField publisherField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
+        JCheckBox showBox = new JCheckBox("Show Password");
+        showBox.addActionListener(e -> passwordField.setEchoChar(showBox.isSelected() ? (char) 0 : '•'));
+
+        JPanel panel = new JPanel(new GridLayout(0, 1, 6, 6));
+        panel.add(new JLabel("Username:"));
+        panel.add(usernameField);
+        panel.add(new JLabel("Publisher Name:"));
+        panel.add(publisherField);
+        panel.add(new JLabel("Password:"));
+        panel.add(passwordField);
+        panel.add(showBox);
+
+        int result = JOptionPane.showConfirmDialog(view, panel, "Add Publisher User", JOptionPane.OK_CANCEL_OPTION);
+        if (result != JOptionPane.OK_OPTION) {
+            return;
+        }
+
+        String username = usernameField.getText().trim();
+        String publisherName = publisherField.getText().trim();
+        String password = new String(passwordField.getPassword());
+
+        if (AuthManager.addPublisherUser(username, publisherName, password)) {
+            JOptionPane.showMessageDialog(view, "Publisher user added.");
+        } else {
+            JOptionPane.showMessageDialog(view, "Could not add publisher user. Username may already exist.");
+        }
     }
 
     /**
@@ -540,7 +610,6 @@ public class DataController {
 
     /**
      * Opens a form for adding or editing a row.
-     * Publishers cannot change the Publisher field away from their own name.
      */
     private String[] promptRow(String title, String[] defaults) {
         JPanel p = new JPanel(new GridLayout(0, 2, 5, 5));
@@ -551,7 +620,6 @@ public class DataController {
             p.add(new JLabel(model.getColumns()[i]));
             f[i] = new JTextField(defaults == null ? "" : defaults[i]);
 
-            // Lock publisher field for publisher accounts
             if (session.isPublisher() && i == pubIdx) {
                 f[i].setText(session.getPublisherName());
                 f[i].setEditable(false);
@@ -571,7 +639,6 @@ public class DataController {
 
     /**
      * Application entry point.
-     * Opens the startup window first.
      */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(StartUp::new);

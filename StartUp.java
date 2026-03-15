@@ -72,22 +72,28 @@ public class StartUp extends JFrame {
 
     /**
      * Opens a login popup for admin or publisher access.
-     *
-     * @param expectedRole the required login type
      */
     private void showLoginDialog(AuthManager.UserRole expectedRole) {
         JTextField usernameField = new JTextField();
         JPasswordField passwordField = new JPasswordField();
+        JCheckBox showPasswordBox = new JCheckBox("Show Password");
+
+        showPasswordBox.addActionListener(e -> {
+            if (showPasswordBox.isSelected()) {
+                passwordField.setEchoChar((char) 0);
+            } else {
+                passwordField.setEchoChar('•');
+            }
+        });
 
         JPanel panel = new JPanel(new GridLayout(0, 1, 6, 6));
         panel.add(new JLabel("Username:"));
         panel.add(usernameField);
         panel.add(new JLabel("Password:"));
         panel.add(passwordField);
+        panel.add(showPasswordBox);
 
-        String title = expectedRole == AuthManager.UserRole.ADMIN
-                ? "Admin Login"
-                : "Publisher Login";
+        String title = expectedRole == AuthManager.UserRole.ADMIN ? "Admin Login" : "Publisher Login";
 
         int result = JOptionPane.showConfirmDialog(
                 this,
@@ -144,12 +150,6 @@ public class StartUp extends JFrame {
 
     /**
      * Creates a JLabel containing the scaled logo image.
-     * If loading fails, a fallback text label is shown instead.
-     *
-     * @param path image file path
-     * @param maxWidth maximum display width
-     * @param maxHeight maximum display height
-     * @return logo label
      */
     public static JLabel createLogoLabel(String path, int maxWidth, int maxHeight) {
         JLabel label = new JLabel();

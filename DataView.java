@@ -9,7 +9,7 @@ public class DataView extends JFrame {
     // Main table and action buttons
     JTable table;
     JButton addBtn, editBtn, deleteBtn, saveBtn, logoutBtn, toggleColumnsBtn, toggleThemeBtn;
-    JButton advancedSearchBtn, searchClearBtn;
+    JButton advancedSearchBtn, searchClearBtn, passwordMenuBtn;
 
     // Table model and scroll area
     DefaultTableModel tableModel;
@@ -108,7 +108,6 @@ public class DataView extends JFrame {
         scrollPane = new JScrollPane(table);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-
         scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(18, 0));
         scrollPane.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 18));
 
@@ -122,7 +121,6 @@ public class DataView extends JFrame {
         searchColumnCombo = new JComboBox<>(new String[]{"Title"});
         searchField = new JTextField(16);
 
-        // Give controls consistent sizing
         Dimension wideButtonSize = new Dimension(140, 34);
         toggleColumnsBtn.setPreferredSize(wideButtonSize);
         toggleThemeBtn.setPreferredSize(wideButtonSize);
@@ -172,7 +170,6 @@ public class DataView extends JFrame {
         tablePanel = new JPanel(new BorderLayout());
         tablePanel.add(headerPanel, BorderLayout.NORTH);
         tablePanel.add(scrollPane, BorderLayout.CENTER);
-
         add(tablePanel, BorderLayout.CENTER);
 
         // Right-side action button panel
@@ -182,12 +179,14 @@ public class DataView extends JFrame {
         editBtn = new JButton("Edit");
         deleteBtn = new JButton("Delete");
         saveBtn = new JButton("Save");
+        passwordMenuBtn = new JButton("Passwords");
         logoutBtn = new JButton("Logout");
 
         buttonPanel.add(addBtn);
         buttonPanel.add(editBtn);
         buttonPanel.add(deleteBtn);
         buttonPanel.add(saveBtn);
+        buttonPanel.add(passwordMenuBtn);
         buttonPanel.add(logoutBtn);
 
         add(buttonPanel, BorderLayout.EAST);
@@ -223,6 +222,7 @@ public class DataView extends JFrame {
         editBtn.setEnabled(enabled);
         deleteBtn.setEnabled(enabled);
         saveBtn.setEnabled(enabled);
+        passwordMenuBtn.setEnabled(enabled);
         logoutBtn.setEnabled(true);
         toggleColumnsBtn.setEnabled(enabled);
         toggleThemeBtn.setEnabled(enabled);
@@ -249,7 +249,6 @@ public class DataView extends JFrame {
 
         for (int col = 0; col < table.getColumnCount(); col++) {
             TableColumn column = table.getColumnModel().getColumn(col);
-
             int width = headerMetrics.stringWidth(table.getColumnName(col)) + PADDING;
 
             for (int row = 0; row < table.getRowCount(); row++) {
@@ -266,8 +265,7 @@ public class DataView extends JFrame {
     }
 
     /**
-     * Resizes the window depending on compact/expanded mode
-     * and whether advanced search is visible.
+     * Resizes the window depending on compact or expanded mode.
      */
     public void fitWindowToTable(boolean expanded) {
         int totalWidth = 80;
@@ -301,23 +299,14 @@ public class DataView extends JFrame {
         applyTheme();
     }
 
-    /**
-     * Returns true if dark mode is active.
-     */
     public boolean isDarkMode() {
         return darkMode;
     }
 
-    /**
-     * Returns whether the advanced search panel is visible.
-     */
     public boolean isAdvancedSearchVisible() {
         return advancedSearchPanel.isVisible();
     }
 
-    /**
-     * Shows or hides the advanced search panel.
-     */
     public void setAdvancedSearchVisible(boolean visible) {
         advancedSearchPanel.setVisible(visible);
         revalidate();
@@ -359,22 +348,20 @@ public class DataView extends JFrame {
         scrollPane.getViewport().setBackground(panelBg);
         scrollPane.setBorder(BorderFactory.createLineBorder(grid));
 
-        // Theme the scrollbars
         applyScrollBarTheme(scrollPane.getVerticalScrollBar(), scrollTrack, scrollThumb);
         applyScrollBarTheme(scrollPane.getHorizontalScrollBar(), scrollTrack, scrollThumb);
 
-        // Theme buttons
         styleButton(addBtn, buttonBg, text);
         styleButton(editBtn, buttonBg, text);
         styleButton(deleteBtn, buttonBg, text);
         styleButton(saveBtn, buttonBg, text);
+        styleButton(passwordMenuBtn, buttonBg, text);
         styleButton(logoutBtn, buttonBg, text);
         styleButton(toggleColumnsBtn, buttonBg, text);
         styleButton(toggleThemeBtn, buttonBg, text);
         styleButton(advancedSearchBtn, buttonBg, text);
         styleButton(searchClearBtn, buttonBg, text);
 
-        // Theme inputs
         styleInput(searchField, panelBg, text, grid);
         styleCombo(searchColumnCombo, panelBg, text);
         styleCombo(genreFilterCombo, panelBg, text);
@@ -383,11 +370,9 @@ public class DataView extends JFrame {
         styleCombo(multiplayerFilterCombo, panelBg, text);
         styleCombo(singlePlayerFilterCombo, panelBg, text);
 
-        // Update button labels based on current state
         toggleThemeBtn.setText(darkMode ? "Light Mode" : "Dark Mode");
         advancedSearchBtn.setText(advancedSearchPanel.isVisible() ? "Hide Filters" : "Adv Search");
 
-        // Apply text color to advanced filter labels
         Component[] advancedComponents = advancedSearchPanel.getComponents();
         for (Component component : advancedComponents) {
             component.setForeground(text);
@@ -515,9 +500,6 @@ public class DataView extends JFrame {
                 return createInvisibleButton();
             }
 
-            /**
-             * Creates invisible arrow buttons so only the custom thumb is shown.
-             */
             private JButton createInvisibleButton() {
                 JButton button = new JButton();
                 button.setPreferredSize(new Dimension(0, 0));
