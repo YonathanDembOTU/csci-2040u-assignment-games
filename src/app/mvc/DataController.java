@@ -48,9 +48,17 @@ public class DataController {
      */
     private void setupSearchAndFilterUI() {
         view.searchField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { refreshVisibleTable(); }
-            public void removeUpdate(DocumentEvent e) { refreshVisibleTable(); }
-            public void changedUpdate(DocumentEvent e) { refreshVisibleTable(); }
+            public void insertUpdate(DocumentEvent e) {
+                refreshVisibleTable();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                refreshVisibleTable();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                refreshVisibleTable();
+            }
         });
 
         view.searchColumnCombo.addActionListener(e -> refreshVisibleTable());
@@ -86,9 +94,12 @@ public class DataController {
      */
     private void updateWindowTitle() {
         String title = "Turn for Turn Co. - Database Editor";
-        if (session.isAdmin()) title += " [Admin]";
-        else if (session.isPublisher()) title += " [Publisher: " + session.getPublisherName() + "]";
-        else title += " [Guest]";
+        if (session.isAdmin())
+            title += " [Admin]";
+        else if (session.isPublisher())
+            title += " [Publisher: " + session.getPublisherName() + "]";
+        else
+            title += " [Guest]";
         view.setTitle(title);
     }
 
@@ -171,7 +182,8 @@ public class DataController {
         TreeSet<String> values = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         for (int rowIndex = 0; rowIndex < model.getRowCount(); rowIndex++) {
             String[] row = model.getRow(rowIndex);
-            if (!canViewRow(row)) continue;
+            if (!canViewRow(row))
+                continue;
 
             String value = row[columnIndex].trim();
             if (!value.isEmpty()) {
@@ -251,13 +263,20 @@ public class DataController {
         for (int rowIndex = 0; rowIndex < model.getRowCount(); rowIndex++) {
             String[] fullRow = model.getRow(rowIndex);
 
-            if (!canViewRow(fullRow)) continue;
-            if (!matchesTextFilter(fullRow, filterColIdx, filterText)) continue;
-            if (!matchesComboFilter(fullRow, "Genre", view.genreFilterCombo)) continue;
-            if (!matchesComboFilter(fullRow, "ESRBRating", view.ratingFilterCombo)) continue;
-            if (!matchesComboFilter(fullRow, "Platform", view.platformFilterCombo)) continue;
-            if (!matchesComboFilter(fullRow, "Multiplayer", view.multiplayerFilterCombo)) continue;
-            if (!matchesComboFilter(fullRow, "SinglePlayer", view.singlePlayerFilterCombo)) continue;
+            if (!canViewRow(fullRow))
+                continue;
+            if (!matchesTextFilter(fullRow, filterColIdx, filterText))
+                continue;
+            if (!matchesComboFilter(fullRow, "Genre", view.genreFilterCombo))
+                continue;
+            if (!matchesComboFilter(fullRow, "ESRBRating", view.ratingFilterCombo))
+                continue;
+            if (!matchesComboFilter(fullRow, "Platform", view.platformFilterCombo))
+                continue;
+            if (!matchesComboFilter(fullRow, "Multiplayer", view.multiplayerFilterCombo))
+                continue;
+            if (!matchesComboFilter(fullRow, "SinglePlayer", view.singlePlayerFilterCombo))
+                continue;
 
             Object[] visibleRow = new Object[visibleIndexes.length];
             for (int col = 0; col < visibleIndexes.length; col++) {
@@ -310,7 +329,7 @@ public class DataController {
      * Returns the default compact set of columns shown first.
      */
     private int[] getDefaultColumnIndexes(String[] columns) {
-        String[] preferred = {"Title", "Developer", "Publisher", "ESRBRating", "Platform", "Genre"};
+        String[] preferred = { "Title", "Developer", "Publisher", "ESRBRating", "Platform", "Genre" };
         List<Integer> indexes = new ArrayList<>();
 
         for (String wanted : preferred) {
@@ -331,7 +350,8 @@ public class DataController {
     private int[] getExpandedColumnIndexes(String[] columns) {
         List<Integer> indexes = new ArrayList<>();
         for (int i = 0; i < columns.length; i++) {
-            if (!isHiddenIdColumn(columns[i])) indexes.add(i);
+            if (!isHiddenIdColumn(columns[i]))
+                indexes.add(i);
         }
         return toIntArray(indexes);
     }
@@ -349,7 +369,8 @@ public class DataController {
      */
     private int[] toIntArray(List<Integer> indexes) {
         int[] res = new int[indexes.size()];
-        for (int i = 0; i < indexes.size(); i++) res[i] = indexes.get(i);
+        for (int i = 0; i < indexes.size(); i++)
+            res[i] = indexes.get(i);
         return res;
     }
 
@@ -357,13 +378,16 @@ public class DataController {
      * Returns the index of a column by name.
      */
     private int getColumnIndex(String columnName) {
-        if (columnName == null) return -1;
+        if (columnName == null)
+            return -1;
 
         String[] cols = model.getColumns();
-        if (cols == null) return -1;
+        if (cols == null)
+            return -1;
 
         for (int i = 0; i < cols.length; i++) {
-            if (cols[i].equalsIgnoreCase(columnName)) return i;
+            if (cols[i].equalsIgnoreCase(columnName))
+                return i;
         }
 
         return -1;
@@ -380,7 +404,8 @@ public class DataController {
      * Checks whether the current session is allowed to view a row.
      */
     private boolean canViewRow(String[] row) {
-        if (session.isAdmin() || session.isGuest()) return true;
+        if (session.isAdmin() || session.isGuest())
+            return true;
 
         int pubIdx = getPublisherColumnIndex();
         return pubIdx != -1 && row[pubIdx].trim().equalsIgnoreCase(session.getPublisherName());
@@ -390,8 +415,10 @@ public class DataController {
      * Checks whether the current session is allowed to modify a row.
      */
     private boolean canModifyRow(String[] row) {
-        if (session.isAdmin()) return true;
-        if (session.isGuest()) return false;
+        if (session.isAdmin())
+            return true;
+        if (session.isGuest())
+            return false;
 
         int pubIdx = getPublisherColumnIndex();
         return pubIdx != -1 && row[pubIdx].trim().equalsIgnoreCase(session.getPublisherName());
@@ -402,7 +429,8 @@ public class DataController {
      */
     private int getSelectedModelRowIndex() {
         int sel = view.table.getSelectedRow();
-        if (sel == -1 || sel >= visibleRowIndexes.size()) return -1;
+        if (sel == -1 || sel >= visibleRowIndexes.size())
+            return -1;
         return visibleRowIndexes.get(sel);
     }
 
@@ -421,8 +449,10 @@ public class DataController {
 
         view.editBtn.addActionListener(e -> {
             int idx = getSelectedModelRowIndex();
-            if (idx == -1) return;
-            if (!canModifyRow(model.getRow(idx))) return;
+            if (idx == -1)
+                return;
+            if (!canModifyRow(model.getRow(idx)))
+                return;
 
             String[] updated = promptRow("Edit Entry", model.getRow(idx));
             if (updated != null) {
@@ -434,8 +464,10 @@ public class DataController {
 
         view.deleteBtn.addActionListener(e -> {
             int idx = getSelectedModelRowIndex();
-            if (idx == -1) return;
-            if (!canModifyRow(model.getRow(idx))) return;
+            if (idx == -1)
+                return;
+            if (!canModifyRow(model.getRow(idx)))
+                return;
 
             if (JOptionPane.showConfirmDialog(view, "Delete?") == JOptionPane.YES_OPTION) {
                 model.removeRow(idx);
@@ -471,7 +503,8 @@ public class DataController {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int row = view.table.rowAtPoint(e.getPoint());
-                if (row >= 0 && e.getClickCount() == 1) showDetails(row);
+                if (row >= 0 && e.getClickCount() == 1)
+                    showDetails(row);
             }
         });
     }
@@ -484,7 +517,7 @@ public class DataController {
             return;
         }
 
-        String[] options = {"View Publisher Passwords", "Change Publisher Password", "Add Publisher User"};
+        String[] options = { "View Publisher Passwords", "Change Publisher Password", "Add Publisher User" };
         String choice = (String) JOptionPane.showInputDialog(
                 view,
                 "Choose a password handling option:",
@@ -492,8 +525,7 @@ public class DataController {
                 JOptionPane.PLAIN_MESSAGE,
                 null,
                 options,
-                options[0]
-        );
+                options[0]);
 
         if (choice == null) {
             return;
@@ -513,7 +545,7 @@ public class DataController {
      */
     private void showPublisherPasswordTable() {
         Object[][] data = AuthManager.getPublisherAccountTableData();
-        String[] columns = {"Username", "Publisher", "Password"};
+        String[] columns = { "Username", "Publisher", "Password" };
 
         JTable passwordTable = new JTable(data, columns);
         passwordTable.setEnabled(false);
@@ -524,8 +556,7 @@ public class DataController {
                 view,
                 pane,
                 "Publisher Passwords",
-                JOptionPane.INFORMATION_MESSAGE
-        );
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**
@@ -550,7 +581,8 @@ public class DataController {
         panel.add(passwordField);
         panel.add(showBox);
 
-        int result = JOptionPane.showConfirmDialog(view, panel, "Change Publisher Password", JOptionPane.OK_CANCEL_OPTION);
+        int result = JOptionPane.showConfirmDialog(view, panel, "Change Publisher Password",
+                JOptionPane.OK_CANCEL_OPTION);
         if (result != JOptionPane.OK_OPTION) {
             return;
         }
@@ -637,7 +669,18 @@ public class DataController {
 
         if (JOptionPane.showConfirmDialog(view, p, title, JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
             String[] row = new String[f.length];
-            for (int i = 0; i < f.length; i++) row[i] = f[i].getText();
+
+            for (int i = 0; i < f.length; i++) {
+                String value = f[i].getText().trim();
+
+                if (value.isEmpty()) {
+                    JOptionPane.showMessageDialog(view, "All fields must be filled.");
+                    return null;
+                }
+
+                row[i] = value;
+            }
+
             return row;
         }
 
