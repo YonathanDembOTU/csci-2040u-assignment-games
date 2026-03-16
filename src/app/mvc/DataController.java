@@ -1,4 +1,4 @@
-package app.mvc;
+package src.app.mvc;
 
 import app.auth.AuthManager;
 import app.mvc.DataModel;
