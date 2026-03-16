@@ -535,7 +535,7 @@ public class DataView extends JFrame {
 
         StringBuilder details = new StringBuilder();
         for (int i = 0; i < columns.length; i++) {
-            details.append(columns[i]).append(": ").append(row[i]).append("\n\n");
+            details.append("• ").append(columns[i]).append(": ").append(row[i]).append("\n\n");
         }
 
         textArea.setText(details.toString());
