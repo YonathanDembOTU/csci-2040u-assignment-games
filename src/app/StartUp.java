@@ -28,7 +28,7 @@ public class StartUp extends JFrame {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // Logo
-        JLabel logoLabel = createLogoLabel("logo.png", 320, 200);
+        JLabel logoLabel = createLogoLabel("assets/logo.png", 320, 200);
         logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // Welcome text
