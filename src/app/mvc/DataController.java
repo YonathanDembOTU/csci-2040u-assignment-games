@@ -296,6 +296,7 @@ public class DataController {
         view.resizeColumnsToFitContent();
         view.fitWindowToTable(showingAllColumns);
         view.toggleColumnsBtn.setText(showingAllColumns ? "Show Less" : "Show More");
+        view.setTitle(view.getTitle().split(" \\| ")[0] + " | Showing " + visibleRows.size() + " games");
     }
 
     /**
