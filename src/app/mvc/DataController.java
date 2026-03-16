@@ -1,3 +1,10 @@
+package app.mvc;
+
+import app.auth.AuthManager;
+import app.mvc.DataModel;
+import app.mvc.DataView;
+import app.StartUp;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -107,7 +114,7 @@ public class DataController {
      * Loads the CSV file into the model and refreshes the UI.
      */
     private void loadFile() {
-        File dataFile = new File("data.csv");
+        File dataFile = new File("data/data.csv");
         if (!dataFile.exists()) {
             JOptionPane.showMessageDialog(view, "data.csv not found.");
             view.setInteractionEnabled(false);

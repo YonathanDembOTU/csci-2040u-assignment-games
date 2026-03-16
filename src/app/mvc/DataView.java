@@ -1,3 +1,5 @@
+package app.mvc;
+
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.table.DefaultTableModel;
@@ -7,9 +9,17 @@ import java.awt.*;
 
 public class DataView extends JFrame {
     // Main table and action buttons
-    JTable table;
-    JButton addBtn, editBtn, deleteBtn, saveBtn, logoutBtn, toggleColumnsBtn, toggleThemeBtn;
-    JButton advancedSearchBtn, searchClearBtn, passwordMenuBtn;
+    public JTable table;
+    public JButton addBtn;
+    public JButton editBtn;
+    public JButton deleteBtn;
+    public JButton saveBtn;
+    public JButton logoutBtn;
+    public JButton toggleColumnsBtn;
+    public JButton toggleThemeBtn;
+    public JButton advancedSearchBtn;
+    public JButton searchClearBtn;
+    public JButton passwordMenuBtn;
 
     // Table model and scroll area
     DefaultTableModel tableModel;
@@ -22,13 +32,13 @@ public class DataView extends JFrame {
     JPanel advancedSearchPanel;
 
     // Search and filter controls
-    JTextField searchField;
-    JComboBox<String> searchColumnCombo;
-    JComboBox<String> genreFilterCombo;
-    JComboBox<String> ratingFilterCombo;
-    JComboBox<String> platformFilterCombo;
-    JComboBox<String> multiplayerFilterCombo;
-    JComboBox<String> singlePlayerFilterCombo;
+    public JTextField searchField;
+    public JComboBox<String> searchColumnCombo;
+    public JComboBox<String> genreFilterCombo;
+    public JComboBox<String> ratingFilterCombo;
+    public JComboBox<String> platformFilterCombo;
+    public JComboBox<String> multiplayerFilterCombo;
+    public JComboBox<String> singlePlayerFilterCombo;
 
     // Tracks current theme mode
     private boolean darkMode = false;

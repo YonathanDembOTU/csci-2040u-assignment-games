@@ -5,6 +5,7 @@ GameID,Title,Developer,Publisher,ReleaseYear,Genre,Platform,ESRBRating,PriceUSD,
 4,Grand Theft Auto V,Rockstar North,Rockstar Games,2013,Action Adventure,PC,M,29.99,96,Yes,Yes,95
 5,Minecraft,Mojang Studios,Xbox Game Studios,2011,Sandbox,PC,E10+,29.99,93,Yes,Yes,2
 6,Fortnite,Epic Games,Epic Games,2017,Battle Royale,PC,T,0.00,81,Yes,Yes,30
+7,The Legend of Zelda: Breath of the Wild,Nintendo EPD,Nintendo,2017,Action Adventure,Nintendo Switch,E10+,59.99,97,No,Yes,14
 8,Call of Duty: Modern Warfare II,Infinity Ward,Activision,2022,First-Person Shooter,PC,M,69.99,78,Yes,Yes,125
 9,God of War (2018),Santa Monica Studio,Sony Interactive Entertainment,2018,Action Adventure,PlayStation 4,M,49.99,94,No,Yes,45
 10,Overwatch,Blizzard Entertainment,Blizzard Entertainment,2016,Hero Shooter,PC,T,39.99,91,Yes,No,30
