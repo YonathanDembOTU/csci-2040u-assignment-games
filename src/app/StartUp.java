@@ -1,3 +1,8 @@
+package app;
+
+import app.auth.AuthManager;
+import app.mvc.DataController;
+
 import javax.swing.*;
 import java.awt.*;
 
