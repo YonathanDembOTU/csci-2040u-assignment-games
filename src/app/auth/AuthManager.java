@@ -93,8 +93,8 @@ public class AuthManager {
     }
 
     // Encrypted credentials file and AES key file
-    private static final String USERS_FILE_NAME = "users.enc";
-    private static final String KEY_FILE_NAME = "secret.key";
+    private static final String USERS_FILE_NAME = "data/users.enc";
+    private static final String KEY_FILE_NAME = "config/secret.key";
 
     // Stores all login accounts in memory
     private static final Map<String, Account> accounts = new HashMap<>();
@@ -143,7 +143,7 @@ public class AuthManager {
      * Password format starts as username + 123.
      */
     private static void loadPublisherAccountsFromCsvIntoMap() {
-        File file = new File("data.csv");
+        File file = new File("data/data.csv");
         if (!file.exists()) {
             return;
         }
