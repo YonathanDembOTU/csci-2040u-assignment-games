@@ -1,9 +1,7 @@
-package src.app.mvc;
+package app.mvc;
 
 import app.auth.AuthManager;
-import app.mvc.DataModel;
-import app.mvc.DataView;
-import src.app.StartUp;
+import app.StartUp;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
