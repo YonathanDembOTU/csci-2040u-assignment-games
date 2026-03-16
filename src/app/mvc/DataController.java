@@ -469,7 +469,14 @@ public class DataController {
             if (!canModifyRow(model.getRow(idx)))
                 return;
 
-            if (JOptionPane.showConfirmDialog(view, "Delete?") == JOptionPane.YES_OPTION) {
+            int confirm = JOptionPane.showConfirmDialog(
+                    view,
+                    "Are you sure you want to delete this game entry?",
+                    "Confirm Delete",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+
+            if (confirm == JOptionPane.YES_OPTION) {
                 model.removeRow(idx);
                 refreshVisibleTable();
                 populateSearchControls();
