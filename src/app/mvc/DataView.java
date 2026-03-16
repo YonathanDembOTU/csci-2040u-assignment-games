@@ -127,9 +127,14 @@ public class DataView extends JFrame {
         toggleThemeBtn = new JButton("Dark Mode");
         advancedSearchBtn = new JButton("Adv Search");
         searchClearBtn = new JButton("Clear");
+        searchField.setToolTipText("Search for games using the selected column.");
+        searchClearBtn.setToolTipText("Clear search text and all active filters.");
+        advancedSearchBtn.setToolTipText("Show or hide advanced search filters.");
+        toggleColumnsBtn.setToolTipText("Switch between compact and expanded table view.");
+        toggleThemeBtn.setToolTipText("Toggle between light mode and dark mode.");
 
         // Basic search controls
-        searchColumnCombo = new JComboBox<>(new String[]{"Title"});
+        searchColumnCombo = new JComboBox<>(new String[] { "Title" });
         searchField = new JTextField(16);
 
         Dimension wideButtonSize = new Dimension(140, 34);
@@ -212,7 +217,7 @@ public class DataView extends JFrame {
      * Creates a combo box used in the advanced filter section.
      */
     private JComboBox<String> createFilterCombo() {
-        JComboBox<String> combo = new JComboBox<>(new String[]{"All"});
+        JComboBox<String> combo = new JComboBox<>(new String[] { "All" });
         combo.setPreferredSize(new Dimension(125, 34));
         return combo;
     }
@@ -402,8 +407,7 @@ public class DataView extends JFrame {
         button.setFocusPainted(false);
         button.setOpaque(true);
         button.setBorder(BorderFactory.createLineBorder(
-                darkMode ? new Color(90, 90, 90) : new Color(190, 190, 190)
-        ));
+                darkMode ? new Color(90, 90, 90) : new Color(190, 190, 190)));
         button.setPreferredSize(button.getPreferredSize().width == 100
                 ? new Dimension(100, 34)
                 : new Dimension(140, 34));
@@ -418,8 +422,7 @@ public class DataView extends JFrame {
         field.setCaretColor(fg);
         field.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(border),
-                BorderFactory.createEmptyBorder(4, 8, 4, 8)
-        ));
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
     }
 
     /**
@@ -480,8 +483,7 @@ public class DataView extends JFrame {
                         Math.max(thumbBounds.width - 2, 10),
                         Math.max(thumbBounds.height - 2, 10),
                         10,
-                        10
-                );
+                        10);
 
                 g2.setColor(DataView.this.darkMode ? new Color(170, 170, 170) : new Color(120, 120, 120));
                 g2.drawRoundRect(
@@ -490,8 +492,7 @@ public class DataView extends JFrame {
                         Math.max(thumbBounds.width - 3, 9),
                         Math.max(thumbBounds.height - 3, 9),
                         10,
-                        10
-                );
+                        10);
 
                 g2.dispose();
             }
@@ -558,7 +559,6 @@ public class DataView extends JFrame {
                 this,
                 detailScroll,
                 "Game Details",
-                JOptionPane.INFORMATION_MESSAGE
-        );
+                JOptionPane.INFORMATION_MESSAGE);
     }
 }
