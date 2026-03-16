@@ -1,7 +1,7 @@
-package app;
+package src.app;
 
 import app.auth.AuthManager;
-import app.mvc.DataController;
+import src.app.mvc.DataController;
 
 import javax.swing.*;
 import java.awt.*;
