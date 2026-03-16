@@ -52,5 +52,5 @@ Examples from current data:
 ---
 
 ## How to Run the Program:
-* To run the program, ensure that you have Java 11 or higher installed, and then run the DataController.java file.
+* To run the program, ensure that you have Java 11 or higher installed, and then run the StartUp.java file.
 ---
