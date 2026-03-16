@@ -111,6 +111,7 @@ public class DataView extends JFrame {
         };
 
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setFillsViewportHeight(true);
         table.setRowHeight(24);
 
