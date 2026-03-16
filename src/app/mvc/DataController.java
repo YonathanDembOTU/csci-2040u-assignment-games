@@ -3,7 +3,7 @@ package src.app.mvc;
 import app.auth.AuthManager;
 import app.mvc.DataModel;
 import app.mvc.DataView;
-import app.StartUp;
+import src.app.StartUp;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
