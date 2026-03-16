@@ -486,9 +486,9 @@ public class DataController {
         view.saveBtn.addActionListener(e -> {
             try {
                 model.saveToFile();
-                JOptionPane.showMessageDialog(view, "Saved");
+                JOptionPane.showMessageDialog(view, "Changes saved successfully.");
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(view, "Error");
+                JOptionPane.showMessageDialog(view, "Failed to save changes.");
             }
         });
 
