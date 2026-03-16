@@ -47,6 +47,10 @@ public class StartUp extends JFrame {
         JButton publisherButton = createMenuButton("Publisher Login", buttonGrey, buttonBorder);
         JButton guestButton = createMenuButton("Guest Access", buttonGrey, buttonBorder);
 
+        adminButton.setForeground(textDark);
+        publisherButton.setForeground(textDark);
+        guestButton.setForeground(textDark);
+
         adminButton.addActionListener(e -> showLoginDialog(AuthManager.UserRole.ADMIN));
         publisherButton.addActionListener(e -> showLoginDialog(AuthManager.UserRole.PUBLISHER));
 
