@@ -127,15 +127,15 @@ public class DataView extends JFrame {
         toggleThemeBtn = new JButton("Dark Mode");
         advancedSearchBtn = new JButton("Adv Search");
         searchClearBtn = new JButton("Clear");
+
+        // Basic search controls
+        searchColumnCombo = new JComboBox<>(new String[] { "Title" });
+        searchField = new JTextField(16);
         searchField.setToolTipText("Search for games using the selected column.");
         searchClearBtn.setToolTipText("Clear search text and all active filters.");
         advancedSearchBtn.setToolTipText("Show or hide advanced search filters.");
         toggleColumnsBtn.setToolTipText("Switch between compact and expanded table view.");
         toggleThemeBtn.setToolTipText("Toggle between light mode and dark mode.");
-
-        // Basic search controls
-        searchColumnCombo = new JComboBox<>(new String[] { "Title" });
-        searchField = new JTextField(16);
 
         Dimension wideButtonSize = new Dimension(140, 34);
         toggleColumnsBtn.setPreferredSize(wideButtonSize);
