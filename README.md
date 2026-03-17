@@ -3,6 +3,17 @@
     <img src="assets/logo.png" alt="Turn4Turns Development and Co." width="200">
 </p>
 
+## Project Members and Roles:
+
+* **Project Manager:** Chaudhry Shayan Qadir
+* **Technical Manager:** Yonathan Demb
+* **Front-End Lead:** Abrar Rahman
+* **Back-End Lead:** Keiren Burbank
+* **Software Quality Lead:** Gurashsish Virdi
+* **Developers:** All
+
+---
+
 ## Project Overview:
 This application serves as a centralized hub for Turn for Turn Co. to track game metadata, including developer details, ESRB ratings, platform availability, and financial data. The system is designed to be used by internal administrators, external publishing partners, and guest viewers.
 
