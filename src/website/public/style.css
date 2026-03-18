@@ -1,0 +1,392 @@
+/* reset + base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: #0f1117;
+    color: #e4e6eb;
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+/* center auth pages (login/register) */
+.auth-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* auth card */
+.container {
+    background: #1a1d24;
+    padding: 40px;
+    border-radius: 12px;
+    width: 350px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* inputs + buttons */
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: #2a2f3a;
+    color: white;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+input:focus {
+    outline: none;
+    border-color: #5865f2;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #5865f2;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #4752c4;
+}
+
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: #1a1d24;
+    padding: 0 30px;
+    height: 70px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    z-index: 1000;
+}
+
+/* main page wrapper */
+.dashboard {
+    width: 90%;
+    max-width: 1200px;
+    margin: 100px auto 40px auto;
+}
+
+.user-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logout-link {
+    color: #ff4757;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.logout-link:hover {
+    text-decoration: underline;
+}
+
+/* responsive grid for games */
+.game-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 25px;
+}
+
+/* game card */
+.game {
+    background: #1a1d24;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #2a2f3a;
+}
+
+.game:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+}
+
+.game img {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    display: block;
+}
+
+.game-info {
+    padding: 15px;
+}
+
+/* truncate long titles */
+.game-title {
+    font-weight: bold;
+    font-size: 15px;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.game-meta {
+    font-size: 12px;
+    color: #aaa;
+}
+
+/* misc */
+.toggle { text-align: center; margin-top: 15px; font-size: 14px; color: #cfcfcf; }
+.link { color: #5865f2; cursor: pointer; font-weight: bold; margin-left: 4px; }
+.message { text-align: center; margin-bottom: 10px; font-size: 14px; min-height: 20px; }
+.error { color: #ff6b6b; }
+.success { color: #4cd137; }
+
+.admin-controls { margin-bottom: 25px; text-align: right; }
+.admin-btn { background: #3498db; width: auto; padding: 10px 20px; font-size: 14px; }
+.admin-btn:hover { background: #2980b9; }
+
+/* modal overlay (hidden by default) */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.15s ease;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+/* fade animation */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* modal container */
+.modal {
+    background: #1a1d24;
+    border-radius: 16px;
+    padding: 32px;
+    width: 480px;
+    max-width: 95vw;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    border: 1px solid #2a2f3a;
+    animation: slideUp 0.2s ease;
+}
+
+/* entrance animation */
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    font-size: 20px;
+    margin: 0;
+    text-align: left;
+}
+
+/* close (top-right X) */
+.modal-close {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    width: auto;
+    margin: 0;
+    transition: color 0.15s;
+}
+
+.modal-close:hover {
+    background: none;
+    color: #fff;
+}
+
+/* form spacing */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.form-group input {
+    margin: 0;
+}
+
+/* two-column layout */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.form-row .form-group {
+    margin-bottom: 0;
+}
+
+/* drag + drop upload area */
+.file-drop-zone {
+    position: relative;
+    border: 2px dashed #3a3f4e;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    overflow: hidden;
+    min-height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* highlight when hovering or dragging file over */
+.file-drop-zone:hover,
+.file-drop-zone.drag-over {
+    border-color: #5865f2;
+    background: rgba(88, 101, 242, 0.06);
+}
+
+/* invisible file input stretched over the drop zone */
+.file-drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.drop-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    pointer-events: none;
+    padding: 24px;
+}
+
+.drop-icon  { font-size: 32px; }
+.drop-text  { font-size: 14px; color: #ccc; }
+.drop-hint  { font-size: 12px; color: #666; }
+
+.image-preview {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+    display: block;
+    border-radius: 8px;
+}
+
+/* primary submit button */
+.submit-btn {
+    background: #5865f2;
+    margin-top: 8px;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background: #4752c4;
+}
+
+/* disabled state */
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* make card relative so delete button can be positioned */
+.game {
+    position: relative;
+}
+
+/* hidden delete button (shown on hover) */
+.delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    margin: 0;
+    border-radius: 50%;
+    background: rgba(255, 71, 87, 0.85);
+    color: white;
+    font-size: 12px;
+    line-height: 1;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* show delete button on hover */
+.game:hover .delete-btn {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.delete-btn:hover {
+    background: #ff4757 !important;
+    transform: scale(1.1) !important;
+}
+
+/* fade out animation when deleting */
+.game.deleting {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+}

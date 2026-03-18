@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Game Catalogue</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="auth-body">
+<div class="container">
+    <h2 id="formTitle">Login</h2>
+
+    <!-- status / error messages -->
+    <div class="message" id="message"></div>
+
+    <form id="authForm">
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit" id="submitBtn">Login</button>
+    </form>
+
+    <!-- switch between login/register -->
+    <div class="toggle">
+        <span id="toggleLabel">Don't have an account? </span>
+        <span id="toggleAction" class="link">Register</span>
+    </div>
+</div>
+
+<script>
+// redirect if logged in already
+if (localStorage.getItem("username")) {
+    window.location.href = "/dashboard";
+}
+
+// track current mode
+let isLogin = true;
+
+const formTitle = document.getElementById("formTitle");
+const submitBtn = document.getElementById("submitBtn");
+const toggleLabel = document.getElementById("toggleLabel");
+const toggleAction = document.getElementById("toggleAction");
+const messageDiv = document.getElementById("message");
+const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
+
+// toggle form mode
+toggleAction.addEventListener("click", () => {
+    isLogin = !isLogin;
+
+    formTitle.textContent = isLogin ? "Login" : "Create Account";
+    submitBtn.textContent = isLogin ? "Login" : "Register";
+    toggleLabel.textContent = isLogin
+        ? "Don't have an account? "
+        : "Already have an account? ";
+    toggleAction.textContent = isLogin ? "Register" : "Login";
+
+    // clear old messages
+    messageDiv.textContent = "";
+});
+
+// handle login/register submit
+document.getElementById("authForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const username = usernameInput.value;
+    const password = passwordInput.value;
+
+    const endpoint = isLogin ? "/login" : "/register";
+
+    try {
+        const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+
+        // show response message
+        messageDiv.textContent = data.message;
+        messageDiv.className = "message " + (data.success ? "success" : "error");
+
+        if (data.success) {
+            if (isLogin) {
+                // store session info client-side
+                localStorage.setItem("username", username);
+                localStorage.setItem("role", data.role || "user");
+
+                window.location.href = "/dashboard";
+            } else {
+                // after register, switch back to login
+                toggleAction.click();
+
+                messageDiv.textContent = "Account created! Please login.";
+                messageDiv.className = "message success";
+            }
+        }
+    } catch (err) {
+        messageDiv.textContent = "Connection error.";
+        messageDiv.className = "message error";
+    }
+});
+</script>
+
+</body>
+</html>

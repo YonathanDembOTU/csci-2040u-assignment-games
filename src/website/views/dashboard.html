@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard - Game Catalogue</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="navbar">
+    <h1>Game Catalogue</h1>
+    <div class="user-info">
+        <span id="userInfo"></span>
+        <a href="#" id="logoutBtn" style="color: #ff4757; margin-left: 15px; text-decoration: none; font-weight: bold; font-size: 12px;">Logout</a>
+    </div>
+</div>
+
+<div class="dashboard">
+
+    <!-- only shown for admins -->
+    <div class="admin-controls" id="adminControls" style="display: none;">
+        <button class="admin-btn" id="openModalBtn">+ Add Game</button>
+    </div>
+
+    <!-- game cards go here -->
+    <div class="game-list" id="gameList">
+        <p style="text-align: center; grid-column: 1/-1;">Loading games...</p>
+    </div>
+
+</div>
+
+<!-- add game modal -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Add Game</h2>
+            <button class="modal-close" id="closeModalBtn">&times;</button>
+        </div>
+
+        <div id="modalMessage" class="message"></div>
+
+        <form id="addGameForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title" placeholder="e.g. Hollow Knight" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="year">Year</label>
+                    <input type="number" id="year" name="year" placeholder="e.g. 2017" min="1970" max="2099" required>
+                </div>
+                <div class="form-group">
+                    <label for="genre">Genre</label>
+                    <input type="text" id="genre" name="genre" placeholder="e.g. Action RPG" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="image">Cover Image</label>
+                <!-- drag/drop or click to upload -->
+                <div class="file-drop-zone" id="dropZone">
+                    <input type="file" id="image" name="image" accept="image/*" required>
+                    <div class="drop-content" id="dropContent">
+                        <span class="drop-icon">🎮</span>
+                        <span class="drop-text">Click or drag an image here</span>
+                        <span class="drop-hint">JPG, PNG, WebP up to 10MB</span>
+                    </div>
+                    <img id="imagePreview" class="image-preview" alt="Preview" style="display:none;">
+                </div>
+            </div>
+            <button type="submit" class="submit-btn" id="submitBtn">Add Game</button>
+        </form>
+    </div>
+</div>
+
+<script>
+// pull auth info from localStorage
+const username = localStorage.getItem("username");
+const role = localStorage.getItem("role");
+const isAdmin = role === "admin";
+
+const userInfo = document.getElementById("userInfo");
+const adminControls = document.getElementById("adminControls");
+const gameList = document.getElementById("gameList");
+
+// redirect if not logged in
+if (!username) window.location.href = "/";
+
+// show role if not a normal user
+if (role && role !== "user") {
+    userInfo.textContent = `${username} (${role})`;
+} else {
+    userInfo.textContent = username;
+}
+
+// enable admin UI
+if (isAdmin) {
+    adminControls.style.display = "block";
+}
+
+// logout clears everything and sends back to login
+document.getElementById("logoutBtn").addEventListener("click", (e) => {
+    e.preventDefault();
+    localStorage.clear();
+    window.location.href = "/";
+});
+
+// modal controls
+const overlay = document.getElementById("modalOverlay");
+const openBtn = document.getElementById("openModalBtn");
+const closeBtn = document.getElementById("closeModalBtn");
+const modalMsg = document.getElementById("modalMessage");
+
+// open modal (reset state)
+openBtn?.addEventListener("click", () => {
+    overlay.classList.add("active");
+    modalMsg.textContent = "";
+    modalMsg.className = "message";
+});
+
+closeBtn.addEventListener("click", closeModal);
+
+// click outside modal to close
+overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) closeModal();
+});
+
+// reset form + preview when closing
+function closeModal() {
+    overlay.classList.remove("active");
+    document.getElementById("addGameForm").reset();
+    document.getElementById("imagePreview").style.display = "none";
+    document.getElementById("dropContent").style.display = "flex";
+}
+
+// image preview logic
+const imageInput = document.getElementById("image");
+const imagePreview = document.getElementById("imagePreview");
+const dropContent = document.getElementById("dropContent");
+const dropZone = document.getElementById("dropZone");
+
+// file picker
+imageInput.addEventListener("change", () => {
+    const file = imageInput.files[0];
+    if (file) showPreview(file);
+});
+
+// drag highlight
+dropZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZone.classList.add("drag-over");
+});
+
+dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
+
+// handle dropped file
+dropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropZone.classList.remove("drag-over");
+
+    const file = e.dataTransfer.files[0];
+
+    // only accept images
+    if (file && file.type.startsWith("image/")) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        imageInput.files = dt.files;
+        showPreview(file);
+    }
+});
+
+// render preview image
+function showPreview(file) {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+        imagePreview.src = e.target.result;
+        imagePreview.style.display = "block";
+        dropContent.style.display = "none";
+    };
+
+    reader.readAsDataURL(file);
+}
+
+// submit new game
+document.getElementById("addGameForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const submitBtn = document.getElementById("submitBtn");
+
+    // disable to prevent spam clicks
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Adding...";
+
+    modalMsg.textContent = "";
+    modalMsg.className = "message";
+
+    const formData = new FormData(e.target);
+
+    try {
+        const res = await fetch("/games", { method: "POST", body: formData });
+        const data = await res.json();
+
+        if (data.success) {
+            modalMsg.textContent = "Game added successfully!";
+            modalMsg.className = "message success";
+
+            appendGame(data.game);
+
+            // small delay so user sees success message
+            setTimeout(closeModal, 1200);
+        } else {
+            modalMsg.textContent = data.message || "Failed to add game.";
+            modalMsg.className = "message error";
+        }
+    } catch (err) {
+        modalMsg.textContent = "Network error. Please try again.";
+        modalMsg.className = "message error";
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Add Game";
+    }
+});
+
+// delete a game (admin only)
+async function deleteGame(title, cardEl) {
+    if (!confirm(`Delete "${title}"?`)) return;
+
+    // start fade immediately
+    cardEl.classList.add("deleting");
+
+    try {
+        const res = await fetch(`/games/${encodeURIComponent(title)}`, { method: "DELETE" });
+        const data = await res.json();
+
+        if (data.success) {
+            // remove after animation finishes
+            cardEl.addEventListener("transitionend", () => cardEl.remove(), { once: true });
+        } else {
+            cardEl.classList.remove("deleting");
+            alert(data.message || "Failed to delete game.");
+        }
+    } catch (err) {
+        cardEl.classList.remove("deleting");
+        alert("Network error. Please try again.");
+    }
+}
+
+// build a game card element
+function createGameCard(game) {
+    const div = document.createElement("div");
+    div.className = "game";
+
+    div.innerHTML = `
+        <img src="${game.image}" alt="${game.title}">
+        ${isAdmin ? `<button class="delete-btn" title="Delete game">✕</button>` : ""}
+        <div class="game-info">
+            <div class="game-title">${game.title}</div>
+            <div class="game-meta">${game.year} • ${game.genre}</div>
+        </div>
+    `;
+
+    // attach delete handler if admin
+    if (isAdmin) {
+        div.querySelector(".delete-btn")
+            .addEventListener("click", () => deleteGame(game.title, div));
+    }
+
+    return div;
+}
+
+// add new game to top of list
+function appendGame(game) {
+    const placeholder = gameList.querySelector("p");
+    if (placeholder) placeholder.remove();
+
+    gameList.prepend(createGameCard(game));
+}
+
+// fetch and render all games
+async function loadGames() {
+    try {
+        const res = await fetch("/games");
+        const games = await res.json();
+
+        gameList.innerHTML = "";
+
+        if (games.length === 0) {
+            gameList.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>No games found.</p>";
+            return;
+        }
+
+        games.forEach(game => gameList.appendChild(createGameCard(game)));
+    } catch (err) {
+        gameList.innerHTML = "<p style='color: #ff6b6b; grid-column: 1/-1; text-align: center;'>Failed to load games.</p>";
+    }
+}
+
+// initial load
+loadGames();
+</script>
+
+</body>
+</html>
