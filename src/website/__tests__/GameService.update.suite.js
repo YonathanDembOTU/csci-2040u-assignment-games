@@ -11,7 +11,7 @@ function buildGame(overrides = {}) {
         year: "2018",
         genre: "Platformer",
         image: "/images/celeste.jpg",
-        description: "Precision platformer",
+        description: "Platformer",
         platforms: ["PC", "Switch"],
         ageRating: "E10+",
         releaseDate: "2018-01-25",
