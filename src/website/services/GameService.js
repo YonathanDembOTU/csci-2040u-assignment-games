@@ -6,53 +6,83 @@ class GameService {
         this.filePath = filePath;
         this.imagesDir = imagesDir;
         if (!fs.existsSync(this.filePath)) {
-            fs.writeFileSync(this.filePath, "title,year,genre,image\r\n");
+            this._writeGames([]);
         }
     }
 
-    _readLines() {
-        const data = fs.readFileSync(this.filePath, "utf-8");
-        return data.split(/\r?\n/);
+    _readGames() {
+        const data = fs.readFileSync(this.filePath, "utf-8").trim();
+
+        if (!data) {
+            return [];
+        }
+
+        const parsed = JSON.parse(data);
+        return Array.isArray(parsed) ? parsed : [];
     }
 
-    _safe(value) {
-        return String(value).replace(/,/g, "");
+    _writeGames(games) {
+        fs.writeFileSync(this.filePath, JSON.stringify(games, null, 2));
+    }
+
+    _normalizeGame(gameOrTitle, year, genre, imagePath) {
+        const input = typeof gameOrTitle === "object" && gameOrTitle !== null
+            ? gameOrTitle
+            : { title: gameOrTitle, year, genre, image: imagePath };
+
+        const normalized = {};
+
+        for (const [key, value] of Object.entries(input)) {
+            if (value === undefined || value === null) {
+                continue;
+            }
+            normalized[key] = typeof value === "string" ? value.trim() : value;
+        }
+
+        return normalized;
     }
 
     getAll() {
-        const lines = this._readLines().slice(1);
-        return lines
-            .filter(line => line.trim() !== "")
-            .map(line => {
-                const [title, year, genre, image] = line.split(",");
-                return { title, year, genre, image };
-            });
+        return this._readGames();
     }
 
-    add(title, year, genre, imagePath) {
-        if (!title || !year || !genre || !imagePath) {
+    add(gameOrTitle, year, genre, imagePath) {
+        const game = this._normalizeGame(gameOrTitle, year, genre, imagePath);
+
+        if (
+            !game.title ||
+            !game.year ||
+            !game.genre ||
+            !game.image ||
+            !game.description ||
+            !game.releaseDate ||
+            !game.ageRating ||
+            !Array.isArray(game.platforms) ||
+            game.platforms.length === 0 ||
+            typeof game.price !== "number" ||
+            Number.isNaN(game.price)
+        ) {
             return { success: false, message: "All fields are required." };
         }
-        fs.appendFileSync(
-            this.filePath,
-            `${this._safe(title)},${this._safe(year)},${this._safe(genre)},${imagePath}\r\n`
-        );
-        return { success: true, message: "Game added!", game: { title, year, genre, image: imagePath } };
+
+        const games = this._readGames();
+        games.push(game);
+        this._writeGames(games);
+
+        return { success: true, message: "Game added!", game };
     }
 
     delete(title) {
         if (!title) {
             return { success: false, message: "Title is required." };
         }
-        const lines = this._readLines();
-        const header = lines[0];
-        let deletedImage = null;
 
-        const remaining = lines.slice(1).filter(line => {
-            if (!line.trim()) return false;
-            const [t, , , img] = line.split(",");
-            if (t === title) {
-                deletedImage = img;
+        let deletedImage = null;
+        const games = this._readGames();
+
+        const remaining = games.filter(game => {
+            if (game.title === title) {
+                deletedImage = game.image;
                 return false;
             }
             return true;
@@ -62,7 +92,7 @@ class GameService {
             return { success: false, message: "Game not found." };
         }
 
-        fs.writeFileSync(this.filePath, [header, ...remaining].join("\r\n") + "\r\n");
+        this._writeGames(remaining);
 
         if (this.imagesDir && deletedImage && deletedImage.startsWith("/images/")) {
             const imgPath = path.join(this.imagesDir, path.basename(deletedImage));

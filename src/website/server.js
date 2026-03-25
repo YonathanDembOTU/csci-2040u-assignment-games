@@ -16,7 +16,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "views")));
 
 const USERS_FILE  = path.join(__dirname, "../../data/website/users.csv");
-const GAMES_FILE  = path.join(__dirname, "../../data/website/games.csv");
+const GAMES_FILE  = path.join(__dirname, "../../data/website/games.json");
 const IMAGES_DIR  = path.join(__dirname, "public/images");
 
 const userService = new UserService(USERS_FILE);
@@ -67,14 +67,31 @@ app.get("/games", (req, res) => {
 });
 
 app.post("/games", upload.single("image"), (req, res) => {
-    const { title, year, genre } = req.body;
+    const { title, year, genre, description, ageRating, releaseDate, price } = req.body;
+    let platforms;
+
+    try {
+        platforms = JSON.parse(req.body.platforms || "[]");
+    } catch {
+        return res.status(400).json({ success: false, message: "Platforms must be a valid list." });
+    }
 
     if (!req.file) {
         return res.status(400).json({ success: false, message: "Image is required." });
     }
 
     const imagePath = `/images/${req.file.filename}`;
-    const result = gameService.add(title, year, genre, imagePath);
+    const result = gameService.add({
+        title,
+        year,
+        genre,
+        description,
+        platforms,
+        ageRating,
+        releaseDate,
+        price: Number(price),
+        image: imagePath
+    });
     res.status(result.success ? 200 : 400).json(result);
 });
 

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Dashboard - Game Catalogue</title>
     <link rel="stylesheet" href="/style.css">
 </head>
@@ -16,19 +17,36 @@
 
 <div class="dashboard">
 
-    <!-- only shown for admins -->
     <div class="admin-controls" id="adminControls" style="display: none;">
         <button class="admin-btn" id="openModalBtn">+ Add Game</button>
     </div>
 
-    <!-- game cards go here -->
+    <div class="toolbar">
+        <div class="search-bar">
+            <input type="search" id="searchInput" placeholder="Search games by title">
+        </div>
+        <div class="sort-bar">
+            <label for="sortSelect">Sort By</label>
+            <select id="sortSelect">
+                <option value="title-asc">Title: A-Z</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="age-asc">Age Rating</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="platform-filter">
+        <div class="platform-filter-label">Platforms</div>
+        <div class="platform-options" id="platformOptions"></div>
+    </div>
+
     <div class="game-list" id="gameList">
         <p style="text-align: center; grid-column: 1/-1;">Loading games...</p>
     </div>
 
 </div>
 
-<!-- add game modal -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
         <div class="modal-header">
@@ -53,13 +71,36 @@
                     <input type="text" id="genre" name="genre" placeholder="e.g. Action RPG" required>
                 </div>
             </div>
+            <div class="form-row form-row-wide">
+                <div class="form-group">
+                    <label for="releaseDate">Release Date</label>
+                    <input type="date" id="releaseDate" name="releaseDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="ageRating">Age Rating</label>
+                    <input type="text" id="ageRating" name="ageRating" placeholder="e.g. T" required>
+                </div>
+            </div>
+            <div class="form-row form-row-wide">
+                <div class="form-group">
+                    <label for="platforms">Platforms</label>
+                    <input type="text" id="platforms" name="platforms" placeholder="e.g. PC, Switch, PS5" required>
+                </div>
+                <div class="form-group">
+                    <label for="price">Price</label>
+                    <input type="number" id="price" name="price" placeholder="e.g. 29.99" min="0" step="0.01" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" placeholder="A short summary of the game" required></textarea>
+            </div>
             <div class="form-group">
                 <label for="image">Cover Image</label>
-                <!-- drag/drop or click to upload -->
                 <div class="file-drop-zone" id="dropZone">
                     <input type="file" id="image" name="image" accept="image/*" required>
                     <div class="drop-content" id="dropContent">
-                        <span class="drop-icon">🎮</span>
+                        <span class="drop-icon">Game</span>
                         <span class="drop-text">Click or drag an image here</span>
                         <span class="drop-hint">JPG, PNG, WebP up to 10MB</span>
                     </div>
@@ -71,8 +112,55 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="detailsOverlay">
+    <div class="modal details-modal">
+        <div class="modal-header">
+            <h2>Game Details</h2>
+            <button class="modal-close" id="closeDetailsBtn">&times;</button>
+        </div>
+        <div class="details-layout">
+            <img id="detailsImage" class="details-image" alt="">
+            <div class="details-content">
+                <div class="details-title" id="detailsTitle"></div>
+                <div class="details-meta" id="detailsMeta"></div>
+                <div class="details-grid">
+                    <div class="details-card">
+                        <div class="details-label">Release Date</div>
+                        <div class="details-value" id="detailsReleaseDate"></div>
+                    </div>
+                    <div class="details-card">
+                        <div class="details-label">Age Rating</div>
+                        <div class="details-value" id="detailsAgeRating"></div>
+                    </div>
+                    <div class="details-card details-card-wide">
+                        <div class="details-label">Platforms</div>
+                        <div class="details-value" id="detailsPlatforms"></div>
+                    </div>
+                    <div class="details-card">
+                        <div class="details-label">Price</div>
+                        <div class="details-value" id="detailsPrice"></div>
+                    </div>
+                </div>
+                <div class="details-video" id="detailsVideoSection">
+                    <div class="details-label">Trailer</div>
+                    <div class="details-video-frame">
+                        <iframe
+                            id="detailsVideo"
+                            title="Game trailer"
+                            src=""
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            referrerpolicy="strict-origin-when-cross-origin"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+                <p class="details-description" id="detailsDescription"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-// pull auth info from localStorage
 const username = localStorage.getItem("username");
 const role = localStorage.getItem("role");
 const isAdmin = role === "admin";
@@ -80,36 +168,46 @@ const isAdmin = role === "admin";
 const userInfo = document.getElementById("userInfo");
 const adminControls = document.getElementById("adminControls");
 const gameList = document.getElementById("gameList");
+const searchInput = document.getElementById("searchInput");
+const sortSelect = document.getElementById("sortSelect");
+const platformOptions = document.getElementById("platformOptions");
+let allGames = [];
 
-// redirect if not logged in
 if (!username) window.location.href = "/";
 
-// show role if not a normal user
 if (role && role !== "user") {
     userInfo.textContent = `${username} (${role})`;
 } else {
     userInfo.textContent = username;
 }
 
-// enable admin UI
 if (isAdmin) {
     adminControls.style.display = "block";
 }
 
-// logout clears everything and sends back to login
 document.getElementById("logoutBtn").addEventListener("click", (e) => {
     e.preventDefault();
     localStorage.clear();
     window.location.href = "/";
 });
 
-// modal controls
 const overlay = document.getElementById("modalOverlay");
 const openBtn = document.getElementById("openModalBtn");
 const closeBtn = document.getElementById("closeModalBtn");
 const modalMsg = document.getElementById("modalMessage");
+const detailsOverlay = document.getElementById("detailsOverlay");
+const closeDetailsBtn = document.getElementById("closeDetailsBtn");
+const detailsImage = document.getElementById("detailsImage");
+const detailsTitle = document.getElementById("detailsTitle");
+const detailsMeta = document.getElementById("detailsMeta");
+const detailsReleaseDate = document.getElementById("detailsReleaseDate");
+const detailsAgeRating = document.getElementById("detailsAgeRating");
+const detailsPlatforms = document.getElementById("detailsPlatforms");
+const detailsPrice = document.getElementById("detailsPrice");
+const detailsVideoSection = document.getElementById("detailsVideoSection");
+const detailsVideo = document.getElementById("detailsVideo");
+const detailsDescription = document.getElementById("detailsDescription");
 
-// open modal (reset state)
 openBtn?.addEventListener("click", () => {
     overlay.classList.add("active");
     modalMsg.textContent = "";
@@ -117,13 +215,22 @@ openBtn?.addEventListener("click", () => {
 });
 
 closeBtn.addEventListener("click", closeModal);
+closeDetailsBtn.addEventListener("click", closeDetails);
 
-// click outside modal to close
 overlay.addEventListener("click", (e) => {
     if (e.target === overlay) closeModal();
 });
 
-// reset form + preview when closing
+detailsOverlay.addEventListener("click", (e) => {
+    if (e.target === detailsOverlay) closeDetails();
+});
+
+document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (detailsOverlay.classList.contains("active")) closeDetails();
+    if (overlay.classList.contains("active")) closeModal();
+});
+
 function closeModal() {
     overlay.classList.remove("active");
     document.getElementById("addGameForm").reset();
@@ -131,19 +238,185 @@ function closeModal() {
     document.getElementById("dropContent").style.display = "flex";
 }
 
-// image preview logic
+function openDetails(game) {
+    const videoUrl = toYouTubeEmbedUrl(game.video);
+
+    detailsImage.src = game.image;
+    detailsImage.alt = game.title;
+    detailsTitle.textContent = game.title;
+    detailsMeta.textContent = `${game.year} • ${game.genre}`;
+    detailsReleaseDate.textContent = formatReleaseDate(game.releaseDate);
+    detailsAgeRating.textContent = game.ageRating || "Not provided";
+    detailsPlatforms.textContent = formatPlatforms(game.platforms);
+    detailsPrice.textContent = formatPrice(game.price);
+    detailsVideoSection.style.display = videoUrl ? "block" : "none";
+    detailsVideo.src = videoUrl || "";
+    detailsDescription.textContent = game.description || "No description has been added for this game yet.";
+    detailsOverlay.classList.add("active");
+}
+
+function closeDetails() {
+    detailsVideo.src = "";
+    detailsOverlay.classList.remove("active");
+}
+
+function renderGames(games, emptyMessage = "No games found.") {
+    gameList.innerHTML = "";
+
+    if (games.length === 0) {
+        gameList.innerHTML = `<p style='grid-column: 1/-1; text-align: center;'>${emptyMessage}</p>`;
+        return;
+    }
+
+    games.forEach(game => gameList.appendChild(createGameCard(game)));
+}
+
+function renderPlatformFilters(games) {
+    const platforms = [...new Set(
+        games.flatMap(game => Array.isArray(game.platforms) ? game.platforms : [])
+    )].sort((a, b) => a.localeCompare(b));
+
+    platformOptions.innerHTML = "";
+
+    platforms.forEach(platform => {
+        const option = document.createElement("label");
+        option.className = "platform-option";
+        option.innerHTML = `
+            <input type="checkbox" value="${platform}">
+            <span>${platform}</span>
+        `;
+        platformOptions.appendChild(option);
+    });
+}
+
+function getSelectedPlatforms() {
+    return [...platformOptions.querySelectorAll("input:checked")].map(input => input.value);
+}
+
+function applyFiltersAndSort() {
+    const query = searchInput.value.trim().toLowerCase();
+    const selectedPlatforms = getSelectedPlatforms();
+
+    const filteredGames = allGames.filter(game => {
+        const matchesTitle = game.title.toLowerCase().includes(query);
+        const gamePlatforms = Array.isArray(game.platforms) ? game.platforms : [];
+        const matchesPlatform = selectedPlatforms.length === 0
+            || selectedPlatforms.every(platform => gamePlatforms.includes(platform));
+
+        return matchesTitle && matchesPlatform;
+    });
+
+    const sortedGames = [...filteredGames].sort(compareGames);
+
+    renderGames(
+        sortedGames,
+        query ? `No games match "${searchInput.value.trim()}".` : "No games found."
+    );
+}
+
+function compareGames(a, b) {
+    switch (sortSelect.value) {
+    case "price-asc":
+        return normalizePrice(a.price) - normalizePrice(b.price);
+    case "price-desc":
+        return normalizePrice(b.price) - normalizePrice(a.price);
+    case "age-asc":
+        return ageRatingRank(a.ageRating) - ageRatingRank(b.ageRating)
+            || a.title.localeCompare(b.title);
+    case "title-asc":
+    default:
+        return a.title.localeCompare(b.title);
+    }
+}
+
+function formatReleaseDate(value) {
+    if (!value) return "Not provided";
+    const date = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+    });
+}
+
+function formatPlatforms(platforms) {
+    if (Array.isArray(platforms) && platforms.length > 0) {
+        return platforms.join(", ");
+    }
+    if (typeof platforms === "string" && platforms.trim()) {
+        return platforms;
+    }
+    return "Not provided";
+}
+
+function formatPrice(price) {
+    const amount = Number(price);
+    if (Number.isNaN(amount)) return "Not provided";
+    if (amount === 0) return "Free";
+    return new Intl.NumberFormat(undefined, {
+        style: "currency",
+        currency: "USD"
+    }).format(amount);
+}
+
+function normalizePrice(price) {
+    const amount = Number(price);
+    return Number.isNaN(amount) ? Number.POSITIVE_INFINITY : amount;
+}
+
+function ageRatingRank(value) {
+    const order = {
+        EC: 0,
+        E: 1,
+        "E10+": 2,
+        T: 3,
+        M: 4,
+        AO: 5,
+        RP: 6
+    };
+
+    return order[value] ?? 999;
+}
+
+function toYouTubeEmbedUrl(url) {
+    if (!url) return "";
+
+    try {
+        const parsed = new URL(url);
+
+        if (parsed.hostname.includes("youtu.be")) {
+            const id = parsed.pathname.slice(1);
+            return id ? `https://www.youtube.com/embed/${id}` : "";
+        }
+
+        if (parsed.hostname.includes("youtube.com")) {
+            if (parsed.pathname === "/watch") {
+                const id = parsed.searchParams.get("v");
+                return id ? `https://www.youtube.com/embed/${id}` : "";
+            }
+
+            if (parsed.pathname.startsWith("/embed/")) {
+                return url;
+            }
+        }
+    } catch {
+        return "";
+    }
+
+    return "";
+}
+
 const imageInput = document.getElementById("image");
 const imagePreview = document.getElementById("imagePreview");
 const dropContent = document.getElementById("dropContent");
 const dropZone = document.getElementById("dropZone");
 
-// file picker
 imageInput.addEventListener("change", () => {
     const file = imageInput.files[0];
     if (file) showPreview(file);
 });
 
-// drag highlight
 dropZone.addEventListener("dragover", (e) => {
     e.preventDefault();
     dropZone.classList.add("drag-over");
@@ -151,14 +424,12 @@ dropZone.addEventListener("dragover", (e) => {
 
 dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
 
-// handle dropped file
 dropZone.addEventListener("drop", (e) => {
     e.preventDefault();
     dropZone.classList.remove("drag-over");
 
     const file = e.dataTransfer.files[0];
 
-    // only accept images
     if (file && file.type.startsWith("image/")) {
         const dt = new DataTransfer();
         dt.items.add(file);
@@ -167,7 +438,6 @@ dropZone.addEventListener("drop", (e) => {
     }
 });
 
-// render preview image
 function showPreview(file) {
     const reader = new FileReader();
 
@@ -180,13 +450,10 @@ function showPreview(file) {
     reader.readAsDataURL(file);
 }
 
-// submit new game
 document.getElementById("addGameForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const submitBtn = document.getElementById("submitBtn");
-
-    // disable to prevent spam clicks
     submitBtn.disabled = true;
     submitBtn.textContent = "Adding...";
 
@@ -194,6 +461,13 @@ document.getElementById("addGameForm").addEventListener("submit", async (e) => {
     modalMsg.className = "message";
 
     const formData = new FormData(e.target);
+    const platforms = String(formData.get("platforms") || "")
+        .split(",")
+        .map(value => value.trim())
+        .filter(Boolean);
+
+    formData.delete("platforms");
+    formData.append("platforms", JSON.stringify(platforms));
 
     try {
         const res = await fetch("/games", { method: "POST", body: formData });
@@ -203,9 +477,9 @@ document.getElementById("addGameForm").addEventListener("submit", async (e) => {
             modalMsg.textContent = "Game added successfully!";
             modalMsg.className = "message success";
 
-            appendGame(data.game);
-
-            // small delay so user sees success message
+            allGames.unshift(data.game);
+            renderPlatformFilters(allGames);
+            applyFiltersAndSort();
             setTimeout(closeModal, 1200);
         } else {
             modalMsg.textContent = data.message || "Failed to add game.";
@@ -220,11 +494,9 @@ document.getElementById("addGameForm").addEventListener("submit", async (e) => {
     }
 });
 
-// delete a game (admin only)
 async function deleteGame(title, cardEl) {
     if (!confirm(`Delete "${title}"?`)) return;
 
-    // start fade immediately
     cardEl.classList.add("deleting");
 
     try {
@@ -232,7 +504,9 @@ async function deleteGame(title, cardEl) {
         const data = await res.json();
 
         if (data.success) {
-            // remove after animation finishes
+            allGames = allGames.filter(game => game.title !== title);
+            renderPlatformFilters(allGames);
+            cardEl.addEventListener("transitionend", () => applyFiltersAndSort(), { once: true });
             cardEl.addEventListener("transitionend", () => cardEl.remove(), { once: true });
         } else {
             cardEl.classList.remove("deleting");
@@ -244,57 +518,60 @@ async function deleteGame(title, cardEl) {
     }
 }
 
-// build a game card element
 function createGameCard(game) {
     const div = document.createElement("div");
     div.className = "game";
+    div.tabIndex = 0;
+    div.setAttribute("role", "button");
+    div.setAttribute("aria-label", `View details for ${game.title}`);
 
     div.innerHTML = `
         <img src="${game.image}" alt="${game.title}">
-        ${isAdmin ? `<button class="delete-btn" title="Delete game">✕</button>` : ""}
+        ${isAdmin ? `<button class="delete-btn" title="Delete game">X</button>` : ""}
         <div class="game-info">
             <div class="game-title">${game.title}</div>
             <div class="game-meta">${game.year} • ${game.genre}</div>
+            <div class="game-preview-meta">
+                <span>${game.ageRating || "NR"}</span>
+                <span>${formatPrice(game.price)}</span>
+            </div>
         </div>
     `;
 
-    // attach delete handler if admin
+    div.addEventListener("click", () => openDetails(game));
+    div.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openDetails(game);
+        }
+    });
+
     if (isAdmin) {
         div.querySelector(".delete-btn")
-            .addEventListener("click", () => deleteGame(game.title, div));
+            .addEventListener("click", (e) => {
+                e.stopPropagation();
+                deleteGame(game.title, div);
+            });
     }
 
     return div;
 }
 
-// add new game to top of list
-function appendGame(game) {
-    const placeholder = gameList.querySelector("p");
-    if (placeholder) placeholder.remove();
-
-    gameList.prepend(createGameCard(game));
-}
-
-// fetch and render all games
 async function loadGames() {
     try {
         const res = await fetch("/games");
-        const games = await res.json();
-
-        gameList.innerHTML = "";
-
-        if (games.length === 0) {
-            gameList.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>No games found.</p>";
-            return;
-        }
-
-        games.forEach(game => gameList.appendChild(createGameCard(game)));
+        allGames = await res.json();
+        renderPlatformFilters(allGames);
+        applyFiltersAndSort();
     } catch (err) {
         gameList.innerHTML = "<p style='color: #ff6b6b; grid-column: 1/-1; text-align: center;'>Failed to load games.</p>";
     }
 }
 
-// initial load
+searchInput.addEventListener("input", applyFiltersAndSort);
+sortSelect.addEventListener("change", applyFiltersAndSort);
+platformOptions.addEventListener("change", applyFiltersAndSort);
+
 loadGames();
 </script>
 
