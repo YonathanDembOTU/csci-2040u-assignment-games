@@ -5,8 +5,17 @@ import app.mvc.DataController;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class StartUp extends JFrame {
+
+    private final Color neutralGrey = new Color(210, 210, 210);
+    private final Color textDark = new Color(45, 45, 45);
+    private final Color buttonGrey = new Color(120, 120, 120, 210);
+    private final Color buttonHover = new Color(150, 150, 150, 225);
+    private final Color buttonPressed = new Color(92, 92, 92, 235);
+    private final Color buttonBorder = new Color(90, 90, 90);
 
     public StartUp() {
         setTitle("Turn for Turn Co.");
@@ -16,33 +25,24 @@ public class StartUp extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        Color neutralGrey = new Color(210, 210, 210);
-        Color textDark = new Color(45, 45, 45);
-        Color buttonGrey = new Color(120, 120, 120);
-        Color buttonBorder = new Color(90, 90, 90);
-
-        // Main background panel
-        JPanel mainPanel = new JPanel();
+        BackgroundPanel mainPanel = new BackgroundPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBackground(neutralGrey);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Logo
         JLabel logoLabel = createLogoLabel("assets/logo.png", 320, 200);
         logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Welcome text
         JLabel welcomeLabel = new JLabel("Welcome to Turn for Turn Co.");
         welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         welcomeLabel.setForeground(textDark);
-        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        welcomeLabel.setFont(new Font("Inter", Font.BOLD, 28));
 
         JLabel subtitleLabel = new JLabel("Game Database Management System");
         subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         subtitleLabel.setForeground(new Color(80, 80, 80));
-        subtitleLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+        subtitleLabel.setFont(new Font("Inter", Font.PLAIN, 18));
 
-        // Login option buttons
         JButton adminButton = createMenuButton("Admin Login", buttonGrey, buttonBorder);
         JButton publisherButton = createMenuButton("Publisher Login", buttonGrey, buttonBorder);
         JButton guestButton = createMenuButton("Guest Access", buttonGrey, buttonBorder);
@@ -54,13 +54,11 @@ public class StartUp extends JFrame {
         adminButton.addActionListener(e -> showLoginDialog(AuthManager.UserRole.ADMIN));
         publisherButton.addActionListener(e -> showLoginDialog(AuthManager.UserRole.PUBLISHER));
 
-        // Guest button opens the UI with view-only access
         guestButton.addActionListener(e -> {
             dispose();
             DataController.launchMainUI(AuthManager.createGuestSession());
         });
 
-        // Layout spacing
         mainPanel.add(Box.createVerticalGlue());
         mainPanel.add(logoLabel);
         mainPanel.add(Box.createVerticalStrut(20));
@@ -79,9 +77,6 @@ public class StartUp extends JFrame {
         setVisible(true);
     }
 
-    /**
-     * Opens a login popup for admin or publisher access.
-     */
     private void showLoginDialog(AuthManager.UserRole expectedRole) {
         JTextField usernameField = new JTextField();
         JPasswordField passwordField = new JPasswordField();
@@ -148,18 +143,47 @@ public class StartUp extends JFrame {
     private JButton createMenuButton(String text, Color bg, Color border) {
         JButton button = new JButton(text);
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setPreferredSize(new Dimension(200, 40));
-        button.setMaximumSize(new Dimension(200, 40));
+        button.setPreferredSize(new Dimension(220, 42));
+        button.setMaximumSize(new Dimension(220, 42));
         button.setFocusPainted(false);
         button.setBackground(bg);
         button.setForeground(Color.WHITE);
+        button.setOpaque(true);
+        button.setContentAreaFilled(true);
         button.setBorder(BorderFactory.createLineBorder(border));
+        button.setFont(new Font("Inter", Font.BOLD, 14));
+
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (button.isEnabled()) {
+                    button.setBackground(buttonHover);
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setBackground(bg);
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (button.isEnabled()) {
+                    button.setBackground(buttonPressed);
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (button.isEnabled()) {
+                    button.setBackground(button.contains(e.getPoint()) ? buttonHover : bg);
+                }
+            }
+        });
+
         return button;
     }
 
-    /**
-     * Creates a JLabel containing the scaled logo image.
-     */
     public static JLabel createLogoLabel(String path, int maxWidth, int maxHeight) {
         JLabel label = new JLabel();
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -169,14 +193,13 @@ public class StartUp extends JFrame {
         if (icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) {
             label.setText("Turn for Turn Co.");
             label.setForeground(new Color(70, 70, 70));
-            label.setFont(new Font("Arial", Font.BOLD, 24));
+            label.setFont(new Font("Inter", Font.BOLD, 24));
             return label;
         }
 
         int originalWidth = icon.getIconWidth();
         int originalHeight = icon.getIconHeight();
 
-        // Preserve aspect ratio so the logo is not stretched
         double widthRatio = (double) maxWidth / originalWidth;
         double heightRatio = (double) maxHeight / originalHeight;
         double scale = Math.min(widthRatio, heightRatio);
@@ -192,5 +215,57 @@ public class StartUp extends JFrame {
 
         label.setIcon(new ImageIcon(scaledImage));
         return label;
+    }
+
+    private class BackgroundPanel extends JPanel {
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setColor(neutralGrey);
+            g2.fillRect(0, 0, getWidth(), getHeight());
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            Color lattice = new Color(255, 170, 0, 44);
+            int size = 22;
+            int hexWidth = size * 2;
+            int hexHeight = (int) (Math.sqrt(3) * size);
+            int xStep = (int) (1.5 * size);
+            int yStep = hexHeight;
+
+            g2.setStroke(new BasicStroke(2.4f));
+            g2.setColor(lattice);
+
+            for (int x = -hexWidth; x < getWidth() + hexWidth; x += xStep) {
+                for (int y = -hexHeight; y < getHeight() + hexHeight; y += yStep) {
+                    int yOffset = ((x / xStep) % 2 == 0) ? 0 : hexHeight / 2;
+                    g2.drawPolygon(createHexagon(x, y + yOffset, size));
+                }
+            }
+
+            g2.dispose();
+        }
+
+        private Polygon createHexagon(int x, int y, int size) {
+            int[] xs = {
+                    x + size / 2,
+                    x + (3 * size) / 2,
+                    x + 2 * size,
+                    x + (3 * size) / 2,
+                    x + size / 2,
+                    x
+            };
+            int h = (int) (Math.sqrt(3) * size / 2);
+            int[] ys = {
+                    y,
+                    y,
+                    y + h,
+                    y + 2 * h,
+                    y + 2 * h,
+                    y + h
+            };
+            return new Polygon(xs, ys, 6);
+        }
     }
 }

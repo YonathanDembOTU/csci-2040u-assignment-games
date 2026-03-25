@@ -5,178 +5,163 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DataModel {
-    // Stores the CSV header row
+    // Stores the CSV column headers currently loaded from file.
     private String[] columns;
-
-    // Stores all data rows from the CSV
     private final List<String[]> rows = new ArrayList<>();
-
-    // Stores the file currently being edited
     private File currentFile;
 
     /**
-     * Loads CSV data from a file.
-     * The first line is treated as the header row.
-     *
-     * @param file the CSV file to read
-     * @throws IOException if the file cannot be read
+     * Loads CSV data from the selected file into memory.
      */
     public void loadFromFile(File file) throws IOException {
         currentFile = file;
         rows.clear();
 
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String line;
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line = reader.readLine();
+            columns = line != null ? parseCsvLine(line) : new String[0];
 
-        // Read the first line as column headers
-        line = reader.readLine();
-        if (line != null) {
-            columns = line.split(",");
-        } else {
-            columns = new String[0];
+            while ((line = reader.readLine()) != null) {
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
+
+                String[] parsed = parseCsvLine(line);
+                String[] padded = new String[columns.length];
+                for (int i = 0; i < columns.length; i++) {
+                    padded[i] = i < parsed.length ? parsed[i].trim() : "";
+                }
+                rows.add(padded);
+            }
         }
-
-        // Read remaining lines as data rows
-        while ((line = reader.readLine()) != null) {
-            rows.add(line.split(","));
-        }
-
-        reader.close();
     }
 
-    /**
-     * Saves the current in-memory data back to the current CSV file.
-     *
-     * @throws IOException if the file cannot be written
-     */
     public void saveToFile() throws IOException {
         if (currentFile == null || columns == null) {
             return;
         }
 
-        PrintWriter writer = new PrintWriter(new FileWriter(currentFile));
+        try (PrintWriter writer = new PrintWriter(new FileWriter(currentFile))) {
+            writer.println(toCsvLine(columns));
 
-        // Write the header row first
-        writer.println(String.join(",", columns));
-
-        // Write each row, padding missing cells with empty strings
-        for (String[] row : rows) {
-            String[] outputRow = new String[columns.length];
-
-            for (int i = 0; i < columns.length; i++) {
-                outputRow[i] = (i < row.length) ? row[i] : "";
+            for (String[] row : rows) {
+                String[] outputRow = new String[columns.length];
+                for (int i = 0; i < columns.length; i++) {
+                    outputRow[i] = i < row.length && row[i] != null ? row[i] : "";
+                }
+                writer.println(toCsvLine(outputRow));
             }
-
-            writer.println(String.join(",", outputRow));
         }
-
-        writer.close();
     }
 
-    /**
-     * Returns the column header names.
-     *
-     * @return array of column names
-     */
     public String[] getColumns() {
         return columns;
     }
 
-    /**
-     * Returns all data as a 2D Object array for JTable use.
-     * Missing values in short rows are padded with empty strings.
-     *
-     * @return all table data
-     */
     public Object[][] getData() {
         if (columns == null) {
             return new Object[0][0];
         }
 
         Object[][] data = new Object[rows.size()][columns.length];
-
         for (int i = 0; i < rows.size(); i++) {
             String[] row = rows.get(i);
-
             for (int j = 0; j < columns.length; j++) {
-                data[i][j] = (j < row.length) ? row[j] : "";
+                data[i][j] = j < row.length ? row[j] : "";
             }
         }
-
         return data;
     }
 
-    /**
-     * Returns a single row, padded to the full number of columns.
-     *
-     * @param index row index
-     * @return padded row data
-     */
     public String[] getRow(int index) {
         String[] original = rows.get(index);
         String[] padded = new String[columns.length];
-
         for (int i = 0; i < columns.length; i++) {
-            padded[i] = (i < original.length) ? original[i] : "";
+            padded[i] = i < original.length ? original[i] : "";
         }
-
         return padded;
     }
 
-    /**
-     * Returns the number of rows in the dataset.
-     *
-     * @return row count
-     */
     public int getRowCount() {
         return rows.size();
     }
 
-    /**
-     * Adds a new row to the dataset.
-     *
-     * @param row new row data
-     */
     public void addRow(String[] row) {
-    if (row == null || row.length != columns.length) {
-        throw new IllegalArgumentException("Invalid row data");
-    }
-
-    for (int i = 0; i < row.length; i++) {
-        if (row[i] == null || row[i].trim().isEmpty()) {
-            row[i] = "N/A";
+        if (row == null || columns == null || row.length != columns.length) {
+            throw new IllegalArgumentException("Invalid row data");
         }
+
+        String[] normalized = new String[row.length];
+        for (int i = 0; i < row.length; i++) {
+            normalized[i] = row[i] == null || row[i].trim().isEmpty() ? "N/A" : row[i].trim();
+        }
+
+        rows.add(normalized);
     }
 
-    rows.add(row);
-
-    }
-
-    /**
-     * Updates an existing row.
-     *
-     * @param index row index to update
-     * @param row new row contents
-     */
     public void updateRow(int index, String[] row) {
-        rows.set(index, row);
+        if (row == null || columns == null || row.length != columns.length) {
+            throw new IllegalArgumentException("Invalid row data");
+        }
+
+        String[] normalized = new String[row.length];
+        for (int i = 0; i < row.length; i++) {
+            normalized[i] = row[i] == null ? "" : row[i].trim();
+        }
+
+        rows.set(index, normalized);
     }
 
-    /**
-     * Removes a row from the dataset.
-     *
-     * @param index row index to remove
-     */
     public void removeRow(int index) {
         rows.remove(index);
     }
 
-    /**
-     * Checks whether valid column headers were loaded.
-     *
-     * @return true if valid header data exists
-     */
     public boolean hasValidData() {
         return columns != null && columns.length > 0;
+    }
+
+    /**
+     * Parses a CSV line while respecting quoted values.
+     */
+    private String[] parseCsvLine(String line) {
+        List<String> values = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean inQuotes = false;
+
+        for (int i = 0; i < line.length(); i++) {
+            char ch = line.charAt(i);
+
+            if (ch == '"') {
+                if (inQuotes && i + 1 < line.length() && line.charAt(i + 1) == '"') {
+                    current.append('"');
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (ch == ',' && !inQuotes) {
+                values.add(current.toString());
+                current.setLength(0);
+            } else {
+                current.append(ch);
+            }
+        }
+
+        values.add(current.toString());
+        return values.toArray(new String[0]);
+    }
+
+    private String toCsvLine(String[] values) {
+        String[] escaped = new String[values.length];
+
+        for (int i = 0; i < values.length; i++) {
+            String value = values[i] == null ? "" : values[i];
+            boolean needsQuotes = value.contains(",") || value.contains("\"") || value.contains("\n");
+            if (value.contains("\"")) {
+                value = value.replace("\"", "\"\"");
+            }
+            escaped[i] = needsQuotes ? "\"" + value + "\"" : value;
+        }
+
+        return String.join(",", escaped);
     }
 }
