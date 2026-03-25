@@ -12,8 +12,8 @@ public class StartUp extends JFrame {
 
     private final Color neutralGrey = new Color(210, 210, 210);
     private final Color textDark = new Color(45, 45, 45);
-    private final Color buttonGrey = new Color(120, 120, 120, 210);
-    private final Color buttonHover = new Color(150, 150, 150, 225);
+    private final Color buttonGrey = new Color(170, 170, 170, 110);
+    private final Color buttonHover = new Color(199, 199, 199, 225);
     private final Color buttonPressed = new Color(92, 92, 92, 235);
     private final Color buttonBorder = new Color(90, 90, 90);
 
@@ -223,24 +223,31 @@ public class StartUp extends JFrame {
             super.paintComponent(g);
 
             Graphics2D g2 = (Graphics2D) g.create();
-            g2.setColor(neutralGrey);
-            g2.fillRect(0, 0, getWidth(), getHeight());
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            Color lattice = new Color(255, 170, 0, 44);
-            int size = 22;
-            int hexWidth = size * 2;
-            int hexHeight = (int) (Math.sqrt(3) * size);
-            int xStep = (int) (1.5 * size);
-            int yStep = hexHeight;
+            // base background
+            g2.setColor(getBackground());
+            g2.fillRect(0, 0, getWidth(), getHeight());
 
-            g2.setStroke(new BasicStroke(2.4f));
+            // hex pattern (subtle)
+            Color lattice = new Color(255, 170, 0, 20); // LOWER alpha fixes overlap issue
+            int radius = 16;
+
+            double hexHeight = Math.sqrt(3) * radius;
+            double xStep = 1.5 * radius;
+            double yStep = hexHeight;
+
             g2.setColor(lattice);
+            g2.setStroke(new BasicStroke(1.2f)); // thinner lines = no visual collision
 
-            for (int x = -hexWidth; x < getWidth() + hexWidth; x += xStep) {
-                for (int y = -hexHeight; y < getHeight() + hexHeight; y += yStep) {
-                    int yOffset = ((x / xStep) % 2 == 0) ? 0 : hexHeight / 2;
-                    g2.drawPolygon(createHexagon(x, y + yOffset, size));
+            for (int col = -2; col < (int)(getWidth() / xStep) + 3; col++) {
+                double x = col * xStep;
+                double yOffset = (col % 2 == 0) ? 0 : hexHeight / 2.0;
+
+                for (int row = -2; row < (int)(getHeight() / yStep) + 3; row++) {
+                    double y = row * yStep + yOffset;
+                    Polygon hex = createHexagon((int)x, (int)y, radius);
+                    g2.drawPolygon(hex);
                 }
             }
 

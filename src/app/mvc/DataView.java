@@ -65,7 +65,7 @@ public class DataView extends JFrame {
     private final Color LIGHT_BUTTON_PRESSED = new Color(205, 212, 222);
     private final Color LIGHT_ROW_EVEN = new Color(210, 210, 210, 150);
     private final Color LIGHT_ROW_ODD = new Color(185, 185, 185, 138);
-    private final Color LIGHT_ROW_HOVER = new Color(205, 205, 205, 190);
+    private final Color LIGHT_ROW_HOVER = new Color(255, 170, 60, 180);
     private final Color LIGHT_TEXT = Color.BLACK;
     private final Color LIGHT_HEADER_BG = new Color(210, 210, 210);
     private final Color LIGHT_HEADER_TEXT = Color.BLACK;
@@ -82,7 +82,7 @@ public class DataView extends JFrame {
     private final Color DARK_BUTTON_PRESSED = new Color(92, 92, 92);
     private final Color DARK_ROW_EVEN = new Color(70, 70, 70, 145);
     private final Color DARK_ROW_ODD = new Color(88, 88, 88, 138);
-    private final Color DARK_ROW_HOVER = new Color(110, 110, 110, 190);
+    private final Color DARK_ROW_HOVER = new Color(255, 140, 0, 180);
     private final Color DARK_TEXT = new Color(235, 235, 235);
     private final Color DARK_HEADER_BG = new Color(65, 65, 65);
     private final Color DARK_HEADER_TEXT = Color.WHITE;
@@ -201,6 +201,7 @@ public class DataView extends JFrame {
 
         JLabel catalogueTitleLabel = new JLabel("GAME CATALOGUE");
         catalogueTitleLabel.setFont(new Font("Inter", Font.BOLD, 22));
+        catalogueTitleLabel.setForeground(new Color(255, 140, 0));
         searchCounterLabel = new JLabel("Showing 0 results");
         searchCounterLabel.setFont(new Font("Inter", Font.BOLD, 13));
 
@@ -816,24 +817,28 @@ public class DataView extends JFrame {
             super.paintComponent(g);
 
             Graphics2D g2 = (Graphics2D) g.create();
-            g2.setColor(baseColor);
-            g2.fillRect(0, 0, getWidth(), getHeight());
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            Color lattice = new Color(255, 170, 0, 52);
-            int size = 66;
-            int hexWidth = size * 2;
-            int hexHeight = (int) (Math.sqrt(3) * size);
-            int xStep = (int) (1.5 * size);
-            int yStep = hexHeight;
+            g2.setColor(baseColor);
+            g2.fillRect(0, 0, getWidth(), getHeight());
 
-            g2.setStroke(new BasicStroke(9.6f));
+            Color lattice = new Color(255, 170, 0, 34);
+            int radius = 18;
+
+            double hexHeight = Math.sqrt(3) * radius;
+            double xStep = 1.5 * radius;
+            double yStep = hexHeight;
+
             g2.setColor(lattice);
+            g2.setStroke(new BasicStroke(1.8f));
 
-            for (int x = -hexWidth; x < getWidth() + hexWidth; x += xStep) {
-                for (int y = -hexHeight; y < getHeight() + hexHeight; y += yStep) {
-                    int yOffset = ((x / xStep) % 2 == 0) ? 0 : hexHeight / 2;
-                    Polygon hex = createHexagon(x, y + yOffset, size);
+            for (int col = -2; col < (int) (getWidth() / xStep) + 3; col++) {
+                double x = col * xStep;
+                double yOffset = (col % 2 == 0) ? 0 : hexHeight / 2.0;
+
+                for (int row = -2; row < (int) (getHeight() / yStep) + 3; row++) {
+                    double y = row * yStep + yOffset;
+                    Polygon hex = createHexagon((int) Math.round(x), (int) Math.round(y), radius);
                     g2.drawPolygon(hex);
                 }
             }
