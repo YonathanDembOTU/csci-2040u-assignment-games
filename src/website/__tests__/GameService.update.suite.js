@@ -32,22 +32,22 @@ afterEach(() => {
 
 describe("GameService - update() test suite", () => {
     test("updates an existing game by title", () => {
-        const svc = new GameService(tempFile);
-        svc.add(buildGame());
+        const gameService = new GameService(tempFile);
+        gameService.add(buildGame());
 
-        const result = svc.update("Celeste", { price: 0 });
+        const result = gameService.update("Celeste", { price: 0 });
 
         expect(result).toMatchObject({ success: true });
-        expect(svc.getAll()[0].price).toBe(0);
+        expect(gameService.getAll()[0].price).toBe(0);
     });
 
     test("updates only the provided fields", () => {
-        const svc = new GameService(tempFile);
-        svc.add(buildGame());
+        const gameService = new GameService(tempFile);
+        gameService.add(buildGame());
 
-        svc.update("Celeste", { description: "Updated description" });
+        gameService.update("Celeste", { description: "Updated description" });
 
-        expect(svc.getAll()[0]).toMatchObject({
+        expect(gameService.getAll()[0]).toMatchObject({
             title: "Celeste",
             price: 19.99,
             description: "Updated description"
@@ -55,29 +55,29 @@ describe("GameService - update() test suite", () => {
     });
 
     test("returns failure when the title does not exist", () => {
-        const svc = new GameService(tempFile);
-        svc.add(buildGame());
+        const gameService = new GameService(tempFile);
+        gameService.add(buildGame());
 
-        const result = svc.update("Hades", { price: 24.99 });
+        const result = gameService.update("Hades", { price: 24.99 });
 
         expect(result).toMatchObject({ success: false });
     });
 
     test("returns failure when the title is empty", () => {
-        const svc = new GameService(tempFile);
-        svc.add(buildGame());
+        const gameService = new GameService(tempFile);
+        gameService.add(buildGame());
 
-        const result = svc.update("", { price: 24.99 });
+        const result = gameService.update("", { price: 24.99 });
 
         expect(result).toMatchObject({ success: false });
     });
 
     test("allows updating price to zero", () => {
-        const svc = new GameService(tempFile);
-        svc.add(buildGame());
+        const gameService = new GameService(tempFile);
+        gameService.add(buildGame());
 
-        svc.update("Celeste", { price: 0 });
+        gameService.update("Celeste", { price: 0 });
 
-        expect(svc.getAll()[0].price).toBe(0);
+        expect(gameService.getAll()[0].price).toBe(0);
     });
 });

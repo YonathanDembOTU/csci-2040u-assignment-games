@@ -14,9 +14,9 @@ afterEach(() => {
 });
 
 test("updates an existing game by title", () => {
-    const svc = new GameService(tempFile);
+    const gameService = new GameService(tempFile);
 
-    svc.add({
+    gameService.add({
         title: "Celeste",
         year: "2018",
         genre: "Platformer",
@@ -28,7 +28,7 @@ test("updates an existing game by title", () => {
         price: 19.99
     });
 
-    const result = svc.update("Celeste", { price: 0 });
+    const result = gameService.update("Celeste", { price: 0 });
 
     expect(result.success).toBe(true);
 });
