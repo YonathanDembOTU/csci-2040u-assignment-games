@@ -30,5 +30,5 @@ test("updates an existing game by title", () => {
 
     const result = gameService.update("Celeste", { price: 0 });
 
-    expect(result.success).toBe(true);
+    expect(gameService.getAll()[0].price).toBe(0);
 });
