@@ -11,7 +11,7 @@ import java.awt.event.ComponentEvent;
 
 public class DataView extends JFrame {
     private static final int DEFAULT_ROW_HEIGHT = 24;
-    private static final Dimension MIN_WINDOW_SIZE = new Dimension(1100, 700);
+    private static final Dimension MIN_WINDOW_SIZE = new Dimension(1200, 700);
 
     // Main table and action buttons
     public JTable table;

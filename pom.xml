@@ -1,0 +1,88 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>app</groupId>
+    <artifactId>turn-for-turn-database-editor</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>Turn for Turn Database Editor</name>
+    <packaging>jar</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <main.class>app.mvc.DataController</main.class>
+        <deploy.directory>${project.basedir}/server-deploy</deploy.directory>
+    </properties>
+
+    <build>
+        <sourceDirectory>src</sourceDirectory>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <release>17</release>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <mainClass>${main.class}</mainClass>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>${main.class}</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>deploy-to-server-folder</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <target>
+                                <mkdir dir="${deploy.directory}" />
+                                <copy file="${project.build.directory}/${project.build.finalName}.jar"
+                                      todir="${deploy.directory}"
+                                      overwrite="true" />
+                                <copy todir="${deploy.directory}/data" overwrite="true" failonerror="false">
+                                    <fileset dir="${project.basedir}/data" />
+                                </copy>
+                                <copy todir="${deploy.directory}/assets" overwrite="true" failonerror="false">
+                                    <fileset dir="${project.basedir}/assets" />
+                                </copy>
+                                <copy todir="${deploy.directory}/config" overwrite="true" failonerror="false">
+                                    <fileset dir="${project.basedir}/config" />
+                                </copy>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
