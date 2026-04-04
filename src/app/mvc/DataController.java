@@ -504,7 +504,7 @@ public class DataController {
      */
     private void attachHandlers() {
         view.addBtn.addActionListener(e -> {
-            String[] row = promptRow("Add Entry", null);
+            String[] row = requestRowInput("Add Entry", null);
             if (row != null) {
                 model.addRow(row);
                 populateSearchControls();
@@ -521,7 +521,7 @@ public class DataController {
                 return;
             }
 
-            String[] updated = promptRow("Edit Entry", model.getRow(idx));
+            String[] updated = requestRowInput("Edit Entry", model.getRow(idx));
             if (updated != null) {
                 model.updateRow(idx, updated);
                 populateSearchControls();
@@ -561,7 +561,11 @@ public class DataController {
             }
         });
 
-        view.passwordMenuBtn.addActionListener(e -> openPasswordHandlingMenu());
+        view.passwordMenuBtn.addActionListener(e -> {
+            if (session.isAdmin()) {
+                view.showPasswordManagementDialog();
+            }
+        });
 
         view.logoutBtn.addActionListener(e -> {
             view.dispose();
@@ -575,6 +579,7 @@ public class DataController {
 
         view.toggleThemeBtn.addActionListener(e -> view.toggleTheme());
 
+        // Double-clicking a game row opens the extracted details helper dialog.
         view.table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -586,120 +591,25 @@ public class DataController {
         });
     }
 
-    private void openPasswordHandlingMenu() {
-        if (!session.isAdmin()) {
-            return;
+    /**
+     * Opens the extracted data entry helper and returns a completed row.
+     */
+    private String[] requestRowInput(String title, String[] defaults) {
+        String[] columns = model.getColumns();
+        if (columns == null || columns.length == 0) {
+            return null;
         }
 
-        String[] options = { "View Publisher Passwords", "Change Publisher Password", "Add Publisher User" };
-        String choice = (String) JOptionPane.showInputDialog(
-                view,
-                "Choose a password handling option:",
-                "Password Handling",
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                options,
-                options[0]);
+        int idIdx = getIdColumnIndex();
+        String generatedId = idIdx == -1 ? null : (defaults == null ? generateNextGameId() : defaults[idIdx]);
 
-        if (choice == null) {
-            return;
-        }
-
-        if (choice.equals(options[0])) {
-            showPublisherPasswordTable();
-        } else if (choice.equals(options[1])) {
-            changePublisherPassword();
-        } else if (choice.equals(options[2])) {
-            addPublisherUser();
-        }
-    }
-
-    private void showPublisherPasswordTable() {
-        Object[][] data = AuthManager.getPublisherAccountTableData();
-        String[] columns = { "Username", "Publisher", "Password" };
-
-        JTable passwordTable = new JTable(data, columns);
-        passwordTable.setEnabled(false);
-        JScrollPane pane = new JScrollPane(passwordTable);
-        pane.setPreferredSize(new java.awt.Dimension(620, 280));
-
-        JOptionPane.showMessageDialog(
-                view,
-                pane,
-                "Publisher Passwords",
-                JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    private void changePublisherPassword() {
-        String[] usernames = AuthManager.getPublisherUsernames();
-        if (usernames.length == 0) {
-            JOptionPane.showMessageDialog(view, "No publisher users found.");
-            return;
-        }
-
-        JComboBox<String> userCombo = new JComboBox<>(usernames);
-        JPasswordField passwordField = new JPasswordField();
-        JCheckBox showBox = new JCheckBox("Show Password");
-        showBox.addActionListener(e -> passwordField.setEchoChar(showBox.isSelected() ? (char) 0 : '•'));
-
-        JPanel panel = new JPanel(new GridLayout(0, 1, 6, 6));
-        panel.add(new JLabel("Select Publisher Username:"));
-        panel.add(userCombo);
-        panel.add(new JLabel("New Password:"));
-        panel.add(passwordField);
-        panel.add(showBox);
-
-        int result = JOptionPane.showConfirmDialog(view, panel, "Change Publisher Password",
-                JOptionPane.OK_CANCEL_OPTION);
-        if (result != JOptionPane.OK_OPTION) {
-            return;
-        }
-
-        String username = (String) userCombo.getSelectedItem();
-        String newPassword = new String(passwordField.getPassword());
-
-        if (newPassword.trim().isEmpty()) {
-            JOptionPane.showMessageDialog(view, "Password cannot be blank.");
-            return;
-        }
-
-        if (AuthManager.updatePublisherPassword(username, newPassword)) {
-            JOptionPane.showMessageDialog(view, "Publisher password updated.");
-        } else {
-            JOptionPane.showMessageDialog(view, "Could not update publisher password.");
-        }
-    }
-
-    private void addPublisherUser() {
-        JTextField usernameField = new JTextField();
-        JTextField publisherField = new JTextField();
-        JPasswordField passwordField = new JPasswordField();
-        JCheckBox showBox = new JCheckBox("Show Password");
-        showBox.addActionListener(e -> passwordField.setEchoChar(showBox.isSelected() ? (char) 0 : '•'));
-
-        JPanel panel = new JPanel(new GridLayout(0, 1, 6, 6));
-        panel.add(new JLabel("Username:"));
-        panel.add(usernameField);
-        panel.add(new JLabel("Publisher Name:"));
-        panel.add(publisherField);
-        panel.add(new JLabel("Password:"));
-        panel.add(passwordField);
-        panel.add(showBox);
-
-        int result = JOptionPane.showConfirmDialog(view, panel, "Add Publisher User", JOptionPane.OK_CANCEL_OPTION);
-        if (result != JOptionPane.OK_OPTION) {
-            return;
-        }
-
-        String username = usernameField.getText().trim();
-        String publisherName = publisherField.getText().trim();
-        String password = new String(passwordField.getPassword());
-
-        if (AuthManager.addPublisherUser(username, publisherName, password)) {
-            JOptionPane.showMessageDialog(view, "Publisher user added.");
-        } else {
-            JOptionPane.showMessageDialog(view, "Could not add publisher user. Username may already exist.");
-        }
+        return view.showDataEntryDialog(
+                title,
+                columns,
+                defaults,
+                session.isPublisher(),
+                session.getPublisherName(),
+                generatedId);
     }
 
     private void showDetails(int visibleIdx) {
@@ -710,158 +620,6 @@ public class DataController {
     }
 
 
-
-    private String[] promptRow(String title, String[] defaults) {
-        String[] columns = model.getColumns();
-        int pubIdx = getPublisherColumnIndex();
-        int descriptionIdx = getColumnIndex("Description");
-        int idIdx = getIdColumnIndex();
-
-        JPanel fieldsGrid = new JPanel(new GridBagLayout());
-        JTextField[] fields = new JTextField[columns.length];
-        JTextArea descriptionArea = null;
-
-        fieldsGrid.setBorder(BorderFactory.createEmptyBorder(6, 8, 2, 8));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(4, 6, 4, 6);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.weightx = 1.0;
-
-        int visualFieldIndex = 0;
-        Font labelFont = new Font("Inter", Font.BOLD, 13);
-        Font fieldFont = new Font("Inter", Font.PLAIN, 14);
-
-        for (int i = 0; i < columns.length; i++) {
-            if (i == descriptionIdx || i == idIdx) {
-                continue;
-            }
-
-            String columnName = columns[i];
-            JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
-            labelPanel.setOpaque(false);
-
-            JLabel label = new JLabel(columnName);
-            label.setFont(labelFont);
-            labelPanel.add(label);
-
-            if ("Platform".equalsIgnoreCase(columnName)) {
-                JButton infoButton = new JButton("(plural)");
-                infoButton.setMargin(new Insets(2, 8, 2, 8));
-                infoButton.setFocusable(false);
-                infoButton.setFont(new Font("Inter", Font.BOLD, 11));
-                infoButton.addActionListener(e -> JOptionPane.showMessageDialog(
-                        view,
-                        "Enter one or more platforms using the | symbol between each value.\n\n" +
-                                "Example:\nPC | PlayStation 5 | Xbox Series X/S",
-                        "Platform Entry Help",
-                        JOptionPane.INFORMATION_MESSAGE));
-                labelPanel.add(infoButton);
-            }
-
-            JTextField field = new JTextField(defaults == null ? "" : defaults[i]);
-            field.setFont(fieldFont);
-            field.setPreferredSize(new Dimension(190, 30));
-            fields[i] = field;
-
-            if (session.isPublisher() && i == pubIdx) {
-                field.setText(session.getPublisherName());
-                field.setEditable(false);
-            }
-
-            int pairColumn = visualFieldIndex % 2;
-            int rowGroup = visualFieldIndex / 2;
-
-            gbc.gridx = pairColumn * 2;
-            gbc.gridy = rowGroup;
-            gbc.weightx = 0;
-            fieldsGrid.add(labelPanel, gbc);
-
-            gbc.gridx = pairColumn * 2 + 1;
-            gbc.weightx = 1.0;
-            fieldsGrid.add(field, gbc);
-
-            visualFieldIndex++;
-        }
-
-        JPanel content = new JPanel(new BorderLayout(0, 8));
-
-        if (idIdx != -1) {
-            String idValue = defaults == null ? generateNextGameId() : defaults[idIdx];
-            JPanel idPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
-            idPanel.setBorder(BorderFactory.createEmptyBorder(4, 12, 0, 12));
-            idPanel.add(new JLabel("Game ID:"));
-            JLabel idValueLabel = new JLabel(idValue);
-            idValueLabel.setFont(new Font("Inter", Font.BOLD, 15));
-            idPanel.add(idValueLabel);
-            content.add(idPanel, BorderLayout.NORTH);
-        }
-
-        content.add(fieldsGrid, BorderLayout.CENTER);
-
-        if (descriptionIdx != -1) {
-            JLabel descriptionLabel = new JLabel("Description");
-            descriptionLabel.setFont(labelFont);
-
-            descriptionArea = new JTextArea(defaults == null ? "" : defaults[descriptionIdx], 5, 38);
-            descriptionArea.setLineWrap(true);
-            descriptionArea.setWrapStyleWord(true);
-            descriptionArea.setFont(fieldFont);
-            descriptionArea.setMargin(new Insets(8, 8, 8, 8));
-
-            JScrollPane descriptionPane = new JScrollPane(descriptionArea);
-            descriptionPane.setPreferredSize(new Dimension(620, 125));
-
-            JPanel descriptionPanel = new JPanel(new BorderLayout(0, 5));
-            descriptionPanel.setBorder(BorderFactory.createEmptyBorder(0, 12, 6, 12));
-            descriptionPanel.add(descriptionLabel, BorderLayout.NORTH);
-            descriptionPanel.add(descriptionPane, BorderLayout.CENTER);
-            content.add(descriptionPanel, BorderLayout.SOUTH);
-        }
-
-        JScrollPane wrapper = new JScrollPane(content);
-        wrapper.setBorder(BorderFactory.createEmptyBorder());
-        wrapper.setPreferredSize(new Dimension(700, 350));
-        wrapper.getVerticalScrollBar().setUnitIncrement(16);
-
-        int result = JOptionPane.showConfirmDialog(
-                view,
-                wrapper,
-                title,
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE);
-
-        if (result == JOptionPane.OK_OPTION) {
-            String[] row = new String[columns.length];
-
-            for (int i = 0; i < columns.length; i++) {
-                String value;
-
-                if (i == idIdx) {
-                    value = defaults == null ? generateNextGameId() : defaults[i];
-                } else if (i == descriptionIdx && descriptionArea != null) {
-                    value = descriptionArea.getText().trim();
-                } else {
-                    value = fields[i] == null ? "" : fields[i].getText().trim();
-                }
-
-                if (value.isEmpty()) {
-                    JOptionPane.showMessageDialog(view, "All fields must be filled.");
-                    return null;
-                }
-
-                if ("Platform".equalsIgnoreCase(columns[i])) {
-                    value = normalizeMultiValueCell(value);
-                }
-
-                row[i] = value;
-            }
-
-            return row;
-        }
-
-        return null;
-    }
 
     private String[] splitMultiValueCell(String value) {
         if (value == null || value.isBlank()) {

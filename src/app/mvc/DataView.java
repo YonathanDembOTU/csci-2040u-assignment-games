@@ -779,37 +779,40 @@ public class DataView extends JFrame {
         });
     }
 
+    /**
+     * Opens the extracted data entry helper dialog for adding or editing a row.
+     */
+    public String[] showDataEntryDialog(String title, String[] columns, String[] defaults,
+                                        boolean lockPublisherField, String publisherName, String generatedId) {
+        return DataEntryDialogHelper.showDialog(
+                this,
+                title,
+                columns,
+                defaults,
+                lockPublisherField,
+                publisherName,
+                generatedId);
+    }
+
+    /**
+     * Opens the extracted password management helper for admin actions.
+     */
+    public void showPasswordManagementDialog() {
+        PasswordDialogHelper.openPasswordHandlingMenu(this);
+    }
+
+    /**
+     * Opens the extracted helper dialog used for double-click game entry details.
+     */
+    /**
+     * Opens the extracted helper dialog used for double-click game entry details.
+     */
     public void showRowDetails(String[] columns, String[] row) {
-        JTextArea area = new JTextArea();
-        area.setEditable(false);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-        area.setFont(new Font("Inter", Font.PLAIN, 13));
-
-        StringBuilder details = new StringBuilder();
-        for (int i = 0; i < columns.length; i++) {
-            String label = columns[i];
-            String value = i < row.length ? row[i] : "";
-
-            if ("Platform".equalsIgnoreCase(label)) {
-                label = "Platform(s)";
-                value = value.replace(" | ", "\n • ");
-                if (!value.isBlank()) {
-                    value = "• " + value;
-                }
-            }
-
-            details.append(label).append(": ").append(value).append("\n");
-        }
-        area.setText(details.toString());
-        area.setCaretPosition(0);
-
-        JScrollPane pane = new JScrollPane(area);
-        pane.setPreferredSize(new Dimension(460, 320));
-        JOptionPane.showMessageDialog(this, pane, "Game Details", JOptionPane.INFORMATION_MESSAGE);
+        GameEntryDetailsDialogHelper.showDialog(this, columns, row);
     }
 
     private static class BackgroundPanel extends JPanel {
+
         private Color baseColor = new Color(245, 245, 245);
 
         @Override
