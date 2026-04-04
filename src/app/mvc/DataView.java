@@ -29,6 +29,7 @@ public class DataView extends JFrame {
     public JButton advancedSearchBtn;
     public JButton searchClearBtn;
     public JButton passwordMenuBtn;
+    public JButton attributionBtn;
 
     DefaultTableModel tableModel;
     JScrollPane scrollPane;
@@ -278,13 +279,17 @@ public class DataView extends JFrame {
         deleteBtn = new JButton("－ Delete");
         saveBtn = new JButton("⇩ Save");
         passwordMenuBtn = new JButton("⚿ Passwords");
+        attributionBtn = new JButton("ⓘ Attribution");
         logoutBtn = new JButton("⇦ Logout");
+
+        attributionBtn.setToolTipText("Open the RAWG attribution page in your browser.");
 
         buttonPanel.add(addBtn);
         buttonPanel.add(editBtn);
         buttonPanel.add(deleteBtn);
         buttonPanel.add(saveBtn);
         buttonPanel.add(passwordMenuBtn);
+        buttonPanel.add(attributionBtn);
         buttonPanel.add(logoutBtn);
 
         mainBodyPanel = new JPanel(new BorderLayout(12, 0));
@@ -414,6 +419,7 @@ public class DataView extends JFrame {
         deleteBtn.setEnabled(enabled);
         saveBtn.setEnabled(enabled);
         passwordMenuBtn.setEnabled(enabled);
+        attributionBtn.setEnabled(true);
         logoutBtn.setEnabled(true);
         toggleColumnsBtn.setEnabled(enabled);
         toggleThemeBtn.setEnabled(enabled);
@@ -546,6 +552,7 @@ public class DataView extends JFrame {
         styleButton(deleteBtn, buttonBg, text);
         styleButton(saveBtn, buttonBg, text);
         styleButton(passwordMenuBtn, buttonBg, text);
+        styleButton(attributionBtn, buttonBg, text);
         styleButton(logoutBtn, buttonBg, text);
         styleButton(toggleColumnsBtn, buttonBg, text);
         styleButton(toggleThemeBtn, buttonBg, text);
@@ -603,7 +610,7 @@ public class DataView extends JFrame {
         JButton[] buttons = {
                 addBtn, editBtn, deleteBtn, saveBtn, logoutBtn,
                 toggleColumnsBtn, toggleThemeBtn, advancedSearchBtn,
-                searchClearBtn, passwordMenuBtn
+                searchClearBtn, passwordMenuBtn, attributionBtn
         };
 
         for (JButton button : buttons) {
@@ -801,9 +808,6 @@ public class DataView extends JFrame {
         PasswordDialogHelper.openPasswordHandlingMenu(this);
     }
 
-    /**
-     * Opens the extracted helper dialog used for double-click game entry details.
-     */
     /**
      * Opens the extracted helper dialog used for double-click game entry details.
      */

@@ -1,20 +1,16 @@
 package app.mvc;
 
 import javax.swing.*;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
+import java.awt.*;
 
 public class GameEntryDetailsDialogHelper {
-    /**
-     * Builds and shows the details dialog used when a game entry is double-clicked.
-     */
     public static void showDialog(Component parent, String[] columns, String[] row) {
+        boolean dark = AppDialogThemeHelper.isDark(parent);
+
         JTextArea area = new JTextArea();
         area.setEditable(false);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
         area.setFont(new Font("Inter", Font.PLAIN, 13));
+        AppDialogThemeHelper.styleTextArea(area, dark);
 
         StringBuilder details = new StringBuilder();
         for (int i = 0; i < columns.length; i++) {
@@ -37,11 +33,8 @@ public class GameEntryDetailsDialogHelper {
 
         JScrollPane pane = new JScrollPane(area);
         pane.setPreferredSize(new Dimension(460, 320));
+        AppDialogThemeHelper.styleScrollPane(pane, dark);
 
-        JOptionPane.showMessageDialog(
-                parent,
-                pane,
-                "Game Details",
-                JOptionPane.INFORMATION_MESSAGE);
+        AppDialogThemeHelper.showContentDialog(parent, "Game Details", pane);
     }
 }

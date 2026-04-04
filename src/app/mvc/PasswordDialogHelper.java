@@ -6,70 +6,75 @@ import javax.swing.*;
 import java.awt.*;
 
 public class PasswordDialogHelper {
-    /**
-     * Opens the admin password handling menu and routes to the selected action.
-     */
     public static void openPasswordHandlingMenu(JFrame parent) {
-        String[] options = { "View Publisher Passwords", "Change Publisher Password", "Add Publisher User" };
-        String choice = (String) JOptionPane.showInputDialog(
+        String[] options = {"View Publisher Passwords", "Change Publisher Password", "Add Publisher User"};
+        int choice = AppDialogThemeHelper.showOptionDialog(
                 parent,
-                "Choose a password handling option:",
                 "Password Handling",
-                JOptionPane.PLAIN_MESSAGE,
-                null,
+                "Choose a password handling option:",
                 options,
-                options[0]);
+                0);
 
-        if (choice == null) {
+        if (choice == JOptionPane.CLOSED_OPTION) {
             return;
         }
 
-        if (choice.equals(options[0])) {
+        if (choice == 0) {
             showPublisherPasswordTable(parent);
-        } else if (choice.equals(options[1])) {
+        } else if (choice == 1) {
             changePublisherPassword(parent);
-        } else if (choice.equals(options[2])) {
+        } else if (choice == 2) {
             addPublisherUser(parent);
         }
     }
 
     private static void showPublisherPasswordTable(JFrame parent) {
+        boolean dark = AppDialogThemeHelper.isDark(parent);
+
         Object[][] data = AuthManager.getPublisherAccountTableData();
-        String[] columns = { "Username", "Publisher", "Password" };
+        String[] columns = {"Username", "Publisher", "Password"};
 
         JTable passwordTable = new JTable(data, columns);
         passwordTable.setEnabled(false);
+        AppDialogThemeHelper.styleTable(passwordTable, dark);
+
         JScrollPane pane = new JScrollPane(passwordTable);
         pane.setPreferredSize(new Dimension(620, 280));
+        AppDialogThemeHelper.styleScrollPane(pane, dark);
 
-        JOptionPane.showMessageDialog(
-                parent,
-                pane,
-                "Publisher Passwords",
-                JOptionPane.INFORMATION_MESSAGE);
+        AppDialogThemeHelper.showContentDialog(parent, "Publisher Passwords", pane);
     }
 
     private static void changePublisherPassword(JFrame parent) {
+        boolean dark = AppDialogThemeHelper.isDark(parent);
         String[] usernames = AuthManager.getPublisherUsernames();
         if (usernames.length == 0) {
-            JOptionPane.showMessageDialog(parent, "No publisher users found.");
+            AppDialogThemeHelper.showMessageDialog(parent, "Password Handling", "No publisher users found.", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         JComboBox<String> userCombo = new JComboBox<>(usernames);
+        AppDialogThemeHelper.styleComboBox(userCombo, dark);
+
         JPasswordField passwordField = new JPasswordField();
+        AppDialogThemeHelper.stylePasswordField(passwordField, dark);
+
         JCheckBox showBox = new JCheckBox("Show Password");
+        AppDialogThemeHelper.styleCheckBox(showBox, dark);
         showBox.addActionListener(e -> passwordField.setEchoChar(showBox.isSelected() ? (char) 0 : '•'));
 
-        JPanel panel = new JPanel(new GridLayout(0, 1, 6, 6));
-        panel.add(new JLabel("Select Publisher Username:"));
+        JPanel panel = AppDialogThemeHelper.createSurfacePanel(new GridLayout(0, 1, 6, 6), dark);
+        JLabel selectLabel = new JLabel("Select Publisher Username:");
+        JLabel passwordLabel = new JLabel("New Password:");
+        AppDialogThemeHelper.styleLabel(selectLabel, false, dark);
+        AppDialogThemeHelper.styleLabel(passwordLabel, false, dark);
+        panel.add(selectLabel);
         panel.add(userCombo);
-        panel.add(new JLabel("New Password:"));
+        panel.add(passwordLabel);
         panel.add(passwordField);
         panel.add(showBox);
 
-        int result = JOptionPane.showConfirmDialog(parent, panel, "Change Publisher Password",
-                JOptionPane.OK_CANCEL_OPTION);
+        int result = AppDialogThemeHelper.showConfirmDialog(parent, "Change Publisher Password", panel);
         if (result != JOptionPane.OK_OPTION) {
             return;
         }
@@ -78,34 +83,49 @@ public class PasswordDialogHelper {
         String newPassword = new String(passwordField.getPassword());
 
         if (newPassword.trim().isEmpty()) {
-            JOptionPane.showMessageDialog(parent, "Password cannot be blank.");
+            AppDialogThemeHelper.showMessageDialog(parent, "Password Handling", "Password cannot be blank.", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         if (AuthManager.updatePublisherPassword(username, newPassword)) {
-            JOptionPane.showMessageDialog(parent, "Publisher password updated.");
+            AppDialogThemeHelper.showMessageDialog(parent, "Password Handling", "Publisher password updated.", JOptionPane.INFORMATION_MESSAGE);
         } else {
-            JOptionPane.showMessageDialog(parent, "Could not update publisher password.");
+            AppDialogThemeHelper.showMessageDialog(parent, "Password Handling", "Could not update publisher password.", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private static void addPublisherUser(JFrame parent) {
+        boolean dark = AppDialogThemeHelper.isDark(parent);
+
         JTextField usernameField = new JTextField();
         JTextField publisherField = new JTextField();
         JPasswordField passwordField = new JPasswordField();
         JCheckBox showBox = new JCheckBox("Show Password");
+
+        AppDialogThemeHelper.styleTextField(usernameField, dark);
+        AppDialogThemeHelper.styleTextField(publisherField, dark);
+        AppDialogThemeHelper.stylePasswordField(passwordField, dark);
+        AppDialogThemeHelper.styleCheckBox(showBox, dark);
+
         showBox.addActionListener(e -> passwordField.setEchoChar(showBox.isSelected() ? (char) 0 : '•'));
 
-        JPanel panel = new JPanel(new GridLayout(0, 1, 6, 6));
-        panel.add(new JLabel("Username:"));
+        JPanel panel = AppDialogThemeHelper.createSurfacePanel(new GridLayout(0, 1, 6, 6), dark);
+        JLabel usernameLabel = new JLabel("Username:");
+        JLabel publisherLabel = new JLabel("Publisher Name:");
+        JLabel passwordLabel = new JLabel("Password:");
+        AppDialogThemeHelper.styleLabel(usernameLabel, false, dark);
+        AppDialogThemeHelper.styleLabel(publisherLabel, false, dark);
+        AppDialogThemeHelper.styleLabel(passwordLabel, false, dark);
+
+        panel.add(usernameLabel);
         panel.add(usernameField);
-        panel.add(new JLabel("Publisher Name:"));
+        panel.add(publisherLabel);
         panel.add(publisherField);
-        panel.add(new JLabel("Password:"));
+        panel.add(passwordLabel);
         panel.add(passwordField);
         panel.add(showBox);
 
-        int result = JOptionPane.showConfirmDialog(parent, panel, "Add Publisher User", JOptionPane.OK_CANCEL_OPTION);
+        int result = AppDialogThemeHelper.showConfirmDialog(parent, "Add Publisher User", panel);
         if (result != JOptionPane.OK_OPTION) {
             return;
         }
@@ -114,10 +134,15 @@ public class PasswordDialogHelper {
         String publisherName = publisherField.getText().trim();
         String password = new String(passwordField.getPassword());
 
+        if (username.isEmpty() || publisherName.isEmpty() || password.trim().isEmpty()) {
+            AppDialogThemeHelper.showMessageDialog(parent, "Password Handling", "All fields are required.", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         if (AuthManager.addPublisherUser(username, publisherName, password)) {
-            JOptionPane.showMessageDialog(parent, "Publisher user added.");
+            AppDialogThemeHelper.showMessageDialog(parent, "Password Handling", "Publisher user added.", JOptionPane.INFORMATION_MESSAGE);
         } else {
-            JOptionPane.showMessageDialog(parent, "Could not add publisher user. Username may already exist.");
+            AppDialogThemeHelper.showMessageDialog(parent, "Password Handling", "Could not add publisher user.", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
