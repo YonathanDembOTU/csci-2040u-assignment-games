@@ -8,8 +8,33 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+/**
+ * Builds the startup window that lets a user launch the application as an admin, publisher, or guest.
+ */
 public class StartUp extends JFrame {
 
+    /**
+     * Performs the color operation.
+     *
+     * @param 210 the 210 value
+     * @param 210 the 210 value
+     * @param Color(45 the color(45 value
+     * @param 45 the 45 value
+     * @param Color(170 the color(170 value
+     * @param 170 the 170 value
+     * @param 170 the 170 value
+     * @param Color(199 the color(199 value
+     * @param 199 the 199 value
+     * @param 199 the 199 value
+     * @param Color(92 the color(92 value
+     * @param 92 the 92 value
+     * @param 92 the 92 value
+     * @param Color(90 the color(90 value
+     * @param 90 the 90 value
+     * @param StartUp( the start up( value
+     *
+     * @return the resulting value
+     */
     private final Color neutralGrey = new Color(210, 210, 210);
     private final Color textDark = new Color(45, 45, 45);
     private final Color buttonGrey = new Color(170, 170, 170, 110);
@@ -77,6 +102,11 @@ public class StartUp extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Shows the login dialog for the requested role.
+     *
+     * @param expectedRole the role that should be authenticated
+     */
     private void showLoginDialog(AuthManager.UserRole expectedRole) {
         JTextField usernameField = new JTextField();
         JPasswordField passwordField = new JPasswordField();
@@ -140,6 +170,15 @@ public class StartUp extends JFrame {
         DataController.launchMainUI(session);
     }
 
+    /**
+     * Creates a styled menu button for the startup screen.
+     *
+     * @param text the text value
+     * @param bg the bg value
+     * @param border the border value
+     *
+     * @return the resulting value
+     */
     private JButton createMenuButton(String text, Color bg, Color border) {
         JButton button = new JButton(text);
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -184,6 +223,15 @@ public class StartUp extends JFrame {
         return button;
     }
 
+    /**
+     * Creates a scaled logo label for the startup screen.
+     *
+     * @param path the path value
+     * @param maxWidth the max width value
+     * @param maxHeight the max height value
+     *
+     * @return the resulting value
+     */
     public static JLabel createLogoLabel(String path, int maxWidth, int maxHeight) {
         JLabel label = new JLabel();
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -217,7 +265,15 @@ public class StartUp extends JFrame {
         return label;
     }
 
+    /**
+     * Provides functionality for background panel.
+     */
     private class BackgroundPanel extends JPanel {
+        /**
+         * Performs the paint component operation.
+         *
+         * @param g the graphics context used for painting
+         */
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -254,6 +310,15 @@ public class StartUp extends JFrame {
             g2.dispose();
         }
 
+        /**
+         * Creates hexagon.
+         *
+         * @param x the x value
+         * @param y the y value
+         * @param size the size value
+         *
+         * @return the resulting value
+         */
         private Polygon createHexagon(int x, int y, int size) {
             int[] xs = {
                     x + size / 2,

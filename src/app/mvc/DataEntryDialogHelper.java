@@ -5,19 +5,33 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Builds and validates the add and edit entry dialog used for game records.
+ */
 public class DataEntryDialogHelper {
+    // Multi-platform values are stored inside one field using | as a separator.
     private static final String MULTI_VALUE_SEPARATOR = "|";
 
+    /**
+     * Builds, shows, and returns the result of the themed dialog for the supplied data.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     * @param title the title text to use
+     * @param columns the column names involved in the operation
+     * @param defaults the default row values to pre-populate, or {@code null} when no defaults are available
+     * @param lockPublisherField whether the publisher field should be locked to the active publisher
+     * @param publisherName the publisher name to enforce when the publisher field is locked
+     * @param generatedId the generated identifier to display or store
+     *
+     * @return the resulting array
+     */
     public static String[] showDialog(JFrame parent, String title, String[] columns, String[] defaults,
                                       boolean lockPublisherField, String publisherName, String generatedId) {
-        boolean dark = AppDialogThemeHelper.isDark(parent);
-        AppDialogThemeHelper.Theme theme = AppDialogThemeHelper.getTheme(parent);
-
         int pubIdx = getColumnIndex(columns, "Publisher");
         int descriptionIdx = getColumnIndex(columns, "Description");
         int idIdx = getIdColumnIndex(columns);
 
-        JPanel fieldsGrid = AppDialogThemeHelper.createSurfacePanel(new GridBagLayout(), dark);
+        JPanel fieldsGrid = new JPanel(new GridBagLayout());
         JTextField[] fields = new JTextField[columns.length];
         JTextArea descriptionArea = null;
 
@@ -38,11 +52,11 @@ public class DataEntryDialogHelper {
             }
 
             String columnName = columns[i];
-            JPanel labelPanel = AppDialogThemeHelper.createSurfacePanel(new FlowLayout(FlowLayout.LEFT, 4, 0), dark);
+            JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+            labelPanel.setOpaque(false);
 
             JLabel label = new JLabel(columnName);
             label.setFont(labelFont);
-            AppDialogThemeHelper.styleLabel(label, false, dark);
             labelPanel.add(label);
 
             if ("Platform".equalsIgnoreCase(columnName)) {
@@ -50,12 +64,11 @@ public class DataEntryDialogHelper {
                 infoButton.setMargin(new Insets(2, 8, 2, 8));
                 infoButton.setFocusable(false);
                 infoButton.setFont(new Font("Inter", Font.BOLD, 11));
-                AppDialogThemeHelper.styleButton(infoButton, false, dark);
-                infoButton.addActionListener(e -> AppDialogThemeHelper.showMessageDialog(
+                infoButton.addActionListener(e -> JOptionPane.showMessageDialog(
                         parent,
+                        "Enter one or more platforms using the | symbol between each value.\n\n" +
+                                "Example:\nPC | PlayStation 5 | Xbox Series X/S",
                         "Platform Entry Help",
-                        "Enter one or more platforms using the | symbol between each value.\n\n"
-                                + "Example:\nPC | PlayStation 5 | Xbox Series X/S",
                         JOptionPane.INFORMATION_MESSAGE));
                 labelPanel.add(infoButton);
             }
@@ -63,14 +76,11 @@ public class DataEntryDialogHelper {
             JTextField field = new JTextField(defaults == null ? "" : defaults[i]);
             field.setFont(fieldFont);
             field.setPreferredSize(new Dimension(190, 30));
-            AppDialogThemeHelper.styleTextField(field, dark);
             fields[i] = field;
 
             if (lockPublisherField && i == pubIdx) {
                 field.setText(publisherName);
                 field.setEditable(false);
-                field.setBackground(theme.cardBg);
-                field.setForeground(theme.mutedText);
             }
 
             int pairColumn = visualFieldIndex % 2;
@@ -88,108 +98,128 @@ public class DataEntryDialogHelper {
             visualFieldIndex++;
         }
 
-        JPanel content = AppDialogThemeHelper.createSurfacePanel(new BorderLayout(0, 10), dark);
-        content.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        content.setPreferredSize(new Dimension(960, 520));
-        content.setMinimumSize(new Dimension(900, 500));
+        JPanel content = new JPanel(new BorderLayout(0, 8));
 
         if (idIdx != -1) {
-            JPanel idPanel = AppDialogThemeHelper.createSurfacePanel(new FlowLayout(FlowLayout.LEFT, 12, 0), dark);
-            idPanel.setOpaque(false);
+            JPanel idPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
             idPanel.setBorder(BorderFactory.createEmptyBorder(4, 12, 0, 12));
-            JLabel idLabel = new JLabel("Game ID:");
-            AppDialogThemeHelper.styleLabel(idLabel, false, dark);
-            idPanel.add(idLabel);
+            idPanel.add(new JLabel("Game ID:"));
             JLabel idValueLabel = new JLabel(generatedId == null ? "" : generatedId);
             idValueLabel.setFont(new Font("Inter", Font.BOLD, 15));
-            idValueLabel.setForeground(theme.accent);
             idPanel.add(idValueLabel);
             content.add(idPanel, BorderLayout.NORTH);
         }
 
-        fieldsGrid.setOpaque(false);
         content.add(fieldsGrid, BorderLayout.CENTER);
 
         if (descriptionIdx != -1) {
             JLabel descriptionLabel = new JLabel("Description");
             descriptionLabel.setFont(labelFont);
-            AppDialogThemeHelper.styleLabel(descriptionLabel, false, dark);
 
             descriptionArea = new JTextArea(defaults == null ? "" : defaults[descriptionIdx], 5, 38);
+            descriptionArea.setLineWrap(true);
+            descriptionArea.setWrapStyleWord(true);
             descriptionArea.setFont(fieldFont);
-            AppDialogThemeHelper.styleTextArea(descriptionArea, dark);
+            descriptionArea.setMargin(new Insets(8, 8, 8, 8));
 
-            descriptionArea.setPreferredSize(new Dimension(820, 150));
-            descriptionArea.setMinimumSize(new Dimension(820, 150));
+            JScrollPane descriptionPane = new JScrollPane(descriptionArea);
+            descriptionPane.setPreferredSize(new Dimension(620, 125));
 
-            JPanel descriptionPanel = AppDialogThemeHelper.createSurfacePanel(new BorderLayout(0, 5), dark);
-            descriptionPanel.setOpaque(false);
+            JPanel descriptionPanel = new JPanel(new BorderLayout(0, 5));
             descriptionPanel.setBorder(BorderFactory.createEmptyBorder(0, 12, 6, 12));
             descriptionPanel.add(descriptionLabel, BorderLayout.NORTH);
-            descriptionPanel.add(descriptionArea, BorderLayout.CENTER);
+            descriptionPanel.add(descriptionPane, BorderLayout.CENTER);
             content.add(descriptionPanel, BorderLayout.SOUTH);
         }
 
-        int result = AppDialogThemeHelper.showConfirmDialog(
+        JScrollPane wrapper = new JScrollPane(content);
+        wrapper.setBorder(BorderFactory.createEmptyBorder());
+        wrapper.setPreferredSize(new Dimension(700, 350));
+        wrapper.getVerticalScrollBar().setUnitIncrement(16);
+
+        int result = JOptionPane.showConfirmDialog(
                 parent,
+                wrapper,
                 title,
-                content,
-                "Save",
-                "Cancel",
-                new Dimension(980, 620));
-        if (result != JOptionPane.OK_OPTION) {
-            return null;
-        }
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
 
-        String[] row = new String[columns.length];
-        for (int i = 0; i < columns.length; i++) {
-            if (i == idIdx) {
-                row[i] = generatedId == null ? "" : generatedId.trim();
-            } else if (i == descriptionIdx) {
-                row[i] = descriptionArea == null ? "" : descriptionArea.getText().trim();
-            } else {
-                row[i] = fields[i] == null ? "" : fields[i].getText().trim();
+        if (result == JOptionPane.OK_OPTION) {
+            String[] row = new String[columns.length];
+
+            for (int i = 0; i < columns.length; i++) {
+                String value;
+
+                if (i == idIdx) {
+                    value = generatedId == null ? "" : generatedId;
+                } else if (i == descriptionIdx && descriptionArea != null) {
+                    value = descriptionArea.getText().trim();
+                } else {
+                    value = fields[i] == null ? "" : fields[i].getText().trim();
+                }
+
+                if (value.isEmpty()) {
+                    JOptionPane.showMessageDialog(parent, "All fields must be filled.");
+                    return null;
+                }
+
+                if ("Platform".equalsIgnoreCase(columns[i])) {
+                    value = normalizeMultiValueCell(value);
+                }
+
+                row[i] = value;
             }
+
+            return row;
         }
 
-        if (lockPublisherField && pubIdx != -1) {
-            row[pubIdx] = publisherName == null ? "" : publisherName.trim();
-        }
-
-        int platformIdx = getColumnIndex(columns, "Platform");
-        if (platformIdx != -1) {
-            row[platformIdx] = normalizeMultiValueCell(row[platformIdx]);
-        }
-
-        return row;
+        return null;
     }
 
-    private static int getColumnIndex(String[] columns, String wantedName) {
-        if (columns == null || wantedName == null) {
+    /**
+     * Returns the index of the requested column name.
+     *
+     * @param columns the column names involved in the operation
+     * @param columnName the column name to search for or populate from
+     *
+     * @return the resulting numeric value
+     */
+    private static int getColumnIndex(String[] columns, String columnName) {
+        if (columns == null || columnName == null) {
             return -1;
         }
 
         for (int i = 0; i < columns.length; i++) {
-            if (wantedName.equalsIgnoreCase(columns[i])) {
+            if (columns[i].equalsIgnoreCase(columnName)) {
                 return i;
             }
         }
+
         return -1;
     }
 
+    /**
+     * Returns the index of the primary identifier column.
+     *
+     * @param columns the column names involved in the operation
+     *
+     * @return the resulting numeric value
+     */
     private static int getIdColumnIndex(String[] columns) {
-        int idIdx = getColumnIndex(columns, "GameID");
-        if (idIdx == -1) {
-            idIdx = getColumnIndex(columns, "ID");
+        int idx = getColumnIndex(columns, "GameID");
+        if (idx == -1) {
+            idx = getColumnIndex(columns, "ID");
         }
-        return idIdx;
+        return idx;
     }
 
-    private static String normalizeMultiValueCell(String value) {
-        String[] parts = splitMultiValueCell(value);
-        return String.join(" " + MULTI_VALUE_SEPARATOR + " ", parts);
-    }
-
+    /**
+     * Splits a multi-value CSV cell into trimmed values.
+     *
+     * @param value the value to inspect
+     *
+     * @return the resulting array
+     */
     private static String[] splitMultiValueCell(String value) {
         if (value == null || value.isBlank()) {
             return new String[0];
@@ -197,12 +227,26 @@ public class DataEntryDialogHelper {
 
         String[] rawParts = value.split("\\s*\\" + MULTI_VALUE_SEPARATOR + "\\s*");
         List<String> cleaned = new ArrayList<>();
+
         for (String part : rawParts) {
             String trimmed = part.trim();
             if (!trimmed.isEmpty()) {
                 cleaned.add(trimmed);
             }
         }
+
         return cleaned.toArray(new String[0]);
+    }
+
+    /**
+     * Normalizes a multi-value CSV cell so values use the shared separator format.
+     *
+     * @param value the value to inspect
+     *
+     * @return the resulting string value
+     */
+    private static String normalizeMultiValueCell(String value) {
+        String[] parts = splitMultiValueCell(value);
+        return String.join(" " + MULTI_VALUE_SEPARATOR + " ", parts);
     }
 }

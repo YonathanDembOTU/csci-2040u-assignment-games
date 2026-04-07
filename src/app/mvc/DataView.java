@@ -13,9 +13,88 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+/**
+ * Builds and manages the main game catalogue editor window, including table presentation, filters, and theme switching.
+ */
 public class DataView extends JFrame {
     // This view supports hover highlighting, live search counters, and advanced filters.
     private static final int DEFAULT_ROW_HEIGHT = 30;
+    /**
+     * Performs the dimension operation.
+     *
+     * @param 1200 the 1200 value
+     * @param Color(245 the color(245 value
+     * @param 245 the 245 value
+     * @param Color(240 the color(240 value
+     * @param 240 the 240 value
+     * @param 240 the 240 value
+     * @param Color(235 the color(235 value
+     * @param 235 the 235 value
+     * @param Color(220 the color(220 value
+     * @param 226 the 226 value
+     * @param Color(205 the color(205 value
+     * @param 212 the 212 value
+     * @param Color(210 the color(210 value
+     * @param 210 the 210 value
+     * @param 210 the 210 value
+     * @param Color(185 the color(185 value
+     * @param 185 the 185 value
+     * @param 185 the 185 value
+     * @param Color(255 the color(255 value
+     * @param 170 the 170 value
+     * @param 60 the 60 value
+     * @param Color(210 the color(210 value
+     * @param 210 the 210 value
+     * @param Color(170 the color(170 value
+     * @param 170 the 170 value
+     * @param 170 the 170 value
+     * @param Color(200 the color(200 value
+     * @param 200 the 200 value
+     * @param Color(230 the color(230 value
+     * @param 230 the 230 value
+     * @param Color(130 the color(130 value
+     * @param 130 the 130 value
+     * @param Color(242 the color(242 value
+     * @param 245 the 245 value
+     * @param Color(28 the color(28 value
+     * @param 28 the 28 value
+     * @param Color(55 the color(55 value
+     * @param 55 the 55 value
+     * @param 55 the 55 value
+     * @param Color(55 the color(55 value
+     * @param 55 the 55 value
+     * @param Color(74 the color(74 value
+     * @param 74 the 74 value
+     * @param Color(92 the color(92 value
+     * @param 92 the 92 value
+     * @param Color(70 the color(70 value
+     * @param 70 the 70 value
+     * @param 70 the 70 value
+     * @param Color(88 the color(88 value
+     * @param 88 the 88 value
+     * @param 88 the 88 value
+     * @param Color(255 the color(255 value
+     * @param 140 the 140 value
+     * @param 0 the 0 value
+     * @param Color(235 the color(235 value
+     * @param 235 the 235 value
+     * @param Color(65 the color(65 value
+     * @param 65 the 65 value
+     * @param Color(132 the color(132 value
+     * @param 132 the 132 value
+     * @param 132 the 132 value
+     * @param Color(85 the color(85 value
+     * @param 85 the 85 value
+     * @param Color(38 the color(38 value
+     * @param 38 the 38 value
+     * @param Color(180 the color(180 value
+     * @param 180 the 180 value
+     * @param Color(35 the color(35 value
+     * @param 35 the 35 value
+     * @param DataView( the data view( value
+     *
+     * @return the resulting value
+     */
     private static final Dimension MIN_WINDOW_SIZE = new Dimension(1200, 720);
 
     public JTable table;
@@ -29,7 +108,6 @@ public class DataView extends JFrame {
     public JButton advancedSearchBtn;
     public JButton searchClearBtn;
     public JButton passwordMenuBtn;
-    public JButton attributionBtn;
 
     DefaultTableModel tableModel;
     JScrollPane scrollPane;
@@ -93,9 +171,6 @@ public class DataView extends JFrame {
     private final Color DARK_SCROLL_THUMB = new Color(180, 180, 180);
     private final Color DARK_EMPTY_BG = new Color(35, 35, 35);
 
-    /**
-     * Builds the main database editor interface.
-     */
     public DataView() {
         setTitle("Turn for Turn Co. - Database Editor");
         setSize(1100, 720);
@@ -279,17 +354,13 @@ public class DataView extends JFrame {
         deleteBtn = new JButton("－ Delete");
         saveBtn = new JButton("⇩ Save");
         passwordMenuBtn = new JButton("⚿ Passwords");
-        attributionBtn = new JButton("ⓘ Attribution");
         logoutBtn = new JButton("⇦ Logout");
-
-        attributionBtn.setToolTipText("Open the RAWG attribution page in your browser.");
 
         buttonPanel.add(addBtn);
         buttonPanel.add(editBtn);
         buttonPanel.add(deleteBtn);
         buttonPanel.add(saveBtn);
         buttonPanel.add(passwordMenuBtn);
-        buttonPanel.add(attributionBtn);
         buttonPanel.add(logoutBtn);
 
         mainBodyPanel = new JPanel(new BorderLayout(12, 0));
@@ -320,12 +391,20 @@ public class DataView extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Creates filter combo.
+     *
+     * @return the resulting value
+     */
     private JComboBox<String> createFilterCombo() {
         JComboBox<String> combo = new JComboBox<>(new String[]{"All"});
         combo.setPreferredSize(new Dimension(150, 34));
         return combo;
     }
 
+    /**
+     * Stretches the last table column to consume remaining viewport width.
+     */
     private void stretchTableToViewport() {
         if (table.getColumnCount() <= 0) {
             return;
@@ -348,6 +427,12 @@ public class DataView extends JFrame {
         table.repaint();
     }
 
+    /**
+     * Replaces the table model contents with the supplied data set.
+     *
+     * @param data the data values to display
+     * @param columns the column names involved in the operation
+     */
     public void setTableData(Object[][] data, String[] columns) {
         tableModel.setDataVector(data, columns);
         applyMultiLineRowHeights();
@@ -355,6 +440,9 @@ public class DataView extends JFrame {
         setEmptyStateVisible(data.length == 0);
     }
 
+    /**
+     * Applies multi line row heights.
+     */
     private void applyMultiLineRowHeights() {
         for (int row = 0; row < table.getRowCount(); row++) {
             int maxLines = 1;
@@ -369,6 +457,13 @@ public class DataView extends JFrame {
         }
     }
 
+    /**
+     * Performs the count display lines operation.
+     *
+     * @param value the value to inspect
+     *
+     * @return the resulting numeric value
+     */
     private int countDisplayLines(Object value) {
         if (value == null) {
             return 1;
@@ -384,6 +479,13 @@ public class DataView extends JFrame {
         return Math.max(1, normalized.split("\n", -1).length);
     }
 
+    /**
+     * Removes basic HTML markup from a RAWG text fragment.
+     *
+     * @param text the text value
+     *
+     * @return the resulting string value
+     */
     private String stripHtml(String text) {
         if (text == null) {
             return "";
@@ -391,6 +493,13 @@ public class DataView extends JFrame {
         return Pattern.compile("<[^>]*>").matcher(text).replaceAll("");
     }
 
+    /**
+     * Updates the visible search-status labels.
+     *
+     * @param visibleCount the visible count value
+     * @param totalCount the total count value
+     * @param query the query value
+     */
     public void setSearchStatus(int visibleCount, int totalCount, String query) {
         if (visibleCount == 0) {
             if (query == null || query.isBlank()) {
@@ -405,6 +514,11 @@ public class DataView extends JFrame {
         }
     }
 
+    /**
+     * Sets empty state visible.
+     *
+     * @param visible whether the controls should be visible or enabled
+     */
     public void setEmptyStateVisible(boolean visible) {
         emptyStateLabel.setVisible(visible);
         scrollPane.setVisible(!visible);
@@ -412,6 +526,11 @@ public class DataView extends JFrame {
         repaint();
     }
 
+    /**
+     * Enables or disables the main interactive controls.
+     *
+     * @param enabled the enabled value
+     */
     public void setInteractionEnabled(boolean enabled) {
         table.setEnabled(enabled);
         addBtn.setEnabled(enabled);
@@ -419,7 +538,6 @@ public class DataView extends JFrame {
         deleteBtn.setEnabled(enabled);
         saveBtn.setEnabled(enabled);
         passwordMenuBtn.setEnabled(enabled);
-        attributionBtn.setEnabled(true);
         logoutBtn.setEnabled(true);
         toggleColumnsBtn.setEnabled(enabled);
         toggleThemeBtn.setEnabled(enabled);
@@ -434,6 +552,9 @@ public class DataView extends JFrame {
         singlePlayerFilterCombo.setEnabled(enabled);
     }
 
+    /**
+     * Resizes the visible table columns to fit their content.
+     */
     public void resizeColumnsToFitContent() {
         final int PADDING = 24;
         final int MIN_WIDTH = 90;
@@ -465,6 +586,11 @@ public class DataView extends JFrame {
         }
     }
 
+    /**
+     * Adjusts the window size to better fit the current table layout.
+     *
+     * @param expanded the expanded value
+     */
     public void fitWindowToTable(boolean expanded) {
         int targetWidth = expanded ? 1280 : 1100;
         int targetHeight = advancedSearchPanel.isVisible() ? 780 : 720;
@@ -474,19 +600,37 @@ public class DataView extends JFrame {
         repaint();
     }
 
+    /**
+     * Toggles the main window between light mode and dark mode.
+     */
     public void toggleTheme() {
         darkMode = !darkMode;
         applyTheme();
     }
 
+    /**
+     * Returns whether the main view is currently using dark mode.
+     *
+     * @return {@code true} when the requested condition is met; otherwise {@code false}
+     */
     public boolean isDarkMode() {
         return darkMode;
     }
 
+    /**
+     * Returns whether the advanced search panel is currently visible.
+     *
+     * @return {@code true} when the requested condition is met; otherwise {@code false}
+     */
     public boolean isAdvancedSearchVisible() {
         return advancedSearchPanel.isVisible();
     }
 
+    /**
+     * Shows or hides the advanced search controls.
+     *
+     * @param visible whether the controls should be visible or enabled
+     */
     public void setAdvancedSearchVisible(boolean visible) {
         advancedSearchPanel.setVisible(visible);
         revalidate();
@@ -494,6 +638,9 @@ public class DataView extends JFrame {
         SwingUtilities.invokeLater(this::stretchTableToViewport);
     }
 
+    /**
+     * Applies the active light or dark theme to the main window components.
+     */
     public void applyTheme() {
         Color windowBg = darkMode ? DARK_WINDOW_BG : LIGHT_WINDOW_BG;
         Color panelBg = darkMode ? DARK_PANEL_BG : LIGHT_PANEL_BG;
@@ -552,7 +699,6 @@ public class DataView extends JFrame {
         styleButton(deleteBtn, buttonBg, text);
         styleButton(saveBtn, buttonBg, text);
         styleButton(passwordMenuBtn, buttonBg, text);
-        styleButton(attributionBtn, buttonBg, text);
         styleButton(logoutBtn, buttonBg, text);
         styleButton(toggleColumnsBtn, buttonBg, text);
         styleButton(toggleThemeBtn, buttonBg, text);
@@ -589,6 +735,13 @@ public class DataView extends JFrame {
         repaint();
     }
 
+    /**
+     * Applies shared styling to the supplied button.
+     *
+     * @param button the button to style
+     * @param bg the bg value
+     * @param fg the fg value
+     */
     private void styleButton(JButton button, Color bg, Color fg) {
         button.putClientProperty("baseBg", bg);
         button.putClientProperty("hoverBg", darkMode ? DARK_BUTTON_HOVER : LIGHT_BUTTON_HOVER);
@@ -606,11 +759,14 @@ public class DataView extends JFrame {
                 : new Dimension(150, 34));
     }
 
+    /**
+     * Performs the install press and hover states operation.
+     */
     private void installPressAndHoverStates() {
         JButton[] buttons = {
                 addBtn, editBtn, deleteBtn, saveBtn, logoutBtn,
                 toggleColumnsBtn, toggleThemeBtn, advancedSearchBtn,
-                searchClearBtn, passwordMenuBtn, attributionBtn
+                searchClearBtn, passwordMenuBtn
         };
 
         for (JButton button : buttons) {
@@ -663,6 +819,14 @@ public class DataView extends JFrame {
         }
     }
 
+    /**
+     * Performs the style input operation.
+     *
+     * @param field the field value
+     * @param bg the bg value
+     * @param fg the fg value
+     * @param border the border value
+     */
     private void styleInput(JTextField field, Color bg, Color fg, Color border) {
         field.setBackground(bg);
         field.setForeground(fg);
@@ -674,7 +838,11 @@ public class DataView extends JFrame {
     }
 
     /**
-     * Styles a combo box so it matches the light or dark theme correctly.
+     * Performs the style combo operation.
+     *
+     * @param combo the combo box to populate or inspect
+     * @param bg the bg value
+     * @param fg the fg value
      */
     private void styleCombo(JComboBox<String> combo, Color bg, Color fg) {
         combo.setBackground(bg);
@@ -715,6 +883,13 @@ public class DataView extends JFrame {
         });
     }
 
+    /**
+     * Applies scroll bar theme.
+     *
+     * @param scrollBar the scroll bar value
+     * @param trackColor the track color value
+     * @param thumbColor the thumb color value
+     */
     private void applyScrollBarTheme(JScrollBar scrollBar, Color trackColor, Color thumbColor) {
         scrollBar.setOpaque(true);
         scrollBar.setBackground(trackColor);
@@ -787,7 +962,16 @@ public class DataView extends JFrame {
     }
 
     /**
-     * Opens the extracted data entry helper dialog for adding or editing a row.
+     * Delegates to the data-entry helper dialog and returns the resulting row values.
+     *
+     * @param title the title text to use
+     * @param columns the column names involved in the operation
+     * @param defaults the default row values to pre-populate, or {@code null} when no defaults are available
+     * @param lockPublisherField whether the publisher field should be locked to the active publisher
+     * @param publisherName the publisher name to enforce when the publisher field is locked
+     * @param generatedId the generated identifier to display or store
+     *
+     * @return the resulting array
      */
     public String[] showDataEntryDialog(String title, String[] columns, String[] defaults,
                                         boolean lockPublisherField, String publisherName, String generatedId) {
@@ -802,21 +986,36 @@ public class DataView extends JFrame {
     }
 
     /**
-     * Opens the extracted password management helper for admin actions.
+     * Delegates to the password-management helper dialog.
      */
     public void showPasswordManagementDialog() {
         PasswordDialogHelper.openPasswordHandlingMenu(this);
     }
 
     /**
-     * Opens the extracted helper dialog used for double-click game entry details.
+     * Delegates to the row-details helper dialog.
+     *
+     * @param columns the column names involved in the operation
+     * @param row the row values involved in the operation
      */
     public void showRowDetails(String[] columns, String[] row) {
         GameEntryDetailsDialogHelper.showDialog(this, columns, row);
     }
 
+    /**
+     * Provides functionality for background panel.
+     */
     private static class BackgroundPanel extends JPanel {
 
+        /**
+         * Performs the color operation.
+         *
+         * @param 245 the 245 value
+         * @param 245 the 245 value
+         * @param g the graphics context used for painting
+         *
+         * @return the resulting value
+         */
         private Color baseColor = new Color(245, 245, 245);
 
         @Override
@@ -853,6 +1052,15 @@ public class DataView extends JFrame {
             g2.dispose();
         }
 
+        /**
+         * Creates hexagon.
+         *
+         * @param x the x value
+         * @param y the y value
+         * @param size the size value
+         *
+         * @return the resulting value
+         */
         private Polygon createHexagon(int x, int y, int size) {
             int[] xs = {
                     x + size / 2,

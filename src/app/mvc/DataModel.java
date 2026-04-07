@@ -4,15 +4,22 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Stores the loaded game catalogue data in memory and provides CSV load and save operations.
+ */
 public class DataModel {
     // Stores the CSV column headers currently loaded from file.
     private String[] columns;
+    /**
+     * Loads CSV data from the supplied file into memory.
+     *
+     * @param file the file to load from
+     *
+     * @throws IOException if the operation cannot be completed successfully
+     */
     private final List<String[]> rows = new ArrayList<>();
     private File currentFile;
 
-    /**
-     * Loads CSV data from the selected file into memory.
-     */
     public void loadFromFile(File file) throws IOException {
         currentFile = file;
         rows.clear();
@@ -36,6 +43,11 @@ public class DataModel {
         }
     }
 
+    /**
+     * Writes the in-memory catalogue back to the currently loaded file.
+     *
+     * @throws IOException if the operation cannot be completed successfully
+     */
     public void saveToFile() throws IOException {
         if (currentFile == null || columns == null) {
             return;
@@ -54,10 +66,20 @@ public class DataModel {
         }
     }
 
+    /**
+     * Returns the currently loaded column headers.
+     *
+     * @return the resulting array
+     */
     public String[] getColumns() {
         return columns;
     }
 
+    /**
+     * Returns the loaded data as a two-dimensional object array.
+     *
+     * @return the resulting array
+     */
     public Object[][] getData() {
         if (columns == null) {
             return new Object[0][0];
@@ -73,6 +95,13 @@ public class DataModel {
         return data;
     }
 
+    /**
+     * Returns a padded copy of the requested row.
+     *
+     * @param index the index involved in the operation
+     *
+     * @return the resulting array
+     */
     public String[] getRow(int index) {
         String[] original = rows.get(index);
         String[] padded = new String[columns.length];
@@ -82,10 +111,20 @@ public class DataModel {
         return padded;
     }
 
+    /**
+     * Returns the number of rows currently loaded in memory.
+     *
+     * @return the resulting numeric value
+     */
     public int getRowCount() {
         return rows.size();
     }
 
+    /**
+     * Adds a new row to the in-memory data set.
+     *
+     * @param row the row values involved in the operation
+     */
     public void addRow(String[] row) {
         if (row == null || columns == null || row.length != columns.length) {
             throw new IllegalArgumentException("Invalid row data");
@@ -99,6 +138,12 @@ public class DataModel {
         rows.add(normalized);
     }
 
+    /**
+     * Replaces the row at the supplied index.
+     *
+     * @param index the index involved in the operation
+     * @param row the row values involved in the operation
+     */
     public void updateRow(int index, String[] row) {
         if (row == null || columns == null || row.length != columns.length) {
             throw new IllegalArgumentException("Invalid row data");
@@ -112,16 +157,30 @@ public class DataModel {
         rows.set(index, normalized);
     }
 
+    /**
+     * Removes the row at the supplied index.
+     *
+     * @param index the index involved in the operation
+     */
     public void removeRow(int index) {
         rows.remove(index);
     }
 
+    /**
+     * Returns whether valid data.
+     *
+     * @return {@code true} when the requested condition is met; otherwise {@code false}
+     */
     public boolean hasValidData() {
         return columns != null && columns.length > 0;
     }
 
     /**
-     * Parses a CSV line while respecting quoted values.
+     * Parses a single CSV line into its individual cell values.
+     *
+     * @param line the CSV line to parse
+     *
+     * @return the resulting array
      */
     private String[] parseCsvLine(String line) {
         List<String> values = new ArrayList<>();
@@ -150,6 +209,13 @@ public class DataModel {
         return values.toArray(new String[0]);
     }
 
+    /**
+     * Converts a row of values into a CSV-formatted line.
+     *
+     * @param values the values to join
+     *
+     * @return the resulting string value
+     */
     private String toCsvLine(String[] values) {
         String[] escaped = new String[values.length];
 

@@ -5,12 +5,18 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Provides themed dialogs that support importing game information from the RAWG API.
+ */
 public class RawgImportDialogHelper {
     public static final int MANUAL_ENTRY = 0;
     public static final int IMPORT_FROM_RAWG = 1;
     public static final int CANCEL = 2;
     public static final int MAX_SIMILAR_CHOICES = 10;
 
+    /**
+     * Represents a RAWG search result that can be shown to the user and optionally selected for import.
+     */
     public static class SearchCandidate {
         private final String rawgId;
         private final String title;
@@ -30,30 +36,67 @@ public class RawgImportDialogHelper {
             this.selectable = selectable;
         }
 
+        /**
+         * Creates a non-selectable placeholder search candidate for an empty result slot.
+         *
+         * @param index the index involved in the operation
+         *
+         * @return the resulting value
+         */
         public static SearchCandidate placeholder(int index) {
             return new SearchCandidate("", "No additional result", "", "Slot " + index, false);
         }
 
+        /**
+         * Returns the rawg id.
+         *
+         * @return the resulting string value
+         */
         public String getRawgId() {
             return rawgId;
         }
 
+        /**
+         * Returns the title.
+         *
+         * @return the resulting string value
+         */
         public String getTitle() {
             return title;
         }
 
+        /**
+         * Returns the release year.
+         *
+         * @return the resulting string value
+         */
         public String getReleaseYear() {
             return releaseYear;
         }
 
+        /**
+         * Returns the platforms.
+         *
+         * @return the resulting string value
+         */
         public String getPlatforms() {
             return platforms;
         }
 
+        /**
+         * Returns whether selectable.
+         *
+         * @return {@code true} when the requested condition is met; otherwise {@code false}
+         */
         public boolean isSelectable() {
             return selectable && !rawgId.isBlank();
         }
 
+        /**
+         * Performs the to string operation.
+         *
+         * @return the resulting string value
+         */
         @Override
         public String toString() {
             if (!isSelectable()) {
@@ -71,6 +114,13 @@ public class RawgImportDialogHelper {
         }
     }
 
+    /**
+     * Prompts an administrator to choose between manual entry and RAWG import.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     *
+     * @return the resulting numeric value
+     */
     public static int showAdminAddChoice(Component parent) {
         String[] options = {"Manual Entry", "Import From RAWG", "Cancel"};
         int choice = AppDialogThemeHelper.showOptionDialog(
@@ -86,6 +136,13 @@ public class RawgImportDialogHelper {
         return choice;
     }
 
+    /**
+     * Prompts the user for the RAWG game title to search for.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     *
+     * @return the resulting string value
+     */
     public static String promptForGameName(Component parent) {
         String gameName = AppDialogThemeHelper.showInputDialog(
                 parent,
@@ -110,6 +167,15 @@ public class RawgImportDialogHelper {
         return gameName;
     }
 
+    /**
+     * Shows a selection dialog for similar RAWG results and returns the chosen candidate.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     * @param gameName the game name to search for
+     * @param candidates the candidate results to display
+     *
+     * @return the resulting value
+     */
     public static SearchCandidate promptToChooseSimilarMatch(Component parent, String gameName,
                                                              List<SearchCandidate> candidates) {
         if (candidates == null || candidates.isEmpty()) {
@@ -187,6 +253,11 @@ public class RawgImportDialogHelper {
         return selected;
     }
 
+    /**
+     * Shows a message explaining that a RAWG API key is required before import can continue.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     */
     public static void showMissingApiKey(Component parent) {
         AppDialogThemeHelper.showMessageDialog(
                 parent,
@@ -195,6 +266,12 @@ public class RawgImportDialogHelper {
                 JOptionPane.WARNING_MESSAGE);
     }
 
+    /**
+     * Shows a message indicating that no suitable RAWG match was found.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     * @param gameName the game name to search for
+     */
     public static void showNoMatch(Component parent, String gameName) {
         AppDialogThemeHelper.showMessageDialog(
                 parent,
@@ -203,6 +280,12 @@ public class RawgImportDialogHelper {
                 JOptionPane.WARNING_MESSAGE);
     }
 
+    /**
+     * Shows a message describing a RAWG import failure.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     * @param message the message text to display
+     */
     public static void showImportFailed(Component parent, String message) {
         AppDialogThemeHelper.showMessageDialog(
                 parent,

@@ -7,10 +7,17 @@ import javax.swing.table.JTableHeader;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.Locale;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+/**
+ * Provides shared theming, layout, and dialog-building utilities for the styled helper windows used by the application.
+ */
 public class AppDialogThemeHelper {
+    /**
+     * Stores the color, typography, and surface values that define a single helper-window theme.
+     */
     public static final class Theme {
         public final boolean dark;
         public final Color windowBg;
@@ -91,6 +98,173 @@ public class AppDialogThemeHelper {
         }
     }
 
+    /**
+     * Performs the theme operation.
+     *
+     * @param false the false value
+     * @param Color(245 the color(245 value
+     * @param 245 the 245 value
+     * @param 245) the 245) value
+     * @param Color(240 the color(240 value
+     * @param 240 the 240 value
+     * @param 240) the 240) value
+     * @param Color(238 the color(238 value
+     * @param 238 the 238 value
+     * @param 238 the 238 value
+     * @param 235) the 235) value
+     * @param Color(188 the color(188 value
+     * @param 188 the 188 value
+     * @param 188) the 188) value
+     * @param Color(205 the color(205 value
+     * @param 205 the 205 value
+     * @param 205) the 205) value
+     * @param Color(235 the color(235 value
+     * @param 235 the 235 value
+     * @param 235) the 235) value
+     * @param Color(220 the color(220 value
+     * @param 226 the 226 value
+     * @param 234) the 234) value
+     * @param Color(205 the color(205 value
+     * @param 212 the 212 value
+     * @param 222) the 222) value
+     * @param Color(255 the color(255 value
+     * @param 170 the 170 value
+     * @param 60) the 60) value
+     * @param Color(255 the color(255 value
+     * @param 183 the 183 value
+     * @param 90) the 90) value
+     * @param Color(232 the color(232 value
+     * @param 150 the 150 value
+     * @param 45) the 45) value
+     * @param Color(30 the color(30 value
+     * @param 30 the 30 value
+     * @param 30) the 30) value
+     * @param Color(80 the color(80 value
+     * @param 80 the 80 value
+     * @param 80) the 80) value
+     * @param Color(255 the color(255 value
+     * @param 140 the 140 value
+     * @param 0) the 0) value
+     * @param Color(230 the color(230 value
+     * @param 230 the 230 value
+     * @param 230) the 230) value
+     * @param Color(130 the color(130 value
+     * @param 130 the 130 value
+     * @param 130) the 130) value
+     * @param Color(170 the color(170 value
+     * @param 170 the 170 value
+     * @param 170 the 170 value
+     * @param 205) the 205) value
+     * @param Color(214 the color(214 value
+     * @param 214 the 214 value
+     * @param 214) the 214) value
+     * @param Color(255 the color(255 value
+     * @param 140 the 140 value
+     * @param 0) the 0) value
+     * @param Color(118 the color(118 value
+     * @param 118 the 118 value
+     * @param 118) the 118) value
+     * @param Color(140 the color(140 value
+     * @param 110 the 110 value
+     * @param 30) the 30) value
+     * @param Color(150 the color(150 value
+     * @param 50 the 50 value
+     * @param 50) the 50) value
+     * @param Color(120 the color(120 value
+     * @param 120 the 120 value
+     * @param 120) the 120) value
+     * @param Color(255 the color(255 value
+     * @param 170 the 170 value
+     * @param 0 the 0 value
+     * @param true the true value
+     * @param Color(28 the color(28 value
+     * @param 28 the 28 value
+     * @param 28) the 28) value
+     * @param Color(55 the color(55 value
+     * @param 55 the 55 value
+     * @param 55) the 55) value
+     * @param Color(48 the color(48 value
+     * @param 48 the 48 value
+     * @param 48 the 48 value
+     * @param 238) the 238) value
+     * @param Color(90 the color(90 value
+     * @param 90 the 90 value
+     * @param 90) the 90) value
+     * @param Color(72 the color(72 value
+     * @param 72 the 72 value
+     * @param 72) the 72) value
+     * @param Color(55 the color(55 value
+     * @param 55 the 55 value
+     * @param 55) the 55) value
+     * @param Color(74 the color(74 value
+     * @param 74 the 74 value
+     * @param 74) the 74) value
+     * @param Color(92 the color(92 value
+     * @param 92 the 92 value
+     * @param 92) the 92) value
+     * @param Color(255 the color(255 value
+     * @param 140 the 140 value
+     * @param 0) the 0) value
+     * @param Color(255 the color(255 value
+     * @param 163 the 163 value
+     * @param 48) the 48) value
+     * @param Color(214 the color(214 value
+     * @param 117 the 117 value
+     * @param 0) the 0) value
+     * @param Color(235 the color(235 value
+     * @param 235 the 235 value
+     * @param 235) the 235) value
+     * @param Color(190 the color(190 value
+     * @param 190 the 190 value
+     * @param 190) the 190) value
+     * @param Color(255 the color(255 value
+     * @param 140 the 140 value
+     * @param 0) the 0) value
+     * @param Color(38 the color(38 value
+     * @param 38 the 38 value
+     * @param 38) the 38) value
+     * @param Color(180 the color(180 value
+     * @param 180 the 180 value
+     * @param 180) the 180) value
+     * @param Color(132 the color(132 value
+     * @param 132 the 132 value
+     * @param 132 the 132 value
+     * @param 205) the 205) value
+     * @param Color(60 the color(60 value
+     * @param 60 the 60 value
+     * @param 60) the 60) value
+     * @param Color(255 the color(255 value
+     * @param 140 the 140 value
+     * @param 0) the 0) value
+     * @param Color(168 the color(168 value
+     * @param 168 the 168 value
+     * @param 168) the 168) value
+     * @param Color(230 the color(230 value
+     * @param 200 the 200 value
+     * @param 120) the 120) value
+     * @param Color(255 the color(255 value
+     * @param 150 the 150 value
+     * @param 150) the 150) value
+     * @param Color(140 the color(140 value
+     * @param 140 the 140 value
+     * @param 140) the 140) value
+     * @param Color(255 the color(255 value
+     * @param 140 the 140 value
+     * @param 0 the 0 value
+     * @param Font("Inter" the font("inter" value
+     * @param Font.BOLD the font.bold value
+     * @param Font("Inter" the font("inter" value
+     * @param Font.PLAIN the font.plain value
+     * @param Font("Inter" the font("inter" value
+     * @param Font.BOLD the font.bold value
+     * @param Font("Inter" the font("inter" value
+     * @param Font.PLAIN the font.plain value
+     * @param Font("Inter" the font("inter" value
+     * @param Font.BOLD the font.bold value
+     * @param AppDialogThemeHelper( the app dialog theme helper( value
+     *
+     * @return the resulting value
+     */
     private static final Theme LIGHT_THEME = new Theme(
             false,
             new Color(245, 245, 245),
@@ -112,7 +286,7 @@ public class AppDialogThemeHelper {
             new Color(170, 170, 170, 205),
             new Color(214, 214, 214),
             new Color(255, 140, 0),
-            new Color(160, 160, 160),
+            new Color(118, 118, 118),
             new Color(140, 110, 30),
             new Color(150, 50, 50),
             new Color(120, 120, 120),
@@ -140,7 +314,7 @@ public class AppDialogThemeHelper {
             new Color(132, 132, 132, 205),
             new Color(60, 60, 60),
             new Color(255, 140, 0),
-            new Color(112, 112, 112),
+            new Color(168, 168, 168),
             new Color(230, 200, 120),
             new Color(255, 150, 150),
             new Color(140, 140, 140),
@@ -156,10 +330,24 @@ public class AppDialogThemeHelper {
     private AppDialogThemeHelper() {
     }
 
+    /**
+     * Returns the dialog theme that should be used for the supplied component hierarchy.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     *
+     * @return the resulting value
+     */
     public static Theme getTheme(Component parent) {
         return isDark(parent) ? DARK_THEME : LIGHT_THEME;
     }
 
+    /**
+     * Determines whether the supplied component belongs to a dark-mode view hierarchy.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     *
+     * @return {@code true} when the requested condition is met; otherwise {@code false}
+     */
     public static boolean isDark(Component parent) {
         Component current = parent;
         while (current != null) {
@@ -179,10 +367,25 @@ public class AppDialogThemeHelper {
         return false;
     }
 
+    /**
+     * Creates a surface-styled panel using the supplied layout manager.
+     *
+     * @param layout the layout manager to install on the panel
+     *
+     * @return the resulting value
+     */
     public static JPanel createSurfacePanel(LayoutManager layout) {
         return createSurfacePanel(layout, false);
     }
 
+    /**
+     * Creates a surface-styled panel using the supplied layout manager.
+     *
+     * @param layout the layout manager to install on the panel
+     * @param dark whether dark-mode styling should be applied
+     *
+     * @return the resulting value
+     */
     public static JPanel createSurfacePanel(LayoutManager layout, boolean dark) {
         Theme theme = dark ? DARK_THEME : LIGHT_THEME;
         JPanel panel = new JPanel(layout);
@@ -190,10 +393,25 @@ public class AppDialogThemeHelper {
         return panel;
     }
 
+    /**
+     * Creates a card-styled panel using the supplied layout manager.
+     *
+     * @param layout the layout manager to install on the panel
+     *
+     * @return the resulting value
+     */
     public static JPanel createCardPanel(LayoutManager layout) {
         return createCardPanel(layout, false);
     }
 
+    /**
+     * Creates a card-styled panel using the supplied layout manager.
+     *
+     * @param layout the layout manager to install on the panel
+     * @param dark whether dark-mode styling should be applied
+     *
+     * @return the resulting value
+     */
     public static JPanel createCardPanel(LayoutManager layout, boolean dark) {
         Theme theme = dark ? DARK_THEME : LIGHT_THEME;
         JPanel panel = new JPanel(layout);
@@ -205,14 +423,32 @@ public class AppDialogThemeHelper {
         return panel;
     }
 
+    /**
+     * Applies the shared helper-dialog label styling to the supplied label.
+     *
+     * @param label the label to style
+     */
     public static void styleLabel(JLabel label) {
         styleLabel(label, false, false);
     }
 
+    /**
+     * Applies the shared helper-dialog label styling to the supplied label.
+     *
+     * @param label the label to style
+     * @param accent whether accent styling should be applied
+     */
     public static void styleLabel(JLabel label, boolean accent) {
         styleLabel(label, accent, false);
     }
 
+    /**
+     * Applies the shared helper-dialog label styling to the supplied label.
+     *
+     * @param label the label to style
+     * @param accent whether accent styling should be applied
+     * @param dark whether dark-mode styling should be applied
+     */
     public static void styleLabel(JLabel label, boolean accent, boolean dark) {
         Theme theme = dark ? DARK_THEME : LIGHT_THEME;
         label.setFont(LABEL_FONT);
@@ -220,34 +456,75 @@ public class AppDialogThemeHelper {
         label.setOpaque(false);
     }
 
+    /**
+     * Creates a styled section-title label for a helper dialog.
+     *
+     * @param text the text value
+     *
+     * @return the resulting value
+     */
     public static JLabel createSectionTitle(String text) {
         return createSectionTitle(text, false);
     }
 
+    /**
+     * Creates a styled section-title label for a helper dialog.
+     *
+     * @param text the text value
+     * @param dark whether dark-mode styling should be applied
+     *
+     * @return the resulting value
+     */
     public static JLabel createSectionTitle(String text, boolean dark) {
         Theme theme = dark ? DARK_THEME : LIGHT_THEME;
-        JLabel label = new JLabel(text);
+        JLabel label = new JLabel(text == null ? "" : text.toUpperCase(Locale.ROOT));
         label.setFont(TITLE_FONT);
         label.setForeground(theme.accent);
         return label;
     }
 
+    /**
+     * Creates subtitle.
+     *
+     * @param text the text value
+     *
+     * @return the resulting value
+     */
     public static JLabel createSubtitle(String text) {
         return createSubtitle(text, false);
     }
 
+    /**
+     * Creates subtitle.
+     *
+     * @param text the text value
+     * @param dark whether dark-mode styling should be applied
+     *
+     * @return the resulting value
+     */
     public static JLabel createSubtitle(String text, boolean dark) {
         Theme theme = dark ? DARK_THEME : LIGHT_THEME;
-        JLabel label = new JLabel(text);
+        JLabel label = new JLabel(text == null ? "" : text.toUpperCase(Locale.ROOT));
         label.setFont(SUBTITLE_FONT);
         label.setForeground(theme.mutedText);
         return label;
     }
 
+    /**
+     * Applies shared styling to the supplied text field.
+     *
+     * @param field the field value
+     */
     public static void styleTextField(JTextField field) {
         styleTextField(field, false);
     }
 
+    /**
+     * Applies shared styling to the supplied text field.
+     *
+     * @param field the field value
+     * @param dark whether dark-mode styling should be applied
+     */
     public static void styleTextField(JTextField field, boolean dark) {
         styleTextComponent(field, dark);
         Theme theme = dark ? DARK_THEME : LIGHT_THEME;
@@ -255,10 +532,21 @@ public class AppDialogThemeHelper {
         field.setPreferredSize(new Dimension(field.getPreferredSize().width, 34));
     }
 
+    /**
+     * Applies shared styling to the supplied password field.
+     *
+     * @param field the field value
+     */
     public static void stylePasswordField(JPasswordField field) {
         stylePasswordField(field, false);
     }
 
+    /**
+     * Applies shared styling to the supplied password field.
+     *
+     * @param field the field value
+     * @param dark whether dark-mode styling should be applied
+     */
     public static void stylePasswordField(JPasswordField field, boolean dark) {
         styleTextComponent(field, dark);
         Theme theme = dark ? DARK_THEME : LIGHT_THEME;
@@ -266,10 +554,21 @@ public class AppDialogThemeHelper {
         field.setPreferredSize(new Dimension(field.getPreferredSize().width, 34));
     }
 
+    /**
+     * Applies shared styling to the supplied text area.
+     *
+     * @param area the area value
+     */
     public static void styleTextArea(JTextArea area) {
         styleTextArea(area, false);
     }
 
+    /**
+     * Applies shared styling to the supplied text area.
+     *
+     * @param area the area value
+     * @param dark whether dark-mode styling should be applied
+     */
     public static void styleTextArea(JTextArea area, boolean dark) {
         styleTextComponent(area, dark);
         area.setLineWrap(true);
@@ -277,6 +576,12 @@ public class AppDialogThemeHelper {
         area.setMargin(new Insets(8, 8, 8, 8));
     }
 
+    /**
+     * Performs the style text component operation.
+     *
+     * @param component the component to configure
+     * @param dark whether dark-mode styling should be applied
+     */
     private static void styleTextComponent(JTextComponent component, boolean dark) {
         Theme theme = dark ? DARK_THEME : LIGHT_THEME;
         component.setFont(BODY_FONT);
@@ -287,10 +592,21 @@ public class AppDialogThemeHelper {
                 new EmptyBorder(6, 8, 6, 8)));
     }
 
+    /**
+     * Applies shared styling to the supplied check box.
+     *
+     * @param box the box value
+     */
     public static void styleCheckBox(JCheckBox box) {
         styleCheckBox(box, false);
     }
 
+    /**
+     * Applies shared styling to the supplied check box.
+     *
+     * @param box the box value
+     * @param dark whether dark-mode styling should be applied
+     */
     public static void styleCheckBox(JCheckBox box, boolean dark) {
         Theme theme = dark ? DARK_THEME : LIGHT_THEME;
         box.setOpaque(false);
@@ -299,10 +615,21 @@ public class AppDialogThemeHelper {
         box.setFocusPainted(false);
     }
 
+    /**
+     * Applies shared styling to the supplied combo box.
+     *
+     * @param combo the combo box to populate or inspect
+     */
     public static void styleComboBox(JComboBox<?> combo) {
         styleComboBox(combo, false);
     }
 
+    /**
+     * Applies shared styling to the supplied combo box.
+     *
+     * @param combo the combo box to populate or inspect
+     * @param dark whether dark-mode styling should be applied
+     */
     public static void styleComboBox(JComboBox<?> combo, boolean dark) {
         Theme theme = dark ? DARK_THEME : LIGHT_THEME;
         combo.setFont(BODY_FONT);
@@ -326,10 +653,23 @@ public class AppDialogThemeHelper {
         });
     }
 
+    /**
+     * Applies shared styling to the supplied button.
+     *
+     * @param button the button to style
+     * @param primary the primary value
+     */
     public static void styleButton(AbstractButton button, boolean primary) {
         styleButton(button, primary, false);
     }
 
+    /**
+     * Applies shared styling to the supplied button.
+     *
+     * @param button the button to style
+     * @param primary the primary value
+     * @param dark whether dark-mode styling should be applied
+     */
     public static void styleButton(AbstractButton button, boolean primary, boolean dark) {
         Theme theme = dark ? DARK_THEME : LIGHT_THEME;
         Color base = primary ? theme.primaryBg : theme.buttonBg;
@@ -354,10 +694,21 @@ public class AppDialogThemeHelper {
         button.addMouseListener(new DialogButtonHoverListener(button, base, hover, pressed));
     }
 
+    /**
+     * Applies shared styling to the supplied table.
+     *
+     * @param table the table to style
+     */
     public static void styleTable(JTable table) {
         styleTable(table, false);
     }
 
+    /**
+     * Applies shared styling to the supplied table.
+     *
+     * @param table the table to style
+     * @param dark whether dark-mode styling should be applied
+     */
     public static void styleTable(JTable table, boolean dark) {
         Theme theme = dark ? DARK_THEME : LIGHT_THEME;
         table.setFont(BODY_FONT);
@@ -376,10 +727,21 @@ public class AppDialogThemeHelper {
         header.setReorderingAllowed(false);
     }
 
+    /**
+     * Applies shared styling to the supplied scroll pane.
+     *
+     * @param scrollPane the scroll pane to style
+     */
     public static void styleScrollPane(JScrollPane scrollPane) {
         styleScrollPane(scrollPane, false);
     }
 
+    /**
+     * Applies shared styling to the supplied scroll pane.
+     *
+     * @param scrollPane the scroll pane to style
+     * @param dark whether dark-mode styling should be applied
+     */
     public static void styleScrollPane(JScrollPane scrollPane, boolean dark) {
         Theme theme = dark ? DARK_THEME : LIGHT_THEME;
         scrollPane.setOpaque(false);
@@ -392,14 +754,46 @@ public class AppDialogThemeHelper {
         scrollPane.getHorizontalScrollBar().setBackground(theme.scrollTrack);
     }
 
+    /**
+     * Shows a themed confirmation dialog for the supplied content.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     * @param title the title text to use
+     * @param content the content component to show
+     *
+     * @return the resulting numeric value
+     */
     public static int showConfirmDialog(Component parent, String title, JComponent content) {
         return showConfirmDialog(parent, title, content, "OK", "Cancel", null);
     }
 
+    /**
+     * Shows a themed confirmation dialog for the supplied content.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     * @param title the title text to use
+     * @param content the content component to show
+     * @param okText the label for the affirmative action button
+     * @param cancelText the label for the cancel action button
+     *
+     * @return the resulting numeric value
+     */
     public static int showConfirmDialog(Component parent, String title, JComponent content, String okText, String cancelText) {
         return showConfirmDialog(parent, title, content, okText, cancelText, null);
     }
 
+    /**
+     * Shows a themed confirmation dialog for the supplied content.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     * @param title the title text to use
+     * @param content the content component to show
+     * @param okText the label for the affirmative action button
+     * @param cancelText the label for the cancel action button
+     * @param minimumSize the minimum size value
+     *
+     * @return the resulting numeric value
+     */
     public static int showConfirmDialog(Component parent, String title, JComponent content, String okText, String cancelText,
                                         Dimension minimumSize) {
         final int[] result = {JOptionPane.CANCEL_OPTION};
@@ -429,11 +823,33 @@ public class AppDialogThemeHelper {
         return result[0];
     }
 
+    /**
+     * Shows a themed option dialog and returns the selected option index.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     * @param title the title text to use
+     * @param message the message text to display
+     * @param options the option labels to display
+     * @param defaultIndex the default index value
+     *
+     * @return the resulting numeric value
+     */
     public static int showOptionDialog(Component parent, String title, String message, String[] options, int defaultIndex) {
         JComponent content = buildMessageContent(message, isDark(parent));
         return showOptionDialog(parent, title, content, options, defaultIndex);
     }
 
+    /**
+     * Shows a themed option dialog and returns the selected option index.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     * @param title the title text to use
+     * @param content the content component to show
+     * @param options the option labels to display
+     * @param defaultIndex the default index value
+     *
+     * @return the resulting numeric value
+     */
     public static int showOptionDialog(Component parent, String title, JComponent content, String[] options, int defaultIndex) {
         final int[] result = {JOptionPane.CLOSED_OPTION};
         boolean dark = isDark(parent);
@@ -462,6 +878,16 @@ public class AppDialogThemeHelper {
         return result[0];
     }
 
+    /**
+     * Shows a themed input dialog and returns the entered text.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     * @param title the title text to use
+     * @param prompt the prompt value
+     * @param initialValue the initial text value
+     *
+     * @return the resulting string value
+     */
     public static String showInputDialog(Component parent, String title, String prompt, String initialValue) {
         boolean dark = isDark(parent);
         JTextField field = new JTextField(initialValue == null ? "" : initialValue, 24);
@@ -481,6 +907,14 @@ public class AppDialogThemeHelper {
         return field.getText();
     }
 
+    /**
+     * Shows a themed message dialog for the supplied message content.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     * @param title the title text to use
+     * @param message the message text to display
+     * @param messageType the {@link JOptionPane} message type to use
+     */
     public static void showMessageDialog(Component parent, String title, String message, int messageType) {
         boolean dark = isDark(parent);
         Theme theme = getTheme(parent);
@@ -503,6 +937,13 @@ public class AppDialogThemeHelper {
         dialog.setVisible(true);
     }
 
+    /**
+     * Shows a themed dialog that wraps a custom content component.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     * @param title the title text to use
+     * @param content the content component to show
+     */
     public static void showContentDialog(Component parent, String title, JComponent content) {
         boolean dark = isDark(parent);
         JDialog dialog = createDialog(parent, title, dark);
@@ -516,6 +957,14 @@ public class AppDialogThemeHelper {
         dialog.setVisible(true);
     }
 
+    /**
+     * Builds message content.
+     *
+     * @param message the message text to display
+     * @param dark whether dark-mode styling should be applied
+     *
+     * @return the resulting value
+     */
     private static JPanel buildMessageContent(String message, boolean dark) {
         Theme theme = dark ? DARK_THEME : LIGHT_THEME;
         JTextArea area = new JTextArea(message == null ? "" : message);
@@ -534,6 +983,15 @@ public class AppDialogThemeHelper {
         return wrapper;
     }
 
+    /**
+     * Creates dialog.
+     *
+     * @param parent the parent component used for ownership and theme lookup
+     * @param title the title text to use
+     * @param dark whether dark-mode styling should be applied
+     *
+     * @return the resulting value
+     */
     private static JDialog createDialog(Component parent, String title, boolean dark) {
         Theme theme = dark ? DARK_THEME : LIGHT_THEME;
         Window owner = parent instanceof Window ? (Window) parent : SwingUtilities.getWindowAncestor(parent);
@@ -552,26 +1010,35 @@ public class AppDialogThemeHelper {
         return dialog;
     }
 
+    /**
+     * Builds the shared helper-dialog shell used to display themed content.
+     *
+     * @param title the title text to use
+     * @param subtitle the subtitle value
+     * @param content the content component to show
+     * @param dark whether dark-mode styling should be applied
+     * @param buttons the buttons value
+     *
+     * @return the resulting value
+     */
     private static JPanel buildDialogShell(String title, JComponent subtitle, JComponent content, boolean dark, JComponent... buttons) {
         Theme theme = dark ? DARK_THEME : LIGHT_THEME;
-        JPanel root = new HexPatternPanel(theme, new BorderLayout(0, 14));
+        JPanel root = new HexPatternPanel(theme, new BorderLayout(0, 10));
         root.setBorder(new EmptyBorder(18, 18, 18, 18));
 
-        JPanel headerTextPanel = createSurfacePanel(new BorderLayout(0, 6), dark);
+        JPanel headerTextPanel = createSurfacePanel(new BorderLayout(0, 3), dark);
         headerTextPanel.setOpaque(false);
         headerTextPanel.add(createSectionTitle(title, dark), BorderLayout.NORTH);
         if (subtitle != null) {
             headerTextPanel.add(subtitle, BorderLayout.CENTER);
         }
 
-        JPanel dividerBar = new JPanel();
-        dividerBar.setPreferredSize(new Dimension(10, 12));
-        dividerBar.setBackground(theme.dividerBar);
-        dividerBar.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, theme.softBorder));
+        JComponent dividerBar = new RoundedDividerBar(theme);
+        dividerBar.setPreferredSize(new Dimension(10, 6));
 
-        JPanel header = createSurfacePanel(new BorderLayout(0, 10), dark);
+        JPanel header = createSurfacePanel(new BorderLayout(0, 4), dark);
         header.setOpaque(false);
-        header.setBorder(new EmptyBorder(0, 0, 2, 0));
+        header.setBorder(new EmptyBorder(0, 0, 0, 0));
         header.add(headerTextPanel, BorderLayout.NORTH);
         header.add(dividerBar, BorderLayout.SOUTH);
         root.add(header, BorderLayout.NORTH);
@@ -592,12 +1059,26 @@ public class AppDialogThemeHelper {
         return root;
     }
 
+    /**
+     * Creates dialog button.
+     *
+     * @param text the text value
+     * @param primary the primary value
+     * @param dark whether dark-mode styling should be applied
+     *
+     * @return the resulting value
+     */
     private static JButton createDialogButton(String text, boolean primary, boolean dark) {
         JButton button = new JButton(text);
         styleButton(button, primary, dark);
         return button;
     }
 
+    /**
+     * Performs the install escape to close operation.
+     *
+     * @param dialog the dialog value
+     */
     private static void installEscapeToClose(JDialog dialog) {
         JRootPane rootPane = dialog.getRootPane();
         rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
@@ -610,6 +1091,13 @@ public class AppDialogThemeHelper {
         });
     }
 
+    /**
+     * Performs the message type to text operation.
+     *
+     * @param messageType the {@link JOptionPane} message type to use
+     *
+     * @return the resulting string value
+     */
     private static String messageTypeToText(int messageType) {
         return switch (messageType) {
             case JOptionPane.ERROR_MESSAGE -> "Something needs attention";
@@ -618,6 +1106,42 @@ public class AppDialogThemeHelper {
         };
     }
 
+
+    /**
+     * Provides functionality for rounded divider bar.
+     */
+    private static class RoundedDividerBar extends JComponent {
+        private final Theme theme;
+
+        private RoundedDividerBar(Theme theme) {
+            this.theme = theme;
+            setOpaque(false);
+        }
+
+        /**
+         * Performs the paint component operation.
+         *
+         * @param g the graphics context used for painting
+         */
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            int width = Math.max(0, getWidth() - 2);
+            int height = Math.max(0, getHeight() - 1);
+            int arc = Math.max(height, 6);
+
+            g2.setColor(theme.dividerBar);
+            g2.fillRoundRect(1, 0, width, height, arc, arc);
+            g2.dispose();
+        }
+    }
+
+    /**
+     * Provides functionality for dialog button hover listener.
+     */
     private static class DialogButtonHoverListener extends MouseAdapter {
         private final AbstractButton button;
         private final Color base;
@@ -631,6 +1155,11 @@ public class AppDialogThemeHelper {
             this.pressed = pressed;
         }
 
+        /**
+         * Performs the mouse entered operation.
+         *
+         * @param e the event instance that triggered the callback
+         */
         @Override
         public void mouseEntered(MouseEvent e) {
             if (button.isEnabled()) {
@@ -638,11 +1167,21 @@ public class AppDialogThemeHelper {
             }
         }
 
+        /**
+         * Performs the mouse exited operation.
+         *
+         * @param e the event instance that triggered the callback
+         */
         @Override
         public void mouseExited(MouseEvent e) {
             button.setBackground(base);
         }
 
+        /**
+         * Performs the mouse pressed operation.
+         *
+         * @param e the event instance that triggered the callback
+         */
         @Override
         public void mousePressed(MouseEvent e) {
             if (button.isEnabled()) {
@@ -650,6 +1189,11 @@ public class AppDialogThemeHelper {
             }
         }
 
+        /**
+         * Performs the mouse released operation.
+         *
+         * @param e the event instance that triggered the callback
+         */
         @Override
         public void mouseReleased(MouseEvent e) {
             if (button.isEnabled()) {
@@ -658,6 +1202,9 @@ public class AppDialogThemeHelper {
         }
     }
 
+    /**
+     * Provides functionality for hex pattern panel.
+     */
     private static class HexPatternPanel extends JPanel {
         private final Theme theme;
 
@@ -668,6 +1215,11 @@ public class AppDialogThemeHelper {
             setBackground(theme.windowBg);
         }
 
+        /**
+         * Performs the paint component operation.
+         *
+         * @param g the graphics context used for painting
+         */
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -696,6 +1248,15 @@ public class AppDialogThemeHelper {
             g2.dispose();
         }
 
+        /**
+         * Creates hexagon.
+         *
+         * @param x the x value
+         * @param y the y value
+         * @param size the size value
+         *
+         * @return the resulting value
+         */
         private Polygon createHexagon(int x, int y, int size) {
             int[] xs = {
                     x + size / 2,
@@ -718,6 +1279,9 @@ public class AppDialogThemeHelper {
         }
     }
 
+    /**
+     * Provides functionality for rounded scroll bar ui.
+     */
     private static class RoundedScrollBarUI extends BasicScrollBarUI {
         private final Theme theme;
 
@@ -725,12 +1289,22 @@ public class AppDialogThemeHelper {
             this.theme = theme;
         }
 
+        /**
+         * Performs the configure scroll bar colors operation.
+         */
         @Override
         protected void configureScrollBarColors() {
             trackColor = theme.scrollTrack;
             thumbColor = theme.scrollThumb;
         }
 
+        /**
+         * Performs the paint track operation.
+         *
+         * @param g the graphics context used for painting
+         * @param c the c value
+         * @param trackBounds the track bounds value
+         */
         @Override
         protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
             Graphics2D g2 = (Graphics2D) g.create();
@@ -739,6 +1313,13 @@ public class AppDialogThemeHelper {
             g2.dispose();
         }
 
+        /**
+         * Performs the paint thumb operation.
+         *
+         * @param g the graphics context used for painting
+         * @param c the c value
+         * @param thumbBounds the thumb bounds value
+         */
         @Override
         protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
             if (thumbBounds == null || thumbBounds.width <= 0 || thumbBounds.height <= 0) {
@@ -753,16 +1334,35 @@ public class AppDialogThemeHelper {
             g2.dispose();
         }
 
+        /**
+         * Creates decrease button.
+         *
+         * @param orientation the orientation value
+         *
+         * @return the resulting value
+         */
         @Override
         protected JButton createDecreaseButton(int orientation) {
             return zeroButton();
         }
 
+        /**
+         * Creates increase button.
+         *
+         * @param orientation the orientation value
+         *
+         * @return the resulting value
+         */
         @Override
         protected JButton createIncreaseButton(int orientation) {
             return zeroButton();
         }
 
+        /**
+         * Performs the zero button operation.
+         *
+         * @return the resulting value
+         */
         private JButton zeroButton() {
             JButton button = new JButton();
             button.setPreferredSize(new Dimension(0, 0));
