@@ -42,6 +42,22 @@ class GameService {
         return normalized;
     }
 
+    _isValidGame(game) {
+        return Boolean(
+            game.title &&
+            game.year &&
+            game.genre &&
+            game.image &&
+            game.description &&
+            game.releaseDate &&
+            game.ageRating &&
+            Array.isArray(game.platforms) &&
+            game.platforms.length > 0 &&
+            typeof game.price === "number" &&
+            !Number.isNaN(game.price)
+        );
+    }
+
     getAll() {
         return this._readGames();
     }
@@ -49,19 +65,7 @@ class GameService {
     add(gameOrTitle, year, genre, imagePath) {
         const game = this._normalizeGame(gameOrTitle, year, genre, imagePath);
 
-        if (
-            !game.title ||
-            !game.year ||
-            !game.genre ||
-            !game.image ||
-            !game.description ||
-            !game.releaseDate ||
-            !game.ageRating ||
-            !Array.isArray(game.platforms) ||
-            game.platforms.length === 0 ||
-            typeof game.price !== "number" ||
-            Number.isNaN(game.price)
-        ) {
+        if (!this._isValidGame(game)) {
             return { success: false, message: "All fields are required." };
         }
 
@@ -70,6 +74,31 @@ class GameService {
         this._writeGames(games);
 
         return { success: true, message: "Game added!", game };
+    }
+
+    update(title, updates = {}) {
+        if (!title) {
+            return { success: false, message: "Title is required." };
+        }
+
+        const normalizedUpdates = this._normalizeGame(updates);
+        const games = this._readGames();
+        const index = games.findIndex(game => game.title === title);
+
+        if (index === -1) {
+            return { success: false, message: "Game not found." };
+        }
+
+        const updatedGame = { ...games[index], ...normalizedUpdates };
+
+        if (!this._isValidGame(updatedGame)) {
+            return { success: false, message: "All fields are required." };
+        }
+
+        games[index] = updatedGame;
+        this._writeGames(games);
+
+        return { success: true, message: "Game updated.", game: updatedGame };
     }
 
     delete(title) {

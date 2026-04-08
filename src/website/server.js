@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
 
@@ -42,6 +43,20 @@ const upload = multer({
     }
 });
 
+function parsePlatforms(value) {
+    try {
+        return {
+            success: true,
+            platforms: JSON.parse(value || "[]")
+        };
+    } catch {
+        return {
+            success: false,
+            message: "Platforms must be a valid list."
+        };
+    }
+}
+
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "views/index.html"));
 });
@@ -68,12 +83,10 @@ app.get("/games", (req, res) => {
 
 app.post("/games", upload.single("image"), (req, res) => {
     const { title, year, genre, description, ageRating, releaseDate, price } = req.body;
-    let platforms;
+    const parsedPlatforms = parsePlatforms(req.body.platforms);
 
-    try {
-        platforms = JSON.parse(req.body.platforms || "[]");
-    } catch {
-        return res.status(400).json({ success: false, message: "Platforms must be a valid list." });
+    if (!parsedPlatforms.success) {
+        return res.status(400).json(parsedPlatforms);
     }
 
     if (!req.file) {
@@ -86,13 +99,70 @@ app.post("/games", upload.single("image"), (req, res) => {
         year,
         genre,
         description,
-        platforms,
+        platforms: parsedPlatforms.platforms,
         ageRating,
         releaseDate,
         price: Number(price),
         image: imagePath
     });
     res.status(result.success ? 200 : 400).json(result);
+});
+
+app.put("/games/:title", upload.single("image"), (req, res) => {
+    const originalTitle = decodeURIComponent(req.params.title);
+    const existingGame = gameService.getAll().find(game => game.title === originalTitle);
+
+    if (!existingGame) {
+        return res.status(404).json({ success: false, message: "Game not found." });
+    }
+
+    const parsedPlatforms = parsePlatforms(req.body.platforms);
+
+    if (!parsedPlatforms.success) {
+        return res.status(400).json(parsedPlatforms);
+    }
+
+    const updates = {
+        title: req.body.title,
+        year: req.body.year,
+        genre: req.body.genre,
+        description: req.body.description,
+        platforms: parsedPlatforms.platforms,
+        ageRating: req.body.ageRating,
+        releaseDate: req.body.releaseDate,
+        price: Number(req.body.price),
+        video: req.body.video
+    };
+
+    if (req.file) {
+        updates.image = `/images/${req.file.filename}`;
+    }
+
+    const result = gameService.update(originalTitle, updates);
+
+    if (!result.success) {
+        if (req.file) {
+            const uploadedImagePath = path.join(IMAGES_DIR, req.file.filename);
+            if (fs.existsSync(uploadedImagePath)) {
+                fs.unlinkSync(uploadedImagePath);
+            }
+        }
+        return res.status(400).json(result);
+    }
+
+    if (
+        req.file &&
+        existingGame.image &&
+        existingGame.image !== result.game.image &&
+        existingGame.image.startsWith("/images/")
+    ) {
+        const previousImagePath = path.join(IMAGES_DIR, path.basename(existingGame.image));
+        if (fs.existsSync(previousImagePath)) {
+            fs.unlinkSync(previousImagePath);
+        }
+    }
+
+    res.json(result);
 });
 
 app.delete("/games/:title", (req, res) => {

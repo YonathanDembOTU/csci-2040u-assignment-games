@@ -96,13 +96,13 @@
                 <textarea id="description" name="description" placeholder="A short summary of the game" required></textarea>
             </div>
             <div class="form-group">
-                <label for="image">Cover Image</label>
+                <label for="image" id="imageLabel">Cover Image</label>
                 <div class="file-drop-zone" id="dropZone">
                     <input type="file" id="image" name="image" accept="image/*" required>
                     <div class="drop-content" id="dropContent">
                         <span class="drop-icon">Game</span>
                         <span class="drop-text">Click or drag an image here</span>
-                        <span class="drop-hint">JPG, PNG, WebP up to 10MB</span>
+                        <span class="drop-hint" id="imageHint">JPG, PNG, WebP up to 10MB</span>
                     </div>
                     <img id="imagePreview" class="image-preview" alt="Preview" style="display:none;">
                 </div>
@@ -195,6 +195,15 @@ const overlay = document.getElementById("modalOverlay");
 const openBtn = document.getElementById("openModalBtn");
 const closeBtn = document.getElementById("closeModalBtn");
 const modalMsg = document.getElementById("modalMessage");
+const addGameForm = document.getElementById("addGameForm");
+const modalTitle = document.querySelector("#modalOverlay .modal-header h2");
+const submitBtn = document.getElementById("submitBtn");
+const imageInput = document.getElementById("image");
+const imagePreview = document.getElementById("imagePreview");
+const dropContent = document.getElementById("dropContent");
+const dropZone = document.getElementById("dropZone");
+const imageLabel = document.getElementById("imageLabel");
+const imageHint = document.getElementById("imageHint");
 const detailsOverlay = document.getElementById("detailsOverlay");
 const closeDetailsBtn = document.getElementById("closeDetailsBtn");
 const detailsImage = document.getElementById("detailsImage");
@@ -207,11 +216,10 @@ const detailsPrice = document.getElementById("detailsPrice");
 const detailsVideoSection = document.getElementById("detailsVideoSection");
 const detailsVideo = document.getElementById("detailsVideo");
 const detailsDescription = document.getElementById("detailsDescription");
+let editingTitle = null;
 
 openBtn?.addEventListener("click", () => {
-    overlay.classList.add("active");
-    modalMsg.textContent = "";
-    modalMsg.className = "message";
+    openCreateModal();
 });
 
 closeBtn.addEventListener("click", closeModal);
@@ -233,9 +241,54 @@ document.addEventListener("keydown", (e) => {
 
 function closeModal() {
     overlay.classList.remove("active");
-    document.getElementById("addGameForm").reset();
-    document.getElementById("imagePreview").style.display = "none";
-    document.getElementById("dropContent").style.display = "flex";
+    resetGameForm();
+}
+
+function resetGameForm() {
+    editingTitle = null;
+    addGameForm.reset();
+    modalTitle.textContent = "Add Game";
+    submitBtn.textContent = "Add Game";
+    submitBtn.disabled = false;
+    modalMsg.textContent = "";
+    modalMsg.className = "message";
+    imageInput.required = true;
+    imageLabel.textContent = "Cover Image";
+    imageHint.textContent = "JPG, PNG, WebP up to 10MB";
+    imagePreview.removeAttribute("src");
+    imagePreview.style.display = "none";
+    dropContent.style.display = "flex";
+}
+
+function openCreateModal() {
+    resetGameForm();
+    overlay.classList.add("active");
+}
+
+function openEditModal(game) {
+    resetGameForm();
+    editingTitle = game.title;
+    modalTitle.textContent = `Edit ${game.title}`;
+    submitBtn.textContent = "Save Changes";
+    imageInput.required = false;
+    imageHint.textContent = "Upload a new image to replace the current cover.";
+
+    document.getElementById("title").value = game.title || "";
+    document.getElementById("year").value = game.year || "";
+    document.getElementById("genre").value = game.genre || "";
+    document.getElementById("releaseDate").value = game.releaseDate || "";
+    document.getElementById("ageRating").value = game.ageRating || "";
+    document.getElementById("platforms").value = Array.isArray(game.platforms) ? game.platforms.join(", ") : "";
+    document.getElementById("price").value = Number.isFinite(Number(game.price)) ? Number(game.price) : "";
+    document.getElementById("description").value = game.description || "";
+
+    if (game.image) {
+        imagePreview.src = game.image;
+        imagePreview.style.display = "block";
+        dropContent.style.display = "none";
+    }
+
+    overlay.classList.add("active");
 }
 
 function openDetails(game) {
@@ -407,14 +460,26 @@ function toYouTubeEmbedUrl(url) {
     return "";
 }
 
-const imageInput = document.getElementById("image");
-const imagePreview = document.getElementById("imagePreview");
-const dropContent = document.getElementById("dropContent");
-const dropZone = document.getElementById("dropZone");
-
 imageInput.addEventListener("change", () => {
     const file = imageInput.files[0];
-    if (file) showPreview(file);
+    if (file) {
+        showPreview(file);
+        return;
+    }
+
+    if (editingTitle) {
+        const currentGame = allGames.find(game => game.title === editingTitle);
+        if (currentGame?.image) {
+            imagePreview.src = currentGame.image;
+            imagePreview.style.display = "block";
+            dropContent.style.display = "none";
+            return;
+        }
+    }
+
+    imagePreview.removeAttribute("src");
+    imagePreview.style.display = "none";
+    dropContent.style.display = "flex";
 });
 
 dropZone.addEventListener("dragover", (e) => {
@@ -450,12 +515,11 @@ function showPreview(file) {
     reader.readAsDataURL(file);
 }
 
-document.getElementById("addGameForm").addEventListener("submit", async (e) => {
+addGameForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const submitBtn = document.getElementById("submitBtn");
     submitBtn.disabled = true;
-    submitBtn.textContent = "Adding...";
+    submitBtn.textContent = editingTitle ? "Saving..." : "Adding...";
 
     modalMsg.textContent = "";
     modalMsg.className = "message";
@@ -470,19 +534,25 @@ document.getElementById("addGameForm").addEventListener("submit", async (e) => {
     formData.append("platforms", JSON.stringify(platforms));
 
     try {
-        const res = await fetch("/games", { method: "POST", body: formData });
+        const url = editingTitle ? `/games/${encodeURIComponent(editingTitle)}` : "/games";
+        const method = editingTitle ? "PUT" : "POST";
+        const res = await fetch(url, { method, body: formData });
         const data = await res.json();
 
         if (data.success) {
-            modalMsg.textContent = "Game added successfully!";
+            modalMsg.textContent = editingTitle ? "Game updated successfully!" : "Game added successfully!";
             modalMsg.className = "message success";
 
-            allGames.unshift(data.game);
+            if (editingTitle) {
+                allGames = allGames.map(game => game.title === editingTitle ? data.game : game);
+            } else {
+                allGames.unshift(data.game);
+            }
             renderPlatformFilters(allGames);
             applyFiltersAndSort();
             setTimeout(closeModal, 1200);
         } else {
-            modalMsg.textContent = data.message || "Failed to add game.";
+            modalMsg.textContent = data.message || `Failed to ${editingTitle ? "update" : "add"} game.`;
             modalMsg.className = "message error";
         }
     } catch (err) {
@@ -490,7 +560,7 @@ document.getElementById("addGameForm").addEventListener("submit", async (e) => {
         modalMsg.className = "message error";
     } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = "Add Game";
+        submitBtn.textContent = editingTitle ? "Save Changes" : "Add Game";
     }
 });
 
@@ -527,7 +597,7 @@ function createGameCard(game) {
 
     div.innerHTML = `
         <img src="${game.image}" alt="${game.title}">
-        ${isAdmin ? `<button class="delete-btn" title="Delete game">X</button>` : ""}
+        ${isAdmin ? `<div class="game-actions"><button class="edit-btn" title="Edit game">Edit</button><button class="delete-btn" title="Delete game">X</button></div>` : ""}
         <div class="game-info">
             <div class="game-title">${game.title}</div>
             <div class="game-meta">${game.year} • ${game.genre}</div>
@@ -547,6 +617,12 @@ function createGameCard(game) {
     });
 
     if (isAdmin) {
+        div.querySelector(".edit-btn")
+            .addEventListener("click", (e) => {
+                e.stopPropagation();
+                openEditModal(game);
+            });
+
         div.querySelector(".delete-btn")
             .addEventListener("click", (e) => {
                 e.stopPropagation();

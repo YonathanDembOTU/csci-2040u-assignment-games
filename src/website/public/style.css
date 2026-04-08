@@ -483,16 +483,22 @@ select:focus {
 }
 
 /* hidden delete button (shown on hover) */
-.delete-btn {
+.game-actions {
     position: absolute;
     top: 8px;
     right: 8px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+
+.edit-btn,
+.delete-btn {
     width: 28px;
     height: 28px;
     padding: 0;
     margin: 0;
     border-radius: 50%;
-    background: rgba(255, 71, 87, 0.85);
     color: white;
     font-size: 12px;
     line-height: 1;
@@ -507,10 +513,28 @@ select:focus {
     justify-content: center;
 }
 
+.edit-btn {
+    width: auto;
+    min-width: 56px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(52, 152, 219, 0.9);
+}
+
+.delete-btn {
+    background: rgba(255, 71, 87, 0.85);
+}
+
 /* show delete button on hover */
+.game:hover .edit-btn,
 .game:hover .delete-btn {
     opacity: 1;
     transform: scale(1);
+}
+
+.edit-btn:hover {
+    background: #3498db !important;
+    transform: scale(1.05) !important;
 }
 
 .delete-btn:hover {
