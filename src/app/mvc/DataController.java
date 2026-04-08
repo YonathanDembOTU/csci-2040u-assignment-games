@@ -7,7 +7,13 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -16,16 +22,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
+/**
+ * Coordinates interactions between the model, the main view, authentication state, and RAWG-backed import helpers.
+ */
 public class DataController {
-    // Main model, view, and current logged-in session
+    // Multi-platform values are stored inside one CSV cell using | as a separator.
+    private static final String MULTI_VALUE_SEPARATOR = "|";
+
     private final DataModel model;
     private final DataView view;
     private final AuthManager.UserSession session;
 
-    // Tracks whether all columns are currently shown
     private boolean showingAllColumns = false;
-
-    // Stores the real model row indexes for currently visible rows
+    /**
+     * Performs the data controller operation.
+     *
+     * @param model the data model used by the controller
+     * @param view the main window managed by the controller
+     * @param session the authenticated user session to launch the main interface with
+     *
+     * @return the resulting value
+     */
     private final List<Integer> visibleRowIndexes = new ArrayList<>();
 
     public DataController(DataModel model, DataView view, AuthManager.UserSession session) {
@@ -41,8 +58,7 @@ public class DataController {
     }
 
     /**
-     * Connects the basic search field, advanced filters,
-     * clear button, and advanced search toggle button.
+     * Sets up search and filter ui.
      */
     private void setupSearchAndFilterUI() {
         view.searchField.getDocument().addDocumentListener(new DocumentListener() {
@@ -77,7 +93,9 @@ public class DataController {
     }
 
     /**
-     * Launches the main UI after a successful login or guest entry.
+     * Creates the main view and controller on the Swing event dispatch thread.
+     *
+     * @param session the authenticated user session to launch the main interface with
      */
     public static void launchMainUI(AuthManager.UserSession session) {
         SwingUtilities.invokeLater(() -> {
@@ -88,21 +106,22 @@ public class DataController {
     }
 
     /**
-     * Updates the window title depending on the current user role.
+     * Updates the main window title to reflect the current authenticated role.
      */
     private void updateWindowTitle() {
         String title = "Turn for Turn Co. - Database Editor";
-        if (session.isAdmin())
+        if (session.isAdmin()) {
             title += " [Admin]";
-        else if (session.isPublisher())
+        } else if (session.isPublisher()) {
             title += " [Publisher: " + session.getPublisherName() + "]";
-        else
+        } else {
             title += " [Guest]";
+        }
         view.setTitle(title);
     }
 
     /**
-     * Enables or disables buttons based on user permissions.
+     * Applies the current session permissions to the main view controls.
      */
     private void applyPermissionsToView() {
         view.toggleColumnsBtn.setEnabled(true);
@@ -120,7 +139,7 @@ public class DataController {
     }
 
     /**
-     * Loads the CSV file into the model and refreshes the UI.
+     * Loads the application CSV file and initializes the visible table state.
      */
     private void loadFile() {
         File dataFile = new File("data/data.csv");
@@ -138,11 +157,12 @@ public class DataController {
             applyPermissionsToView();
         } catch (IOException e) {
             view.setInteractionEnabled(false);
+            JOptionPane.showMessageDialog(view, "Could not load data.csv.");
         }
     }
 
     /**
-     * Fills the search and filter combo boxes using CSV data.
+     * Populates the searchable columns and filter combo boxes from the loaded data.
      */
     private void populateSearchControls() {
         String[] columns = model.getColumns();
@@ -166,9 +186,14 @@ public class DataController {
     }
 
     /**
-     * Adds unique values from one CSV column into one filter combo box.
+     * Populates a filter combo box with the distinct values found in the requested column.
+     *
+     * @param combo the combo box to populate or inspect
+     * @param columnName the column name to search for or populate from
      */
     private void populateFilterCombo(JComboBox<String> combo, String columnName) {
+        String previous = (String) combo.getSelectedItem();
+
         combo.removeAllItems();
         combo.addItem("All");
 
@@ -180,12 +205,14 @@ public class DataController {
         TreeSet<String> values = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         for (int rowIndex = 0; rowIndex < model.getRowCount(); rowIndex++) {
             String[] row = model.getRow(rowIndex);
-            if (!canViewRow(row))
+            if (!canViewRow(row)) {
                 continue;
+            }
 
-            String value = row[columnIndex].trim();
-            if (!value.isEmpty()) {
-                values.add(value);
+            for (String value : splitMultiValueCell(row[columnIndex])) {
+                if (!value.isEmpty()) {
+                    values.add(value);
+                }
             }
         }
 
@@ -193,11 +220,18 @@ public class DataController {
             combo.addItem(value);
         }
 
-        combo.setSelectedIndex(0);
+        if (previous != null) {
+            selectComboValue(combo, previous);
+        } else {
+            combo.setSelectedIndex(0);
+        }
     }
 
     /**
-     * Selects a combo box item if that value exists.
+     * Selects the requested combo-box value when it is available.
+     *
+     * @param combo the combo box to populate or inspect
+     * @param desiredValue the value that should be selected when available
      */
     private void selectComboValue(JComboBox<String> combo, String desiredValue) {
         for (int i = 0; i < combo.getItemCount(); i++) {
@@ -214,7 +248,7 @@ public class DataController {
     }
 
     /**
-     * Resets search text and all advanced filters back to defaults.
+     * Clears all active search text and filter selections.
      */
     private void clearAllFilters() {
         view.searchField.setText("");
@@ -232,12 +266,13 @@ public class DataController {
     }
 
     /**
-     * Rebuilds the visible table based on current filters and permissions.
+     * Rebuilds the visible table data based on search text, filters, permissions, and column mode.
      */
     private void refreshVisibleTable() {
         String[] allColumns = model.getColumns();
         if (allColumns == null || allColumns.length == 0) {
             view.setTableData(new Object[0][0], new String[0]);
+            view.setSearchStatus(0, 0, view.searchField.getText().trim());
             return;
         }
 
@@ -253,6 +288,7 @@ public class DataController {
 
         String[] visibleColumns = new String[visibleIndexes.length];
         List<Object[]> visibleRows = new ArrayList<>();
+        int accessibleTotal = 0;
 
         for (int i = 0; i < visibleIndexes.length; i++) {
             visibleColumns[i] = allColumns[visibleIndexes[i]];
@@ -261,24 +297,36 @@ public class DataController {
         for (int rowIndex = 0; rowIndex < model.getRowCount(); rowIndex++) {
             String[] fullRow = model.getRow(rowIndex);
 
-            if (!canViewRow(fullRow))
+            if (!canViewRow(fullRow)) {
                 continue;
-            if (!matchesTextFilter(fullRow, filterColIdx, filterText))
+            }
+
+            accessibleTotal++;
+
+            if (!matchesTextFilter(fullRow, filterColIdx, filterText)) {
                 continue;
-            if (!matchesComboFilter(fullRow, "Genre", view.genreFilterCombo))
+            }
+            if (!matchesComboFilter(fullRow, "Genre", view.genreFilterCombo)) {
                 continue;
-            if (!matchesComboFilter(fullRow, "ESRBRating", view.ratingFilterCombo))
+            }
+            if (!matchesComboFilter(fullRow, "ESRBRating", view.ratingFilterCombo)) {
                 continue;
-            if (!matchesComboFilter(fullRow, "Platform", view.platformFilterCombo))
+            }
+            if (!matchesComboFilter(fullRow, "Platform", view.platformFilterCombo)) {
                 continue;
-            if (!matchesComboFilter(fullRow, "Multiplayer", view.multiplayerFilterCombo))
+            }
+            if (!matchesComboFilter(fullRow, "Multiplayer", view.multiplayerFilterCombo)) {
                 continue;
-            if (!matchesComboFilter(fullRow, "SinglePlayer", view.singlePlayerFilterCombo))
+            }
+            if (!matchesComboFilter(fullRow, "SinglePlayer", view.singlePlayerFilterCombo)) {
                 continue;
+            }
 
             Object[] visibleRow = new Object[visibleIndexes.length];
             for (int col = 0; col < visibleIndexes.length; col++) {
-                visibleRow[col] = fullRow[visibleIndexes[col]];
+                String columnName = visibleColumns[col];
+                String rawValue = fullRow[visibleIndexes[col]];
+                visibleRow[col] = formatDisplayValue(columnName, rawValue);
             }
 
             visibleRows.add(visibleRow);
@@ -293,22 +341,81 @@ public class DataController {
         view.setTableData(visibleData, visibleColumns);
         view.resizeColumnsToFitContent();
         view.fitWindowToTable(showingAllColumns);
-        view.toggleColumnsBtn.setText(showingAllColumns ? "Show Less" : "Show More");
-        view.setTitle(view.getTitle().split(" \\| ")[0] + " | Showing " + visibleRows.size() + " games");
+        view.toggleColumnsBtn.setText(showingAllColumns ? "▥ Show Less" : "▤ Show More");
+        view.setSearchStatus(visibleRows.size(), accessibleTotal, view.searchField.getText().trim());
+        updateWindowTitle();
+    }
+
+
+    /**
+     * Formats a stored cell value for presentation in the visible table.
+     *
+     * @param columnName the column name to search for or populate from
+     * @param rawValue the stored raw value
+     *
+     * @return the resulting string value
+     */
+    private String formatDisplayValue(String columnName, String rawValue) {
+        if (rawValue == null) {
+            return "";
+        }
+
+        if ("Platform".equalsIgnoreCase(columnName)) {
+            String[] parts = splitMultiValueCell(rawValue);
+            if (parts.length <= 1) {
+                return rawValue;
+            }
+
+            StringBuilder html = new StringBuilder("<html>");
+            for (int i = 0; i < parts.length; i++) {
+                if (i > 0) {
+                    html.append("<br>");
+                }
+                html.append(parts[i]);
+            }
+            html.append("</html>");
+            return html.toString();
+        }
+
+        return rawValue;
     }
 
     /**
-     * Checks whether a row matches the current search text.
+     * Determines whether the supplied row matches the current text filter.
+     *
+     * @param row the row values involved in the operation
+     * @param filterColIdx the index of the column being filtered
+     * @param filterText the normalized filter text
+     *
+     * @return {@code true} when the requested condition is met; otherwise {@code false}
      */
     private boolean matchesTextFilter(String[] row, int filterColIdx, String filterText) {
         if (filterText.isEmpty() || filterColIdx == -1) {
             return true;
         }
-        return row[filterColIdx].toLowerCase().contains(filterText);
+
+        String rawValue = row[filterColIdx] == null ? "" : row[filterColIdx].trim().toLowerCase();
+        if (rawValue.contains(filterText)) {
+            return true;
+        }
+
+        for (String part : splitMultiValueCell(rawValue)) {
+            if (part.toLowerCase().contains(filterText)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
-     * Checks whether a row matches one selected advanced filter value.
+     * Determines whether the supplied row matches the selected combo-box filter.
+     *
+     * @param row the row values involved in the operation
+     * @param columnName the column name to search for or populate from
+     * @param combo the combo box to populate or inspect
+     *
+     * @return {@code true} when the requested condition is met; otherwise {@code false}
      */
     private boolean matchesComboFilter(String[] row, String columnName, JComboBox<String> combo) {
         String selectedValue = (String) combo.getSelectedItem();
@@ -321,14 +428,24 @@ public class DataController {
             return true;
         }
 
-        return row[columnIndex].trim().equalsIgnoreCase(selectedValue);
+        for (String value : splitMultiValueCell(row[columnIndex])) {
+            if (value.equalsIgnoreCase(selectedValue)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
-     * Returns the default compact set of columns shown first.
+     * Returns the default compact column set used by the main table.
+     *
+     * @param columns the column names involved in the operation
+     *
+     * @return the resulting array
      */
     private int[] getDefaultColumnIndexes(String[] columns) {
-        String[] preferred = { "Title", "Developer", "Publisher", "ESRBRating", "Platform", "Genre" };
+        String[] preferred = { "Title", "Developer", "Publisher", "ESRBRating", "Platform", "Genre", "Description" };
         List<Integer> indexes = new ArrayList<>();
 
         for (String wanted : preferred) {
@@ -344,19 +461,28 @@ public class DataController {
     }
 
     /**
-     * Returns every non-hidden column for expanded view.
+     * Returns the expanded column set used when all columns are visible.
+     *
+     * @param columns the column names involved in the operation
+     *
+     * @return the resulting array
      */
     private int[] getExpandedColumnIndexes(String[] columns) {
         List<Integer> indexes = new ArrayList<>();
         for (int i = 0; i < columns.length; i++) {
-            if (!isHiddenIdColumn(columns[i]))
+            if (!isHiddenIdColumn(columns[i])) {
                 indexes.add(i);
+            }
         }
         return toIntArray(indexes);
     }
 
     /**
-     * Hides ID columns from the visible table.
+     * Determines whether the supplied column name should be hidden from the main table.
+     *
+     * @param name the name value
+     *
+     * @return {@code true} when the requested condition is met; otherwise {@code false}
      */
     private boolean isHiddenIdColumn(String name) {
         String n = name.toLowerCase();
@@ -364,109 +490,186 @@ public class DataController {
     }
 
     /**
-     * Converts a List<Integer> into an int[] array.
+     * Converts a list of boxed integers into a primitive array.
+     *
+     * @param indexes the indexes to convert
+     *
+     * @return the resulting array
      */
     private int[] toIntArray(List<Integer> indexes) {
         int[] res = new int[indexes.size()];
-        for (int i = 0; i < indexes.size(); i++)
+        for (int i = 0; i < indexes.size(); i++) {
             res[i] = indexes.get(i);
+        }
         return res;
     }
 
     /**
-     * Returns the index of a column by name.
+     * Returns the index of the requested column name.
+     *
+     * @param columnName the column name to search for or populate from
+     *
+     * @return the resulting numeric value
      */
     private int getColumnIndex(String columnName) {
-        if (columnName == null)
+        if (columnName == null) {
             return -1;
+        }
 
         String[] cols = model.getColumns();
-        if (cols == null)
+        if (cols == null) {
             return -1;
+        }
 
         for (int i = 0; i < cols.length; i++) {
-            if (cols[i].equalsIgnoreCase(columnName))
+            if (cols[i].equalsIgnoreCase(columnName)) {
                 return i;
+            }
         }
 
         return -1;
     }
 
     /**
-     * Convenience method for finding the Publisher column.
+     * Returns the index of the publisher column.
+     *
+     * @return the resulting numeric value
      */
     private int getPublisherColumnIndex() {
         return getColumnIndex("Publisher");
     }
 
     /**
-     * Checks whether the current session is allowed to view a row.
+     * Returns the index of the primary identifier column.
+     *
+     * @return the resulting numeric value
+     */
+    private int getIdColumnIndex() {
+        int idx = getColumnIndex("GameID");
+        if (idx == -1) {
+            idx = getColumnIndex("ID");
+        }
+        return idx;
+    }
+
+    /**
+     * Finds the next available positive game identifier.
+     *
+     * @return the resulting string value
+     */
+    private String generateNextGameId() {
+        int idIdx = getIdColumnIndex();
+        if (idIdx == -1) {
+            return "";
+        }
+
+        TreeSet<Integer> usedIds = new TreeSet<>();
+        for (int rowIndex = 0; rowIndex < model.getRowCount(); rowIndex++) {
+            String[] row = model.getRow(rowIndex);
+            if (idIdx < row.length) {
+                try {
+                    int value = Integer.parseInt(row[idIdx].trim());
+                    if (value > 0) {
+                        usedIds.add(value);
+                    }
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+
+        int nextId = 1;
+        for (int value : usedIds) {
+            if (value == nextId) {
+                nextId++;
+            } else if (value > nextId) {
+                break;
+            }
+        }
+        return String.valueOf(nextId);
+    }
+
+    /**
+     * Determines whether the current session can view the supplied row.
+     *
+     * @param row the row values involved in the operation
+     *
+     * @return {@code true} when the requested condition is met; otherwise {@code false}
      */
     private boolean canViewRow(String[] row) {
-        if (session.isAdmin() || session.isGuest())
-            return true;
-
-        int pubIdx = getPublisherColumnIndex();
-        return pubIdx != -1 && row[pubIdx].trim().equalsIgnoreCase(session.getPublisherName());
+        // Publishers can browse all games, but can only modify games owned by their publisher.
+        return true;
     }
 
     /**
-     * Checks whether the current session is allowed to modify a row.
+     * Determines whether the current session can modify the supplied row.
+     *
+     * @param row the row values involved in the operation
+     *
+     * @return {@code true} when the requested condition is met; otherwise {@code false}
      */
     private boolean canModifyRow(String[] row) {
-        if (session.isAdmin())
+        if (session.isAdmin()) {
             return true;
-        if (session.isGuest())
+        }
+        if (session.isGuest()) {
             return false;
+        }
 
         int pubIdx = getPublisherColumnIndex();
         return pubIdx != -1 && row[pubIdx].trim().equalsIgnoreCase(session.getPublisherName());
     }
 
     /**
-     * Returns the selected visible row converted back into the model row index.
+     * Returns the model row index represented by the current table selection.
+     *
+     * @return the resulting numeric value
      */
     private int getSelectedModelRowIndex() {
         int sel = view.table.getSelectedRow();
-        if (sel == -1 || sel >= visibleRowIndexes.size())
+        if (sel == -1 || sel >= visibleRowIndexes.size()) {
             return -1;
+        }
         return visibleRowIndexes.get(sel);
     }
 
     /**
-     * Connects all buttons and row click behavior.
+     * Attaches listeners for buttons, filters, and table interactions.
      */
     private void attachHandlers() {
         view.addBtn.addActionListener(e -> {
-            String[] row = promptRow("Add Entry", null);
+            String[] row = requestRowInput("Add Entry", null);
             if (row != null) {
                 model.addRow(row);
-                refreshVisibleTable();
                 populateSearchControls();
+                refreshVisibleTable();
             }
         });
 
         view.editBtn.addActionListener(e -> {
             int idx = getSelectedModelRowIndex();
-            if (idx == -1)
+            if (idx == -1) {
                 return;
-            if (!canModifyRow(model.getRow(idx)))
+            }
+            if (!canModifyRow(model.getRow(idx))) {
                 return;
+            }
 
-            String[] updated = promptRow("Edit Entry", model.getRow(idx));
+            String[] updated = requestRowInput("Edit Entry", model.getRow(idx));
             if (updated != null) {
                 model.updateRow(idx, updated);
-                refreshVisibleTable();
                 populateSearchControls();
+                refreshVisibleTable();
             }
         });
 
         view.deleteBtn.addActionListener(e -> {
             int idx = getSelectedModelRowIndex();
-            if (idx == -1)
+            if (idx == -1) {
                 return;
-            if (!canModifyRow(model.getRow(idx)))
+            }
+            if (!canModifyRow(model.getRow(idx))) {
                 return;
+            }
 
             int confirm = JOptionPane.showConfirmDialog(
                     view,
@@ -477,8 +680,8 @@ public class DataController {
 
             if (confirm == JOptionPane.YES_OPTION) {
                 model.removeRow(idx);
-                refreshVisibleTable();
                 populateSearchControls();
+                refreshVisibleTable();
             }
         });
 
@@ -491,7 +694,11 @@ public class DataController {
             }
         });
 
-        view.passwordMenuBtn.addActionListener(e -> openPasswordHandlingMenu());
+        view.passwordMenuBtn.addActionListener(e -> {
+            if (session.isAdmin()) {
+                view.showPasswordManagementDialog();
+            }
+        });
 
         view.logoutBtn.addActionListener(e -> {
             view.dispose();
@@ -505,146 +712,48 @@ public class DataController {
 
         view.toggleThemeBtn.addActionListener(e -> view.toggleTheme());
 
+        // Double-clicking a game row opens the extracted details helper dialog.
         view.table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int row = view.table.rowAtPoint(e.getPoint());
-                if (row >= 0 && e.getClickCount() == 1)
+                if (row >= 0 && e.getClickCount() == 2) {
                     showDetails(row);
+                }
             }
         });
     }
 
     /**
-     * Opens the admin-only password handling menu.
+     * Shows the add or edit dialog and returns the completed row values.
+     *
+     * @param title the title text to use
+     * @param defaults the default row values to pre-populate, or {@code null} when no defaults are available
+     *
+     * @return the resulting array
      */
-    private void openPasswordHandlingMenu() {
-        if (!session.isAdmin()) {
-            return;
+    private String[] requestRowInput(String title, String[] defaults) {
+        String[] columns = model.getColumns();
+        if (columns == null || columns.length == 0) {
+            return null;
         }
 
-        String[] options = { "View Publisher Passwords", "Change Publisher Password", "Add Publisher User" };
-        String choice = (String) JOptionPane.showInputDialog(
-                view,
-                "Choose a password handling option:",
-                "Password Handling",
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                options,
-                options[0]);
+        int idIdx = getIdColumnIndex();
+        String generatedId = idIdx == -1 ? null : (defaults == null ? generateNextGameId() : defaults[idIdx]);
 
-        if (choice == null) {
-            return;
-        }
-
-        if (choice.equals(options[0])) {
-            showPublisherPasswordTable();
-        } else if (choice.equals(options[1])) {
-            changePublisherPassword();
-        } else if (choice.equals(options[2])) {
-            addPublisherUser();
-        }
+        return view.showDataEntryDialog(
+                title,
+                columns,
+                defaults,
+                session.isPublisher(),
+                session.getPublisherName(),
+                generatedId);
     }
 
     /**
-     * Shows all publisher usernames, publisher names, and passwords.
-     */
-    private void showPublisherPasswordTable() {
-        Object[][] data = AuthManager.getPublisherAccountTableData();
-        String[] columns = { "Username", "Publisher", "Password" };
-
-        JTable passwordTable = new JTable(data, columns);
-        passwordTable.setEnabled(false);
-        JScrollPane pane = new JScrollPane(passwordTable);
-        pane.setPreferredSize(new java.awt.Dimension(620, 280));
-
-        JOptionPane.showMessageDialog(
-                view,
-                pane,
-                "Publisher Passwords",
-                JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    /**
-     * Lets the admin change one publisher password.
-     */
-    private void changePublisherPassword() {
-        String[] usernames = AuthManager.getPublisherUsernames();
-        if (usernames.length == 0) {
-            JOptionPane.showMessageDialog(view, "No publisher users found.");
-            return;
-        }
-
-        JComboBox<String> userCombo = new JComboBox<>(usernames);
-        JPasswordField passwordField = new JPasswordField();
-        JCheckBox showBox = new JCheckBox("Show Password");
-        showBox.addActionListener(e -> passwordField.setEchoChar(showBox.isSelected() ? (char) 0 : '•'));
-
-        JPanel panel = new JPanel(new GridLayout(0, 1, 6, 6));
-        panel.add(new JLabel("Select Publisher Username:"));
-        panel.add(userCombo);
-        panel.add(new JLabel("New Password:"));
-        panel.add(passwordField);
-        panel.add(showBox);
-
-        int result = JOptionPane.showConfirmDialog(view, panel, "Change Publisher Password",
-                JOptionPane.OK_CANCEL_OPTION);
-        if (result != JOptionPane.OK_OPTION) {
-            return;
-        }
-
-        String username = (String) userCombo.getSelectedItem();
-        String newPassword = new String(passwordField.getPassword());
-
-        if (newPassword.trim().isEmpty()) {
-            JOptionPane.showMessageDialog(view, "Password cannot be blank.");
-            return;
-        }
-
-        if (AuthManager.updatePublisherPassword(username, newPassword)) {
-            JOptionPane.showMessageDialog(view, "Publisher password updated.");
-        } else {
-            JOptionPane.showMessageDialog(view, "Could not update publisher password.");
-        }
-    }
-
-    /**
-     * Lets the admin add one new publisher user.
-     */
-    private void addPublisherUser() {
-        JTextField usernameField = new JTextField();
-        JTextField publisherField = new JTextField();
-        JPasswordField passwordField = new JPasswordField();
-        JCheckBox showBox = new JCheckBox("Show Password");
-        showBox.addActionListener(e -> passwordField.setEchoChar(showBox.isSelected() ? (char) 0 : '•'));
-
-        JPanel panel = new JPanel(new GridLayout(0, 1, 6, 6));
-        panel.add(new JLabel("Username:"));
-        panel.add(usernameField);
-        panel.add(new JLabel("Publisher Name:"));
-        panel.add(publisherField);
-        panel.add(new JLabel("Password:"));
-        panel.add(passwordField);
-        panel.add(showBox);
-
-        int result = JOptionPane.showConfirmDialog(view, panel, "Add Publisher User", JOptionPane.OK_CANCEL_OPTION);
-        if (result != JOptionPane.OK_OPTION) {
-            return;
-        }
-
-        String username = usernameField.getText().trim();
-        String publisherName = publisherField.getText().trim();
-        String password = new String(passwordField.getPassword());
-
-        if (AuthManager.addPublisherUser(username, publisherName, password)) {
-            JOptionPane.showMessageDialog(view, "Publisher user added.");
-        } else {
-            JOptionPane.showMessageDialog(view, "Could not add publisher user. Username may already exist.");
-        }
-    }
-
-    /**
-     * Shows full information for one selected row.
+     * Shows the details dialog for the selected visible row.
+     *
+     * @param visibleIdx the visible table row index
      */
     private void showDetails(int visibleIdx) {
         int modelIdx = visibleRowIndexes.get(visibleIdx);
@@ -653,48 +762,49 @@ public class DataController {
         view.showRowDetails(fullCols, fullRow);
     }
 
+
+
     /**
-     * Opens a form for adding or editing a row.
+     * Splits a multi-value CSV cell into trimmed values.
+     *
+     * @param value the value to inspect
+     *
+     * @return the resulting array
      */
-    private String[] promptRow(String title, String[] defaults) {
-        JPanel p = new JPanel(new GridLayout(0, 2, 5, 5));
-        JTextField[] f = new JTextField[model.getColumns().length];
-        int pubIdx = getPublisherColumnIndex();
-
-        for (int i = 0; i < f.length; i++) {
-            p.add(new JLabel(model.getColumns()[i]));
-            f[i] = new JTextField(defaults == null ? "" : defaults[i]);
-
-            if (session.isPublisher() && i == pubIdx) {
-                f[i].setText(session.getPublisherName());
-                f[i].setEditable(false);
-            }
-
-            p.add(f[i]);
+    private String[] splitMultiValueCell(String value) {
+        if (value == null || value.isBlank()) {
+            return new String[0];
         }
 
-        if (JOptionPane.showConfirmDialog(view, p, title, JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
-            String[] row = new String[f.length];
+        String[] rawParts = value.split("\\s*\\" + MULTI_VALUE_SEPARATOR + "\\s*");
+        List<String> cleaned = new ArrayList<>();
 
-            for (int i = 0; i < f.length; i++) {
-                String value = f[i].getText().trim();
-
-                if (value.isEmpty()) {
-                    JOptionPane.showMessageDialog(view, "All fields must be filled.");
-                    return null;
-                }
-
-                row[i] = value;
+        for (String part : rawParts) {
+            String trimmed = part.trim();
+            if (!trimmed.isEmpty()) {
+                cleaned.add(trimmed);
             }
-
-            return row;
         }
 
-        return null;
+        return cleaned.toArray(new String[0]);
     }
 
     /**
-     * Application entry point.
+     * Normalizes a multi-value CSV cell so values use the shared separator format.
+     *
+     * @param value the value to inspect
+     *
+     * @return the resulting string value
+     */
+    private String normalizeMultiValueCell(String value) {
+        String[] parts = splitMultiValueCell(value);
+        return String.join(" " + MULTI_VALUE_SEPARATOR + " ", parts);
+    }
+
+    /**
+     * Performs the main operation.
+     *
+     * @param args the args value
      */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(StartUp::new);

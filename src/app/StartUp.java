@@ -5,8 +5,42 @@ import app.mvc.DataController;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
+/**
+ * Builds the startup window that lets a user launch the application as an admin, publisher, or guest.
+ */
 public class StartUp extends JFrame {
+
+    /**
+     * Performs the color operation.
+     *
+     * @param 210 the 210 value
+     * @param 210 the 210 value
+     * @param Color(45 the color(45 value
+     * @param 45 the 45 value
+     * @param Color(170 the color(170 value
+     * @param 170 the 170 value
+     * @param 170 the 170 value
+     * @param Color(199 the color(199 value
+     * @param 199 the 199 value
+     * @param 199 the 199 value
+     * @param Color(92 the color(92 value
+     * @param 92 the 92 value
+     * @param 92 the 92 value
+     * @param Color(90 the color(90 value
+     * @param 90 the 90 value
+     * @param StartUp( the start up( value
+     *
+     * @return the resulting value
+     */
+    private final Color neutralGrey = new Color(210, 210, 210);
+    private final Color textDark = new Color(45, 45, 45);
+    private final Color buttonGrey = new Color(170, 170, 170, 110);
+    private final Color buttonHover = new Color(199, 199, 199, 225);
+    private final Color buttonPressed = new Color(92, 92, 92, 235);
+    private final Color buttonBorder = new Color(90, 90, 90);
 
     public StartUp() {
         setTitle("Turn for Turn Co.");
@@ -16,33 +50,24 @@ public class StartUp extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        Color neutralGrey = new Color(210, 210, 210);
-        Color textDark = new Color(45, 45, 45);
-        Color buttonGrey = new Color(120, 120, 120);
-        Color buttonBorder = new Color(90, 90, 90);
-
-        // Main background panel
-        JPanel mainPanel = new JPanel();
+        BackgroundPanel mainPanel = new BackgroundPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBackground(neutralGrey);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Logo
         JLabel logoLabel = createLogoLabel("assets/logo.png", 320, 200);
         logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Welcome text
         JLabel welcomeLabel = new JLabel("Welcome to Turn for Turn Co.");
         welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         welcomeLabel.setForeground(textDark);
-        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        welcomeLabel.setFont(new Font("Inter", Font.BOLD, 28));
 
         JLabel subtitleLabel = new JLabel("Game Database Management System");
         subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         subtitleLabel.setForeground(new Color(80, 80, 80));
-        subtitleLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+        subtitleLabel.setFont(new Font("Inter", Font.PLAIN, 18));
 
-        // Login option buttons
         JButton adminButton = createMenuButton("Admin Login", buttonGrey, buttonBorder);
         JButton publisherButton = createMenuButton("Publisher Login", buttonGrey, buttonBorder);
         JButton guestButton = createMenuButton("Guest Access", buttonGrey, buttonBorder);
@@ -54,13 +79,11 @@ public class StartUp extends JFrame {
         adminButton.addActionListener(e -> showLoginDialog(AuthManager.UserRole.ADMIN));
         publisherButton.addActionListener(e -> showLoginDialog(AuthManager.UserRole.PUBLISHER));
 
-        // Guest button opens the UI with view-only access
         guestButton.addActionListener(e -> {
             dispose();
             DataController.launchMainUI(AuthManager.createGuestSession());
         });
 
-        // Layout spacing
         mainPanel.add(Box.createVerticalGlue());
         mainPanel.add(logoLabel);
         mainPanel.add(Box.createVerticalStrut(20));
@@ -80,7 +103,9 @@ public class StartUp extends JFrame {
     }
 
     /**
-     * Opens a login popup for admin or publisher access.
+     * Shows the login dialog for the requested role.
+     *
+     * @param expectedRole the role that should be authenticated
      */
     private void showLoginDialog(AuthManager.UserRole expectedRole) {
         JTextField usernameField = new JTextField();
@@ -145,20 +170,67 @@ public class StartUp extends JFrame {
         DataController.launchMainUI(session);
     }
 
+    /**
+     * Creates a styled menu button for the startup screen.
+     *
+     * @param text the text value
+     * @param bg the bg value
+     * @param border the border value
+     *
+     * @return the resulting value
+     */
     private JButton createMenuButton(String text, Color bg, Color border) {
         JButton button = new JButton(text);
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setPreferredSize(new Dimension(200, 40));
-        button.setMaximumSize(new Dimension(200, 40));
+        button.setPreferredSize(new Dimension(220, 42));
+        button.setMaximumSize(new Dimension(220, 42));
         button.setFocusPainted(false);
         button.setBackground(bg);
         button.setForeground(Color.WHITE);
+        button.setOpaque(true);
+        button.setContentAreaFilled(true);
         button.setBorder(BorderFactory.createLineBorder(border));
+        button.setFont(new Font("Inter", Font.BOLD, 14));
+
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (button.isEnabled()) {
+                    button.setBackground(buttonHover);
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setBackground(bg);
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (button.isEnabled()) {
+                    button.setBackground(buttonPressed);
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (button.isEnabled()) {
+                    button.setBackground(button.contains(e.getPoint()) ? buttonHover : bg);
+                }
+            }
+        });
+
         return button;
     }
 
     /**
-     * Creates a JLabel containing the scaled logo image.
+     * Creates a scaled logo label for the startup screen.
+     *
+     * @param path the path value
+     * @param maxWidth the max width value
+     * @param maxHeight the max height value
+     *
+     * @return the resulting value
      */
     public static JLabel createLogoLabel(String path, int maxWidth, int maxHeight) {
         JLabel label = new JLabel();
@@ -169,14 +241,13 @@ public class StartUp extends JFrame {
         if (icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) {
             label.setText("Turn for Turn Co.");
             label.setForeground(new Color(70, 70, 70));
-            label.setFont(new Font("Arial", Font.BOLD, 24));
+            label.setFont(new Font("Inter", Font.BOLD, 24));
             return label;
         }
 
         int originalWidth = icon.getIconWidth();
         int originalHeight = icon.getIconHeight();
 
-        // Preserve aspect ratio so the logo is not stretched
         double widthRatio = (double) maxWidth / originalWidth;
         double heightRatio = (double) maxHeight / originalHeight;
         double scale = Math.min(widthRatio, heightRatio);
@@ -192,5 +263,81 @@ public class StartUp extends JFrame {
 
         label.setIcon(new ImageIcon(scaledImage));
         return label;
+    }
+
+    /**
+     * Provides functionality for background panel.
+     */
+    private class BackgroundPanel extends JPanel {
+        /**
+         * Performs the paint component operation.
+         *
+         * @param g the graphics context used for painting
+         */
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // base background
+            g2.setColor(getBackground());
+            g2.fillRect(0, 0, getWidth(), getHeight());
+
+            // hex pattern (subtle)
+            Color lattice = new Color(255, 170, 0, 20); // LOWER alpha fixes overlap issue
+            int radius = 16;
+
+            double hexHeight = Math.sqrt(3) * radius;
+            double xStep = 1.5 * radius;
+            double yStep = hexHeight;
+
+            g2.setColor(lattice);
+            g2.setStroke(new BasicStroke(1.2f)); // thinner lines = no visual collision
+
+            for (int col = -2; col < (int)(getWidth() / xStep) + 3; col++) {
+                double x = col * xStep;
+                double yOffset = (col % 2 == 0) ? 0 : hexHeight / 2.0;
+
+                for (int row = -2; row < (int)(getHeight() / yStep) + 3; row++) {
+                    double y = row * yStep + yOffset;
+                    Polygon hex = createHexagon((int)x, (int)y, radius);
+                    g2.drawPolygon(hex);
+                }
+            }
+
+            g2.dispose();
+        }
+
+        /**
+         * Creates hexagon.
+         *
+         * @param x the x value
+         * @param y the y value
+         * @param size the size value
+         *
+         * @return the resulting value
+         */
+        private Polygon createHexagon(int x, int y, int size) {
+            int[] xs = {
+                    x + size / 2,
+                    x + (3 * size) / 2,
+                    x + 2 * size,
+                    x + (3 * size) / 2,
+                    x + size / 2,
+                    x
+            };
+            int h = (int) (Math.sqrt(3) * size / 2);
+            int[] ys = {
+                    y,
+                    y,
+                    y + h,
+                    y + 2 * h,
+                    y + 2 * h,
+                    y + h
+            };
+            return new Polygon(xs, ys, 6);
+        }
     }
 }
