@@ -50,6 +50,7 @@ public class DataController {
 
     private boolean showingAllColumns = false;
     private final List<Integer> visibleRowIndexes = new ArrayList<>();
+    private final FavouritesDialogHelper favouritesHelper;
 
     /**
      * Wires the model, view, and session together for the main UI.
@@ -59,6 +60,7 @@ public class DataController {
         this.view = view;
         this.session = session;
         this.rawgApiKey = resolveRawgApiKey();
+        this.favouritesHelper = new FavouritesDialogHelper(view, session);
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(8))
                 .build();
@@ -139,6 +141,7 @@ public class DataController {
         view.editBtn.setEnabled(canModify);
         view.deleteBtn.setEnabled(canModify);
         view.saveBtn.setEnabled(canModify);
+        favouritesHelper.applyAccessRules();
         view.applyTheme();
     }
 
@@ -605,16 +608,16 @@ public class DataController {
 
         view.toggleThemeBtn.addActionListener(e -> view.toggleTheme());
 
-        // Double-clicking a game row opens the extracted details helper dialog.
-        view.table.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                int row = view.table.rowAtPoint(e.getPoint());
-                if (row >= 0 && e.getClickCount() == 2) {
-                    showDetails(row);
-                }
-            }
-        });
+        favouritesHelper.installMainViewControls();
+        if (favouritesHelper.isAvailableToCurrentSession()) {
+            favouritesHelper.getToggleFavouriteButton().addActionListener(e -> toggleSelectedFavourite());
+            favouritesHelper.getOpenFavouritesButton().addActionListener(
+                    e -> favouritesHelper.showFavouritesDialog(model.getColumns(), showingAllColumns));
+        }
+
+        // Double-click handling is delegated to a dedicated helper so the
+        // controller only needs to provide the selected visible row index.
+        GameEntryDetailsDialogHelper.installDoubleClickPreview(view.table, this::showDetails);
     }
 
     private String[] requestAddRowInput() {
@@ -712,6 +715,10 @@ public class DataController {
     }
 
     private void showDetails(int visibleIdx) {
+        if (visibleIdx < 0 || visibleIdx >= visibleRowIndexes.size()) {
+            return;
+        }
+
         int modelIdx = visibleRowIndexes.get(visibleIdx);
         String[] fullCols = model.getColumns();
         String[] fullRow = model.getRow(modelIdx);
@@ -719,10 +726,28 @@ public class DataController {
         Cursor previousCursor = view.getCursor();
         view.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            view.showRowDetails(fullCols, enrichRowWithRawgData(fullCols, fullRow));
+            GameEntryDetailsDialogHelper.showDialog(view, fullCols, enrichRowWithRawgData(fullCols, fullRow));
         } finally {
             view.setCursor(previousCursor);
         }
+    }
+
+    /**
+     * Adds or removes the currently selected catalogue entry from the user-only
+     * favourites catalogue managed by the favourites helper.
+     */
+    private void toggleSelectedFavourite() {
+        int selectedModelIndex = getSelectedModelRowIndex();
+        if (selectedModelIndex == -1) {
+            AppDialogThemeHelper.showMessageDialog(
+                    view,
+                    "Favourites",
+                    "Select a game entry before adding it to or removing it from favourites.",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        favouritesHelper.toggleFavourite(model.getColumns(), model.getRow(selectedModelIndex));
     }
 
 

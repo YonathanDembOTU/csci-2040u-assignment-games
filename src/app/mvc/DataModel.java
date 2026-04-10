@@ -20,6 +20,64 @@ public class DataModel {
     private final List<String[]> rows = new ArrayList<>();
     private File currentFile;
 
+    /**
+     * Loads the supplied CSV file when it exists, or creates a new empty CSV
+     * file using the provided headers when it does not.
+     * <p>
+     * This is primarily used by helper-managed secondary catalogues, such as
+     * the user-only favourites list, so they can be created lazily without
+     * duplicating file bootstrap logic outside of the model.
+     *
+     * @param file the CSV file to load or create
+     * @param headerColumns fallback headers written when the file does not yet
+     *                      exist
+     *
+     * @throws IOException if the file cannot be created or loaded
+     */
+    public void loadOrCreateFile(File file, String[] headerColumns) throws IOException {
+        if (file != null && file.exists()) {
+            loadFromFile(file);
+            return;
+        }
+
+        initializeEmptyFile(file, headerColumns);
+    }
+
+    /**
+     * Creates an empty CSV file containing only the supplied header row and
+     * resets the in-memory model to match it.
+     *
+     * @param file the file to create
+     * @param headerColumns the header row written to the new file
+     *
+     * @throws IOException if the file cannot be created
+     */
+    public void initializeEmptyFile(File file, String[] headerColumns) throws IOException {
+        if (file == null) {
+            throw new IOException("Target file cannot be null.");
+        }
+        if (headerColumns == null || headerColumns.length == 0) {
+            throw new IOException("Header columns are required to initialize a CSV file.");
+        }
+
+        File parent = file.getParentFile();
+        if (parent != null && !parent.exists() && !parent.mkdirs()) {
+            throw new IOException("Could not create parent directories for " + file.getPath());
+        }
+
+        currentFile = file;
+        columns = new String[headerColumns.length];
+        rows.clear();
+
+        for (int i = 0; i < headerColumns.length; i++) {
+            columns[i] = headerColumns[i] == null ? "" : headerColumns[i].trim();
+        }
+
+        try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
+            writer.println(toCsvLine(columns));
+        }
+    }
+
     public void loadFromFile(File file) throws IOException {
         currentFile = file;
         rows.clear();
