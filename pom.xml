@@ -15,6 +15,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <main.class>app.mvc.DataController</main.class>
         <deploy.directory>${project.basedir}/server-deploy</deploy.directory>
+        <jar.splash.image>assets/logo.png</jar.splash.image>
     </properties>
 
     <dependencies>
@@ -29,6 +30,19 @@
     <build>
         <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>src</testSourceDirectory>
+
+        <!--
+            Package non-code assets into the jar so the startup logo can be used
+            both by the application itself and by the jar splash-screen manifest.
+            The same assets are also copied to server-deploy for local file-path use.
+        -->
+        <resources>
+            <resource>
+                <directory>${project.basedir}/assets</directory>
+                <targetPath>assets</targetPath>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
 
         <plugins>
             <plugin>
@@ -75,6 +89,9 @@
                         <manifest>
                             <mainClass>${main.class}</mainClass>
                         </manifest>
+                        <manifestEntries>
+                            <SplashScreen-Image>${jar.splash.image}</SplashScreen-Image>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>

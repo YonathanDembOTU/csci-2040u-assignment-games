@@ -8,7 +8,7 @@ Navigate into the root of the project before running any commands.
 
 Example:
 ```bash
-cd /path/to/your/project
+cd /path/to/files
 ```
 
 You should be in the folder where `pom.xml` is located. That is the correct place to run all Maven commands for this project.
