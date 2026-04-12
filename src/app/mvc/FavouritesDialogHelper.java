@@ -6,8 +6,6 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,10 +64,9 @@ public class FavouritesDialogHelper {
     public void installMainViewControls() {
         owner.buttonPanel.add(toggleFavouriteButton);
         owner.buttonPanel.add(openFavouritesButton);
+        owner.registerSideBarButton(toggleFavouriteButton);
+        owner.registerSideBarButton(openFavouritesButton);
         applyAccessRules();
-        applyMainViewButtonTheme();
-
-        owner.toggleThemeBtn.addActionListener(e -> SwingUtilities.invokeLater(this::applyMainViewButtonTheme));
         owner.buttonPanel.revalidate();
         owner.buttonPanel.repaint();
     }
@@ -262,55 +259,6 @@ public class FavouritesDialogHelper {
 
     private String safe(String value) {
         return value == null ? "" : value.trim();
-    }
-
-    private void applyMainViewButtonTheme() {
-        boolean dark = owner.isDarkMode();
-        AppDialogThemeHelper.Theme theme = AppDialogThemeHelper.getTheme(owner);
-
-        styleMainActionButton(toggleFavouriteButton, theme, dark);
-        styleMainActionButton(openFavouritesButton, theme, dark);
-    }
-
-    private void styleMainActionButton(JButton button, AppDialogThemeHelper.Theme theme, boolean dark) {
-        button.setBackground(theme.buttonBg);
-        button.setForeground(theme.text);
-        button.setFocusPainted(false);
-        button.setOpaque(true);
-        button.setBorder(BorderFactory.createLineBorder(theme.border));
-        button.setPreferredSize(owner.addBtn.getPreferredSize());
-        button.setMaximumSize(owner.addBtn.getMaximumSize());
-        button.setFont(owner.addBtn.getFont());
-        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-        if (!Boolean.TRUE.equals(button.getClientProperty("favouritesHoverInstalled"))) {
-            button.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    if (button.isEnabled()) {
-                        button.setBackground(theme.buttonHover);
-                    }
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    button.setBackground(theme.buttonBg);
-                }
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    if (button.isEnabled()) {
-                        button.setBackground(theme.buttonPressed);
-                    }
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    button.setBackground(button.contains(e.getPoint()) ? theme.buttonHover : theme.buttonBg);
-                }
-            });
-            button.putClientProperty("favouritesHoverInstalled", Boolean.TRUE);
-        }
     }
 
     /**

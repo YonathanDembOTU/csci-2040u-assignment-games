@@ -726,7 +726,7 @@ public class DataController {
         Cursor previousCursor = view.getCursor();
         view.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            GameEntryDetailsDialogHelper.showDialog(view, fullCols, enrichRowWithRawgData(fullCols, fullRow));
+            GameEntryDetailsDialogHelper.showDialog(view, fullCols, fullRow);
         } finally {
             view.setCursor(previousCursor);
         }

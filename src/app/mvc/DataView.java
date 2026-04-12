@@ -545,13 +545,7 @@ public class DataView extends JFrame {
         applyScrollBarTheme(pageScrollPane.getVerticalScrollBar(), scrollTrack, scrollThumb);
         applyScrollBarTheme(pageScrollPane.getHorizontalScrollBar(), scrollTrack, scrollThumb);
 
-        styleButton(addBtn, buttonBg, text);
-        styleButton(editBtn, buttonBg, text);
-        styleButton(deleteBtn, buttonBg, text);
-        styleButton(saveBtn, buttonBg, text);
-        styleButton(passwordMenuBtn, buttonBg, text);
-        styleButton(attributionBtn, buttonBg, text);
-        styleButton(logoutBtn, buttonBg, text);
+        applySideBarButtonTheme(buttonBg, text);
         styleButton(toggleColumnsBtn, buttonBg, text);
         styleButton(toggleThemeBtn, buttonBg, text);
         styleButton(advancedSearchBtn, buttonBg, text);
@@ -605,60 +599,112 @@ public class DataView extends JFrame {
     }
 
     private void installPressAndHoverStates() {
-        JButton[] buttons = {
-                addBtn, editBtn, deleteBtn, saveBtn, logoutBtn,
-                toggleColumnsBtn, toggleThemeBtn, advancedSearchBtn,
-                searchClearBtn, passwordMenuBtn, attributionBtn
-        };
+        installButtonHoverState(toggleColumnsBtn);
+        installButtonHoverState(toggleThemeBtn);
+        installButtonHoverState(advancedSearchBtn);
+        installButtonHoverState(searchClearBtn);
+        installButtonHoverState(addBtn);
+        installButtonHoverState(editBtn);
+        installButtonHoverState(deleteBtn);
+        installButtonHoverState(saveBtn);
+        installButtonHoverState(passwordMenuBtn);
+        installButtonHoverState(attributionBtn);
+        installButtonHoverState(logoutBtn);
+    }
 
-        for (JButton button : buttons) {
-            button.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    if (button.isEnabled()) {
+    /**
+     * Registers a right-side action button so it uses the same theme, sizing,
+     * and hover behaviour as the built-in sidebar buttons.
+     *
+     * @param button sidebar button to style and wire for hover feedback
+     */
+    public void registerSideBarButton(JButton button) {
+        if (button == null) {
+            return;
+        }
+
+        Color buttonBg = darkMode ? DARK_BUTTON_BG : LIGHT_BUTTON_BG;
+        Color text = darkMode ? DARK_TEXT : LIGHT_TEXT;
+        styleButton(button, buttonBg, text);
+        installButtonHoverState(button);
+        buttonPanel.revalidate();
+        buttonPanel.repaint();
+    }
+
+    /**
+     * Reapplies the standard theme styling to every button currently present in
+     * the main right-side action bar.
+     *
+     * @param bg themed background colour for sidebar buttons
+     * @param fg themed foreground colour for sidebar buttons
+     */
+    private void applySideBarButtonTheme(Color bg, Color fg) {
+        for (Component component : buttonPanel.getComponents()) {
+            if (component instanceof JButton button) {
+                styleButton(button, bg, fg);
+                installButtonHoverState(button);
+            }
+        }
+    }
+
+    /**
+     * Installs the shared hover and pressed-state feedback used by main view
+     * buttons.
+     *
+     * @param button button to update
+     */
+    private void installButtonHoverState(JButton button) {
+        if (button == null || Boolean.TRUE.equals(button.getClientProperty("mainHoverInstalled"))) {
+            return;
+        }
+
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (button.isEnabled()) {
+                    Color hover = (Color) button.getClientProperty("hoverBg");
+                    if (hover != null) {
+                        button.setBackground(hover);
+                    }
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                Color base = (Color) button.getClientProperty("baseBg");
+                if (base != null) {
+                    button.setBackground(base);
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (button.isEnabled()) {
+                    Color pressed = (Color) button.getClientProperty("pressedBg");
+                    if (pressed != null) {
+                        button.setBackground(pressed);
+                    }
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (button.isEnabled()) {
+                    if (button.contains(e.getPoint())) {
                         Color hover = (Color) button.getClientProperty("hoverBg");
                         if (hover != null) {
                             button.setBackground(hover);
                         }
-                    }
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    Color base = (Color) button.getClientProperty("baseBg");
-                    if (base != null) {
-                        button.setBackground(base);
-                    }
-                }
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    if (button.isEnabled()) {
-                        Color pressed = (Color) button.getClientProperty("pressedBg");
-                        if (pressed != null) {
-                            button.setBackground(pressed);
+                    } else {
+                        Color base = (Color) button.getClientProperty("baseBg");
+                        if (base != null) {
+                            button.setBackground(base);
                         }
                     }
                 }
-
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    if (button.isEnabled()) {
-                        if (button.contains(e.getPoint())) {
-                            Color hover = (Color) button.getClientProperty("hoverBg");
-                            if (hover != null) {
-                                button.setBackground(hover);
-                            }
-                        } else {
-                            Color base = (Color) button.getClientProperty("baseBg");
-                            if (base != null) {
-                                button.setBackground(base);
-                            }
-                        }
-                    }
-                }
-            });
-        }
+            }
+        });
+        button.putClientProperty("mainHoverInstalled", Boolean.TRUE);
     }
 
     private void styleInput(JTextField field, Color bg, Color fg, Color border) {

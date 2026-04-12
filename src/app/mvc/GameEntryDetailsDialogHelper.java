@@ -7,31 +7,23 @@ import java.awt.event.MouseEvent;
 import java.util.function.IntConsumer;
 
 /**
- * Centralizes the user interaction and themed detail presentation for game
- * entries shown throughout the application.
+ * Builds the themed read-only details dialog for a selected game entry.
  * <p>
- * This merged helper now owns both responsibilities that were previously split
- * across separate files:
- * <ul>
- *     <li>installing the double-click listener used by tables that preview a
- *     selected entry</li>
- *     <li>building the themed details window used to display the full contents
- *     of a chosen row</li>
- * </ul>
- * Keeping both behaviors together makes the entry-preview workflow easier to
- * reuse and reduces controller wiring.
+ * This helper now owns both the double-click preview wiring and the visual
+ * rendering of the selected entry so controllers and helper dialogs can keep
+ * their row-click logic minimal and focused on supplying the correct CSV row.
  */
 public final class GameEntryDetailsDialogHelper {
     private GameEntryDetailsDialogHelper() {
     }
 
     /**
-     * Installs a double-click listener that forwards the clicked visible row
-     * index to the supplied callback.
+     * Installs a double-click listener that forwards the clicked visible table
+     * row index to the supplied callback.
      * <p>
-     * The controller or dialog using the table remains responsible for mapping
-     * the visible row index back to the correct model row and deciding what to
-     * do with that selection.
+     * The callback can then translate that visible index into the matching CSV
+     * row index and open the details window for the exact entry that was
+     * clicked.
      *
      * @param table table that should react to double-clicks
      * @param onRowDoubleClick callback that receives the clicked visible row
@@ -62,7 +54,8 @@ public final class GameEntryDetailsDialogHelper {
      *
      * @param parent parent component used for theme lookup and dialog placement
      * @param columns ordered column names for the row
-     * @param row row values to display
+     * @param row row values taken directly from the CSV-backed model for the
+     *            selected entry
      */
     public static void showDialog(Component parent, String[] columns, String[] row) {
         if (columns == null || row == null || columns.length == 0) {
@@ -159,15 +152,6 @@ public final class GameEntryDetailsDialogHelper {
         AppDialogThemeHelper.showContentDialog(parent, "Game Details", root);
     }
 
-    /**
-     * Builds one compact, themed fact card used by the details window for any
-     * non-description field.
-     *
-     * @param labelText display label for the field
-     * @param valueText display value for the field
-     * @param dark whether the current helper theme is dark mode
-     * @return fully styled fact card panel
-     */
     private static JPanel createFactCard(String labelText, String valueText, boolean dark) {
         JPanel card = AppDialogThemeHelper.createCardPanel(new BorderLayout(0, 6), dark);
         card.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -188,16 +172,6 @@ public final class GameEntryDetailsDialogHelper {
         return card;
     }
 
-    /**
-     * Returns the first non-blank value that matches the requested column name.
-     *
-     * @param columns ordered column names for the row
-     * @param row row data aligned to the provided columns
-     * @param wantedColumn target column to read
-     * @param fallback fallback value when the requested column is missing or
-     *                 blank
-     * @return resolved value for the details view header/body
-     */
     private static String valueFor(String[] columns, String[] row, String wantedColumn, String fallback) {
         for (int i = 0; i < columns.length; i++) {
             if (columns[i].equalsIgnoreCase(wantedColumn)) {
