@@ -82,7 +82,7 @@ app.get("/games", (req, res) => {
 });
 
 app.post("/games", upload.single("image"), (req, res) => {
-    const { title, year, genre, description, ageRating, releaseDate, price } = req.body;
+    const { title, year, genre, description, ageRating, releaseDate, price, purchaseLink, video } = req.body;
     const parsedPlatforms = parsePlatforms(req.body.platforms);
 
     if (!parsedPlatforms.success) {
@@ -103,7 +103,9 @@ app.post("/games", upload.single("image"), (req, res) => {
         ageRating,
         releaseDate,
         price: Number(price),
-        image: imagePath
+        image: imagePath,
+        purchaseLink,
+        video
     });
     res.status(result.success ? 200 : 400).json(result);
 });
@@ -131,6 +133,7 @@ app.put("/games/:title", upload.single("image"), (req, res) => {
         ageRating: req.body.ageRating,
         releaseDate: req.body.releaseDate,
         price: Number(req.body.price),
+        purchaseLink: req.body.purchaseLink,
         video: req.body.video
     };
 

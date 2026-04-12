@@ -41,6 +41,19 @@
         <div class="platform-options" id="platformOptions"></div>
     </div>
 
+    <div class="wishlist-panel">
+        <div class="wishlist-header">
+            <div>
+                <div class="wishlist-eyebrow">Wishlist</div>
+                <h2>Your saved games</h2>
+            </div>
+            <div class="wishlist-total" id="wishlistTotal">$0.00</div>
+        </div>
+        <div class="wishlist-list" id="wishlistList">
+            <p class="wishlist-empty">Your wishlist is empty.</p>
+        </div>
+    </div>
+
     <div class="game-list" id="gameList">
         <p style="text-align: center; grid-column: 1/-1;">Loading games...</p>
     </div>
@@ -92,6 +105,14 @@
                 </div>
             </div>
             <div class="form-group">
+                <label for="purchaseLink">Purchase URL</label>
+                <input type="url" id="purchaseLink" name="purchaseLink" placeholder="https://store.example.com/game">
+            </div>
+            <div class="form-group">
+                <label for="video">Trailer URL</label>
+                <input type="url" id="video" name="video" placeholder="https://www.youtube.com/watch?v=...">
+            </div>
+            <div class="form-group">
                 <label for="description">Description</label>
                 <textarea id="description" name="description" placeholder="A short summary of the game" required></textarea>
             </div>
@@ -141,6 +162,7 @@
                         <div class="details-value" id="detailsPrice"></div>
                     </div>
                 </div>
+                <a id="detailsPurchaseLink" class="details-purchase-link" href="#" target="_blank" rel="noopener noreferrer">Go to purchase page</a>
                 <div class="details-video" id="detailsVideoSection">
                     <div class="details-label">Trailer</div>
                     <div class="details-video-frame">
@@ -165,32 +187,18 @@ const username = localStorage.getItem("username");
 const role = localStorage.getItem("role");
 const isAdmin = role === "admin";
 
+if (!username) {
+    window.location.href = "/";
+}
+
 const userInfo = document.getElementById("userInfo");
 const adminControls = document.getElementById("adminControls");
 const gameList = document.getElementById("gameList");
 const searchInput = document.getElementById("searchInput");
 const sortSelect = document.getElementById("sortSelect");
 const platformOptions = document.getElementById("platformOptions");
-let allGames = [];
-
-if (!username) window.location.href = "/";
-
-if (role && role !== "user") {
-    userInfo.textContent = `${username} (${role})`;
-} else {
-    userInfo.textContent = username;
-}
-
-if (isAdmin) {
-    adminControls.style.display = "block";
-}
-
-document.getElementById("logoutBtn").addEventListener("click", (e) => {
-    e.preventDefault();
-    localStorage.clear();
-    window.location.href = "/";
-});
-
+const wishlistList = document.getElementById("wishlistList");
+const wishlistTotal = document.getElementById("wishlistTotal");
 const overlay = document.getElementById("modalOverlay");
 const openBtn = document.getElementById("openModalBtn");
 const closeBtn = document.getElementById("closeModalBtn");
@@ -213,31 +221,113 @@ const detailsReleaseDate = document.getElementById("detailsReleaseDate");
 const detailsAgeRating = document.getElementById("detailsAgeRating");
 const detailsPlatforms = document.getElementById("detailsPlatforms");
 const detailsPrice = document.getElementById("detailsPrice");
+const detailsPurchaseLink = document.getElementById("detailsPurchaseLink");
 const detailsVideoSection = document.getElementById("detailsVideoSection");
 const detailsVideo = document.getElementById("detailsVideo");
 const detailsDescription = document.getElementById("detailsDescription");
+
+let allGames = [];
+let wishlistTitles = [];
 let editingTitle = null;
 
-openBtn?.addEventListener("click", () => {
-    openCreateModal();
+userInfo.textContent = role && role !== "user" ? `${username} (${role})` : username;
+
+if (isAdmin) {
+    adminControls.style.display = "block";
+}
+
+document.getElementById("logoutBtn").addEventListener("click", (e) => {
+    e.preventDefault();
+    localStorage.clear();
+    window.location.href = "/";
 });
 
+openBtn?.addEventListener("click", openCreateModal);
 closeBtn.addEventListener("click", closeModal);
 closeDetailsBtn.addEventListener("click", closeDetails);
 
 overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) closeModal();
+    if (e.target === overlay) {
+        closeModal();
+    }
 });
 
 detailsOverlay.addEventListener("click", (e) => {
-    if (e.target === detailsOverlay) closeDetails();
+    if (e.target === detailsOverlay) {
+        closeDetails();
+    }
 });
 
 document.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape") return;
-    if (detailsOverlay.classList.contains("active")) closeDetails();
-    if (overlay.classList.contains("active")) closeModal();
+    if (e.key !== "Escape") {
+        return;
+    }
+
+    if (detailsOverlay.classList.contains("active")) {
+        closeDetails();
+    }
+
+    if (overlay.classList.contains("active")) {
+        closeModal();
+    }
 });
+
+function getWishlistStorageKey() {
+    return `wishlist:${username}`;
+}
+
+function loadWishlist() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(getWishlistStorageKey()) || "[]");
+        wishlistTitles = Array.isArray(saved) ? saved : [];
+    } catch {
+        wishlistTitles = [];
+    }
+}
+
+function saveWishlist() {
+    localStorage.setItem(getWishlistStorageKey(), JSON.stringify(wishlistTitles));
+}
+
+function syncWishlistWithGames() {
+    const validTitles = new Set(allGames.map((game) => game.title));
+    const filtered = wishlistTitles.filter((title) => validTitles.has(title));
+
+    if (filtered.length !== wishlistTitles.length) {
+        wishlistTitles = filtered;
+        saveWishlist();
+    }
+}
+
+function isInWishlist(title) {
+    return wishlistTitles.includes(title);
+}
+
+function addToWishlist(title) {
+    if (isInWishlist(title)) {
+        return;
+    }
+
+    wishlistTitles = [...wishlistTitles, title];
+    saveWishlist();
+    renderWishlist();
+    applyFiltersAndSort();
+}
+
+function removeFromWishlist(title) {
+    wishlistTitles = wishlistTitles.filter((savedTitle) => savedTitle !== title);
+    saveWishlist();
+    renderWishlist();
+    applyFiltersAndSort();
+}
+
+function getPurchaseUrl(game) {
+    if (game.purchaseLink && /^https?:\/\//i.test(game.purchaseLink)) {
+        return game.purchaseLink;
+    }
+
+    return `https://store.steampowered.com/search/?term=${encodeURIComponent(game.title)}`;
+}
 
 function closeModal() {
     overlay.classList.remove("active");
@@ -280,6 +370,8 @@ function openEditModal(game) {
     document.getElementById("ageRating").value = game.ageRating || "";
     document.getElementById("platforms").value = Array.isArray(game.platforms) ? game.platforms.join(", ") : "";
     document.getElementById("price").value = Number.isFinite(Number(game.price)) ? Number(game.price) : "";
+    document.getElementById("purchaseLink").value = game.purchaseLink || "";
+    document.getElementById("video").value = game.video || "";
     document.getElementById("description").value = game.description || "";
 
     if (game.image) {
@@ -302,6 +394,7 @@ function openDetails(game) {
     detailsAgeRating.textContent = game.ageRating || "Not provided";
     detailsPlatforms.textContent = formatPlatforms(game.platforms);
     detailsPrice.textContent = formatPrice(game.price);
+    detailsPurchaseLink.href = getPurchaseUrl(game);
     detailsVideoSection.style.display = videoUrl ? "block" : "none";
     detailsVideo.src = videoUrl || "";
     detailsDescription.textContent = game.description || "No description has been added for this game yet.";
@@ -317,21 +410,21 @@ function renderGames(games, emptyMessage = "No games found.") {
     gameList.innerHTML = "";
 
     if (games.length === 0) {
-        gameList.innerHTML = `<p style='grid-column: 1/-1; text-align: center;'>${emptyMessage}</p>`;
+        gameList.innerHTML = `<p style="grid-column: 1/-1; text-align: center;">${emptyMessage}</p>`;
         return;
     }
 
-    games.forEach(game => gameList.appendChild(createGameCard(game)));
+    games.forEach((game) => gameList.appendChild(createGameCard(game)));
 }
 
 function renderPlatformFilters(games) {
     const platforms = [...new Set(
-        games.flatMap(game => Array.isArray(game.platforms) ? game.platforms : [])
+        games.flatMap((game) => Array.isArray(game.platforms) ? game.platforms : [])
     )].sort((a, b) => a.localeCompare(b));
 
     platformOptions.innerHTML = "";
 
-    platforms.forEach(platform => {
+    platforms.forEach((platform) => {
         const option = document.createElement("label");
         option.className = "platform-option";
         option.innerHTML = `
@@ -342,19 +435,58 @@ function renderPlatformFilters(games) {
     });
 }
 
+function renderWishlist() {
+    syncWishlistWithGames();
+    wishlistList.innerHTML = "";
+
+    const wishlistGames = wishlistTitles
+        .map((title) => allGames.find((game) => game.title === title))
+        .filter(Boolean);
+
+    const total = wishlistGames.reduce((sum, game) => sum + Math.max(0, Number(game.price) || 0), 0);
+    wishlistTotal.textContent = formatPrice(total);
+
+    if (wishlistGames.length === 0) {
+        wishlistList.innerHTML = '<p class="wishlist-empty">Your wishlist is empty.</p>';
+        return;
+    }
+
+    wishlistGames.forEach((game) => {
+        const item = document.createElement("div");
+        item.className = "wishlist-item";
+        item.innerHTML = `
+            <a class="wishlist-link" href="${getPurchaseUrl(game)}" target="_blank" rel="noopener noreferrer">
+                <img class="wishlist-thumb" src="${game.image}" alt="${game.title}">
+                <div class="wishlist-copy">
+                    <div class="wishlist-game-title">${game.title}</div>
+                    <div class="wishlist-game-meta">${game.year} • ${game.genre}</div>
+                </div>
+                <div class="wishlist-game-price">${formatPrice(game.price)}</div>
+            </a>
+            <button type="button" class="wishlist-remove-btn">Remove</button>
+        `;
+
+        item.querySelector(".wishlist-remove-btn").addEventListener("click", () => {
+            removeFromWishlist(game.title);
+        });
+
+        wishlistList.appendChild(item);
+    });
+}
+
 function getSelectedPlatforms() {
-    return [...platformOptions.querySelectorAll("input:checked")].map(input => input.value);
+    return [...platformOptions.querySelectorAll("input:checked")].map((input) => input.value);
 }
 
 function applyFiltersAndSort() {
     const query = searchInput.value.trim().toLowerCase();
     const selectedPlatforms = getSelectedPlatforms();
 
-    const filteredGames = allGames.filter(game => {
+    const filteredGames = allGames.filter((game) => {
         const matchesTitle = game.title.toLowerCase().includes(query);
         const gamePlatforms = Array.isArray(game.platforms) ? game.platforms : [];
         const matchesPlatform = selectedPlatforms.length === 0
-            || selectedPlatforms.every(platform => gamePlatforms.includes(platform));
+            || selectedPlatforms.every((platform) => gamePlatforms.includes(platform));
 
         return matchesTitle && matchesPlatform;
     });
@@ -383,9 +515,15 @@ function compareGames(a, b) {
 }
 
 function formatReleaseDate(value) {
-    if (!value) return "Not provided";
+    if (!value) {
+        return "Not provided";
+    }
+
     const date = new Date(`${value}T00:00:00`);
-    if (Number.isNaN(date.getTime())) return value;
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
     return date.toLocaleDateString(undefined, {
         year: "numeric",
         month: "long",
@@ -397,16 +535,24 @@ function formatPlatforms(platforms) {
     if (Array.isArray(platforms) && platforms.length > 0) {
         return platforms.join(", ");
     }
+
     if (typeof platforms === "string" && platforms.trim()) {
         return platforms;
     }
+
     return "Not provided";
 }
 
 function formatPrice(price) {
     const amount = Number(price);
-    if (Number.isNaN(amount)) return "Not provided";
-    if (amount === 0) return "Free";
+    if (Number.isNaN(amount)) {
+        return "Not provided";
+    }
+
+    if (amount === 0) {
+        return "Free";
+    }
+
     return new Intl.NumberFormat(undefined, {
         style: "currency",
         currency: "USD"
@@ -433,7 +579,9 @@ function ageRatingRank(value) {
 }
 
 function toYouTubeEmbedUrl(url) {
-    if (!url) return "";
+    if (!url) {
+        return "";
+    }
 
     try {
         const parsed = new URL(url);
@@ -462,13 +610,14 @@ function toYouTubeEmbedUrl(url) {
 
 imageInput.addEventListener("change", () => {
     const file = imageInput.files[0];
+
     if (file) {
         showPreview(file);
         return;
     }
 
     if (editingTitle) {
-        const currentGame = allGames.find(game => game.title === editingTitle);
+        const currentGame = allGames.find((game) => game.title === editingTitle);
         if (currentGame?.image) {
             imagePreview.src = currentGame.image;
             imagePreview.style.display = "block";
@@ -487,7 +636,9 @@ dropZone.addEventListener("dragover", (e) => {
     dropZone.classList.add("drag-over");
 });
 
-dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
+dropZone.addEventListener("dragleave", () => {
+    dropZone.classList.remove("drag-over");
+});
 
 dropZone.addEventListener("drop", (e) => {
     e.preventDefault();
@@ -520,14 +671,13 @@ addGameForm.addEventListener("submit", async (e) => {
 
     submitBtn.disabled = true;
     submitBtn.textContent = editingTitle ? "Saving..." : "Adding...";
-
     modalMsg.textContent = "";
     modalMsg.className = "message";
 
     const formData = new FormData(e.target);
     const platforms = String(formData.get("platforms") || "")
         .split(",")
-        .map(value => value.trim())
+        .map((value) => value.trim())
         .filter(Boolean);
 
     formData.delete("platforms");
@@ -539,23 +689,32 @@ addGameForm.addEventListener("submit", async (e) => {
         const res = await fetch(url, { method, body: formData });
         const data = await res.json();
 
-        if (data.success) {
-            modalMsg.textContent = editingTitle ? "Game updated successfully!" : "Game added successfully!";
-            modalMsg.className = "message success";
-
-            if (editingTitle) {
-                allGames = allGames.map(game => game.title === editingTitle ? data.game : game);
-            } else {
-                allGames.unshift(data.game);
-            }
-            renderPlatformFilters(allGames);
-            applyFiltersAndSort();
-            setTimeout(closeModal, 1200);
-        } else {
+        if (!data.success) {
             modalMsg.textContent = data.message || `Failed to ${editingTitle ? "update" : "add"} game.`;
             modalMsg.className = "message error";
+            return;
         }
-    } catch (err) {
+
+        modalMsg.textContent = editingTitle ? "Game updated successfully!" : "Game added successfully!";
+        modalMsg.className = "message success";
+
+        if (editingTitle) {
+            const previousTitle = editingTitle;
+            allGames = allGames.map((game) => game.title === previousTitle ? data.game : game);
+
+            if (previousTitle !== data.game.title && isInWishlist(previousTitle)) {
+                wishlistTitles = wishlistTitles.map((title) => title === previousTitle ? data.game.title : title);
+                saveWishlist();
+            }
+        } else {
+            allGames.unshift(data.game);
+        }
+
+        renderPlatformFilters(allGames);
+        renderWishlist();
+        applyFiltersAndSort();
+        setTimeout(closeModal, 1200);
+    } catch {
         modalMsg.textContent = "Network error. Please try again.";
         modalMsg.className = "message error";
     } finally {
@@ -565,7 +724,9 @@ addGameForm.addEventListener("submit", async (e) => {
 });
 
 async function deleteGame(title, cardEl) {
-    if (!confirm(`Delete "${title}"?`)) return;
+    if (!confirm(`Delete "${title}"?`)) {
+        return;
+    }
 
     cardEl.classList.add("deleting");
 
@@ -573,16 +734,20 @@ async function deleteGame(title, cardEl) {
         const res = await fetch(`/games/${encodeURIComponent(title)}`, { method: "DELETE" });
         const data = await res.json();
 
-        if (data.success) {
-            allGames = allGames.filter(game => game.title !== title);
-            renderPlatformFilters(allGames);
-            cardEl.addEventListener("transitionend", () => applyFiltersAndSort(), { once: true });
-            cardEl.addEventListener("transitionend", () => cardEl.remove(), { once: true });
-        } else {
+        if (!data.success) {
             cardEl.classList.remove("deleting");
             alert(data.message || "Failed to delete game.");
+            return;
         }
-    } catch (err) {
+
+        allGames = allGames.filter((game) => game.title !== title);
+        wishlistTitles = wishlistTitles.filter((savedTitle) => savedTitle !== title);
+        saveWishlist();
+        renderPlatformFilters(allGames);
+        renderWishlist();
+        cardEl.addEventListener("transitionend", () => applyFiltersAndSort(), { once: true });
+        cardEl.addEventListener("transitionend", () => cardEl.remove(), { once: true });
+    } catch {
         cardEl.classList.remove("deleting");
         alert("Network error. Please try again.");
     }
@@ -595,9 +760,10 @@ function createGameCard(game) {
     div.setAttribute("role", "button");
     div.setAttribute("aria-label", `View details for ${game.title}`);
 
+    const saved = isInWishlist(game.title);
     div.innerHTML = `
         <img src="${game.image}" alt="${game.title}">
-        ${isAdmin ? `<div class="game-actions"><button class="edit-btn" title="Edit game">Edit</button><button class="delete-btn" title="Delete game">X</button></div>` : ""}
+        ${isAdmin ? '<div class="game-actions"><button type="button" class="edit-btn" title="Edit game">Edit</button><button type="button" class="delete-btn" title="Delete game">X</button></div>' : ""}
         <div class="game-info">
             <div class="game-title">${game.title}</div>
             <div class="game-meta">${game.year} • ${game.genre}</div>
@@ -605,10 +771,21 @@ function createGameCard(game) {
                 <span>${game.ageRating || "NR"}</span>
                 <span>${formatPrice(game.price)}</span>
             </div>
+            <div class="game-card-actions">
+                <button type="button" class="wishlist-btn ${saved ? "is-saved" : ""}">${saved ? "Remove from wishlist" : "Add to wishlist"}</button>
+                <a class="buy-link-btn" href="${getPurchaseUrl(game)}" target="_blank" rel="noopener noreferrer">Buy</a>
+            </div>
         </div>
     `;
 
-    div.addEventListener("click", () => openDetails(game));
+    div.addEventListener("click", (e) => {
+        if (e.target.closest(".game-card-actions") || e.target.closest(".game-actions")) {
+            return;
+        }
+
+        openDetails(game);
+    });
+
     div.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
@@ -616,18 +793,30 @@ function createGameCard(game) {
         }
     });
 
-    if (isAdmin) {
-        div.querySelector(".edit-btn")
-            .addEventListener("click", (e) => {
-                e.stopPropagation();
-                openEditModal(game);
-            });
+    div.querySelector(".wishlist-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
 
-        div.querySelector(".delete-btn")
-            .addEventListener("click", (e) => {
-                e.stopPropagation();
-                deleteGame(game.title, div);
-            });
+        if (isInWishlist(game.title)) {
+            removeFromWishlist(game.title);
+        } else {
+            addToWishlist(game.title);
+        }
+    });
+
+    div.querySelector(".buy-link-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
+    });
+
+    if (isAdmin) {
+        div.querySelector(".edit-btn").addEventListener("click", (e) => {
+            e.stopPropagation();
+            openEditModal(game);
+        });
+
+        div.querySelector(".delete-btn").addEventListener("click", (e) => {
+            e.stopPropagation();
+            deleteGame(game.title, div);
+        });
     }
 
     return div;
@@ -637,9 +826,11 @@ async function loadGames() {
     try {
         const res = await fetch("/games");
         allGames = await res.json();
+        loadWishlist();
         renderPlatformFilters(allGames);
+        renderWishlist();
         applyFiltersAndSort();
-    } catch (err) {
+    } catch {
         gameList.innerHTML = "<p style='color: #ff6b6b; grid-column: 1/-1; text-align: center;'>Failed to load games.</p>";
     }
 }
