@@ -42,6 +42,9 @@ public class StartUp extends JFrame {
     private final Color buttonPressed = new Color(92, 92, 92, 235);
     private final Color buttonBorder = new Color(90, 90, 90);
 
+    private CardLayout cardLayout;
+    private JPanel cardPanel;
+
     public StartUp() {
         setTitle("Turn for Turn Co.");
         setSize(760, 540);
@@ -71,18 +74,20 @@ public class StartUp extends JFrame {
         JButton adminButton = createMenuButton("Admin Login", buttonGrey, buttonBorder);
         JButton publisherButton = createMenuButton("Publisher Login", buttonGrey, buttonBorder);
         JButton guestButton = createMenuButton("Guest Access", buttonGrey, buttonBorder);
+        JButton instructionsButton = createMenuButton("View Instructions", buttonGrey, buttonBorder);
 
         adminButton.setForeground(textDark);
         publisherButton.setForeground(textDark);
         guestButton.setForeground(textDark);
+        instructionsButton.setForeground(textDark);
 
         adminButton.addActionListener(e -> showLoginDialog(AuthManager.UserRole.ADMIN));
         publisherButton.addActionListener(e -> showLoginDialog(AuthManager.UserRole.PUBLISHER));
-
         guestButton.addActionListener(e -> {
             dispose();
             DataController.launchMainUI(AuthManager.createGuestSession());
         });
+        instructionsButton.addActionListener(e -> showInstructionsDialog());
 
         mainPanel.add(Box.createVerticalGlue());
         mainPanel.add(logoLabel);
@@ -97,9 +102,14 @@ public class StartUp extends JFrame {
         mainPanel.add(Box.createVerticalStrut(12));
         mainPanel.add(guestButton);
         mainPanel.add(Box.createVerticalGlue());
+        mainPanel.add(Box.createVerticalStrut(12));
+        mainPanel.add(instructionsButton);
 
         add(mainPanel, BorderLayout.CENTER);
         setVisible(true);
+
+        cardLayout = new CardLayout();
+        cardPanel = new JPanel(cardLayout);
     }
 
     /**
@@ -263,6 +273,65 @@ public class StartUp extends JFrame {
 
         label.setIcon(new ImageIcon(scaledImage));
         return label;
+    }
+
+    /**
+     * Provides functionality for the Instructions Panel.
+     */
+    private void showInstructionsDialog() {
+        JDialog dialog = new JDialog(this, "Developer Instructions", true);
+        dialog.setSize(560, 420);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout(10, 10));
+
+        JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        contentPanel.setBackground(neutralGrey);
+
+        JLabel titleLabel = new JLabel("Developer Instructions");
+        titleLabel.setFont(new Font("Inter", Font.BOLD, 22));
+        titleLabel.setForeground(textDark);
+
+        JTextArea instructionsArea = new JTextArea();
+        instructionsArea.setEditable(false);
+        instructionsArea.setLineWrap(true);
+        instructionsArea.setWrapStyleWord(true);
+        instructionsArea.setFont(new Font("Inter", Font.PLAIN, 14));
+        instructionsArea.setText(
+                "Welcome to Turn4Turn's Game Cataloguing Application, " +
+                        "where you are able to View/List what games are for Sale in many Various Ways.\n\n" +
+                        " - If you are a guest who wishes to view the games that are available in the Catalogue, \n" +
+                        "   1. Click the Guest Access Button.\n\n" +
+                        " - If you are a publisher who wishes to adjust/update the availability of the games in the Catalogue,\n" +
+                        "   1. Request access for the proper login credentials from an admin of the Application.\n" +
+                        "   2. Click the Publisher Login Button.\n" +
+                        "   3. Log into the Application with the give credentials.\n\n" +
+                        " - If you are an admin who wishes to adjust the system in any way, \n" +
+                        "   1. Request access for the proper login credentials from another admin of the Application.\n" +
+                        "   2. Click the Admin Login Button.\n" +
+                        "   3. Log into the Application with the give credentials.\n\n" +
+                        "Special Notes/Good Reminders:\n" +
+                        " - Ensure that data.csv exists in the project.\n" +
+                        " - Remember to Save any Adjustments made In Order to Preserve Changes That Are Made.\n" +
+                        " - Any Changes Made are not Reversible and will need to be Readjusted once Saved."
+        );
+
+        JScrollPane scrollPane = new JScrollPane(instructionsArea);
+
+        JButton closeButton = createMenuButton("Close", buttonGrey, buttonBorder);
+        closeButton.setForeground(textDark);
+        closeButton.addActionListener(e -> dialog.dispose());
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setOpaque(false);
+        bottomPanel.add(closeButton);
+
+        contentPanel.add(titleLabel, BorderLayout.NORTH);
+        contentPanel.add(scrollPane, BorderLayout.CENTER);
+        contentPanel.add(bottomPanel, BorderLayout.SOUTH);
+
+        dialog.add(contentPanel);
+        dialog.setVisible(true);
     }
 
     /**
