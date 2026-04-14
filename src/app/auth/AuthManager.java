@@ -190,7 +190,7 @@ public class AuthManager {
                 return;
             }
 
-            String[] headers = headerLine.split(",");
+            String[] headers = parseCsvLine(headerLine);
             int publisherIndex = -1;
 
             for (int i = 0; i < headers.length; i++) {
@@ -208,7 +208,11 @@ public class AuthManager {
             String line;
 
             while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
+
+                String[] parts = parseCsvLine(line);
                 if (publisherIndex >= parts.length) {
                     continue;
                 }
@@ -225,7 +229,7 @@ public class AuthManager {
                 seenPublishers.add(normalizedPublisher);
 
                 String username = makePublisherUsername(publisherName);
-                String password = username + "123";
+                String password = generatePublisherPassword(publisherName);
 
                 if (!accounts.containsKey(username.toLowerCase())) {
                     accounts.put(username.toLowerCase(), new Account(
@@ -239,6 +243,136 @@ public class AuthManager {
         } catch (IOException e) {
             // Keep app running even if CSV publisher loading fails
         }
+    }
+
+    /**
+     * Parses one CSV line while respecting quoted values.
+     *
+     * @param line raw CSV line
+     *
+     * @return parsed cell values
+     */
+    private static String[] parseCsvLine(String line) {
+        List<String> parts = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean insideQuotes = false;
+
+        for (int i = 0; i < line.length(); i++) {
+            char ch = line.charAt(i);
+
+            if (ch == '"') {
+                if (insideQuotes && i + 1 < line.length() && line.charAt(i + 1) == '"') {
+                    current.append('"');
+                    i++;
+                } else {
+                    insideQuotes = !insideQuotes;
+                }
+            } else if (ch == ',' && !insideQuotes) {
+                parts.add(current.toString());
+                current.setLength(0);
+            } else {
+                current.append(ch);
+            }
+        }
+
+        parts.add(current.toString());
+        return parts.toArray(new String[0]);
+    }
+
+    /**
+     * Builds the default auto-generated publisher password for a publisher name.
+     *
+     * @param publisherName publisher name used to derive the password
+     *
+     * @return the generated password
+     */
+    public static String generatePublisherPassword(String publisherName) {
+        return makePublisherUsername(publisherName) + "123";
+    }
+
+    /**
+     * Refreshes publisher accounts from data/data.csv and applies the
+     * auto-generated password pattern to every publisher listed there.
+     *
+     * @return the number of publishers refreshed from the CSV file
+     */
+    public static int syncPublisherAccountsFromCsvAndAutoGeneratePasswords() {
+        File file = new File("data/data.csv");
+        if (!file.exists()) {
+            return 0;
+        }
+
+        List<Account> refreshedAccounts = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String headerLine = reader.readLine();
+            if (headerLine == null) {
+                return 0;
+            }
+
+            String[] headers = parseCsvLine(headerLine);
+            int publisherIndex = -1;
+
+            for (int i = 0; i < headers.length; i++) {
+                if (headers[i].trim().equalsIgnoreCase("Publisher")) {
+                    publisherIndex = i;
+                    break;
+                }
+            }
+
+            if (publisherIndex == -1) {
+                return 0;
+            }
+
+            Set<String> seenPublishers = new HashSet<>();
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
+
+                String[] parts = parseCsvLine(line);
+                if (publisherIndex >= parts.length) {
+                    continue;
+                }
+
+                String publisherName = parts[publisherIndex].trim();
+                if (publisherName.isEmpty()) {
+                    continue;
+                }
+
+                String normalizedPublisher = publisherName.toLowerCase();
+                if (!seenPublishers.add(normalizedPublisher)) {
+                    continue;
+                }
+
+                String username = makePublisherUsername(publisherName);
+                String password = generatePublisherPassword(publisherName);
+                refreshedAccounts.add(new Account(username, password, UserRole.PUBLISHER, publisherName));
+            }
+        } catch (IOException e) {
+            return getPublisherUsernames().length;
+        }
+
+        for (Account account : refreshedAccounts) {
+            String key = account.username.toLowerCase();
+            Account existing = accounts.get(key);
+
+            if (existing != null && existing.role != UserRole.PUBLISHER) {
+                continue;
+            }
+
+            accounts.put(key, account);
+        }
+
+        try {
+            saveAccountsToEncryptedFile();
+        } catch (Exception e) {
+            // Keep the in-memory refresh even when persistence fails.
+        }
+
+        return refreshedAccounts.size();
     }
 
     /**

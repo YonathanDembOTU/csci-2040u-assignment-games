@@ -544,11 +544,20 @@ public class DataController {
             if (idx == -1) {
                 return;
             }
-            if (!canModifyRow(model.getRow(idx))) {
+
+            String[] selectedRow = model.getRow(idx);
+            if (!canModifyRow(selectedRow)) {
+                if (session.isPublisher()) {
+                    AppDialogThemeHelper.showMessageDialog(
+                            view,
+                            "Access Denied",
+                            "You must be publisher of the game to access editing.",
+                            JOptionPane.ERROR_MESSAGE);
+                }
                 return;
             }
 
-            String[] updated = requestRowInput("Edit Entry", model.getRow(idx));
+            String[] updated = requestRowInput("Edit Entry", selectedRow);
             if (updated != null) {
                 model.updateRow(idx, updated);
                 populateSearchControls();
@@ -660,21 +669,18 @@ public class DataController {
         Cursor previousCursor = view.getCursor();
         view.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            RawgGameData rawgData = fetchDirectRawgGameData(gameName);
-            if (rawgData == null || rawgData.title == null || rawgData.title.isBlank()) {
-                List<RawgImportDialogHelper.SearchCandidate> similarMatches =
-                        fetchRawgSearchCandidates(gameName, RawgImportDialogHelper.MAX_SIMILAR_CHOICES);
-                RawgImportDialogHelper.SearchCandidate selected =
-                        RawgImportDialogHelper.promptToChooseSimilarMatch(view, gameName, similarMatches);
-                if (selected == null) {
-                    return null;
-                }
+            List<RawgImportDialogHelper.SearchCandidate> similarMatches =
+                    fetchRawgSearchCandidates(gameName, RawgImportDialogHelper.MAX_SIMILAR_CHOICES);
+            RawgImportDialogHelper.SearchCandidate selected =
+                    RawgImportDialogHelper.promptToChooseSimilarMatch(view, gameName, similarMatches);
+            if (selected == null) {
+                return null;
+            }
 
-                rawgData = fetchRawgGameDataById(selected.getRawgId());
-                if (rawgData == null || rawgData.title == null || rawgData.title.isBlank()) {
-                    RawgImportDialogHelper.showNoMatch(view, gameName);
-                    return null;
-                }
+            RawgGameData rawgData = fetchRawgGameDataById(selected.getRawgId());
+            if (rawgData == null || rawgData.title == null || rawgData.title.isBlank()) {
+                RawgImportDialogHelper.showNoMatch(view, gameName);
+                return null;
             }
 
             int nextGameId = 1;
@@ -726,7 +732,7 @@ public class DataController {
         Cursor previousCursor = view.getCursor();
         view.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            GameEntryDetailsDialogHelper.showDialog(view, fullCols, fullRow);
+            GameEntryDetailsDialogHelper.showDialog(view, fullCols, enrichRowWithRawgData(fullCols, fullRow));
         } finally {
             view.setCursor(previousCursor);
         }

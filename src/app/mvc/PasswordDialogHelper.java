@@ -50,6 +50,8 @@ public class PasswordDialogHelper {
     private static void showPublisherPasswordTable(JFrame parent) {
         boolean dark = AppDialogThemeHelper.isDark(parent);
 
+        AuthManager.syncPublisherAccountsFromCsvAndAutoGeneratePasswords();
+
         Object[][] data = AuthManager.getPublisherAccountTableData();
         String[] columns = {"Username", "Publisher", "Password"};
 
@@ -57,11 +59,26 @@ public class PasswordDialogHelper {
         passwordTable.setEnabled(false);
         AppDialogThemeHelper.styleTable(passwordTable, dark);
 
-        JScrollPane pane = new JScrollPane(passwordTable);
-        pane.setPreferredSize(new Dimension(620, 280));
-        AppDialogThemeHelper.styleScrollPane(pane, dark);
+        JScrollPane tablePane = new JScrollPane(passwordTable);
+        tablePane.setPreferredSize(new Dimension(620, 280));
+        AppDialogThemeHelper.styleScrollPane(tablePane, dark);
 
-        AppDialogThemeHelper.showContentDialog(parent, "Publisher Passwords", pane);
+        JTextArea infoArea = new JTextArea(
+                "Publisher accounts shown below are refreshed from data/data.csv when this page opens. " +
+                "Each listed publisher is assigned the auto-generated password used by the authentication helper.");
+        infoArea.setEditable(false);
+        infoArea.setWrapStyleWord(true);
+        infoArea.setLineWrap(true);
+        infoArea.setOpaque(false);
+        infoArea.setBorder(BorderFactory.createEmptyBorder(0, 0, 8, 0));
+        infoArea.setFont(new Font("Inter", Font.PLAIN, 13));
+        infoArea.setForeground(AppDialogThemeHelper.getTheme(parent).mutedText);
+
+        JPanel content = AppDialogThemeHelper.createSurfacePanel(new BorderLayout(0, 6), dark);
+        content.add(infoArea, BorderLayout.NORTH);
+        content.add(tablePane, BorderLayout.CENTER);
+
+        AppDialogThemeHelper.showContentDialog(parent, "Publisher Passwords", content);
     }
 
     /**
