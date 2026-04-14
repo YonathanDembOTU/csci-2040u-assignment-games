@@ -323,7 +323,7 @@ public class StartUp extends JFrame {
                 "This includes: \n" +
                 " - A Search Bar that Searches for Game Titles Based on the Name Inputted By the User. \n" +
                 " - A Sorting System that allows the User to change how the games are sorted and displayed Alphabetically (A-Z) in various different ways such as Developers, Genres, Title Names, ETC. \n" +
-                " - An Advance Filtering System that Allows the User to Filter out what Games a Viewable by Genre, Age Rating, Platform, and Whether a game is Multiplayer, or Singleplayer. \n\n" +
+                " - An Advance Filtering System that Allows the User to Filter out what Games are Viewable by Genre, Age Rating, Platform, and Whether a game is Multiplayer, or Singleplayer. \n\n" +
                 "After finding the game the user is looking for, they are able to interact with it in a few ways.\n" +
                 "The user can:\n" +
                 " - Double Click the entry to be able to get a better detailed view of the Game, it's Description, Pricing, and Any Extra Details related to that game.\n" +
