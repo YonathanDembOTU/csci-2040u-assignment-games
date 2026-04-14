@@ -9,7 +9,6 @@
 <div class="container">
     <h2 id="formTitle">Login</h2>
 
-    <!-- status / error messages -->
     <div class="message" id="message"></div>
 
     <form id="authForm">
@@ -18,87 +17,193 @@
         <button type="submit" id="submitBtn">Login</button>
     </form>
 
-    <!-- switch between login/register -->
     <div class="toggle">
         <span id="toggleLabel">Don't have an account? </span>
         <span id="toggleAction" class="link">Register</span>
     </div>
+
+    <button type="button" id="openInfoBtn" class="secondary-btn">View Information</button>
+</div>
+
+<div class="modal-overlay" id="infoOverlay">
+    <div class="modal info-modal">
+        <div class="modal-header">
+            <h2>Information</h2>
+            <button class="modal-close" id="closeInfoBtn">&times;</button>
+        </div>
+
+        <div class="info-section-buttons">
+            <button type="button" id="loginInfoBtn" class="info-tab-btn active">Login Info</button>
+            <button type="button" id="appInfoBtn" class="info-tab-btn">App Info</button>
+        </div>
+
+        <div class="info-panel">
+            <h3 id="infoTitle">Login Information</h3>
+            <p id="infoText"></p>
+        </div>
+    </div>
 </div>
 
 <script>
-// redirect if logged in already
-if (localStorage.getItem("username")) {
-    window.location.href = "/dashboard";
-}
-
-// track current mode
-let isLogin = true;
-
-const formTitle = document.getElementById("formTitle");
-const submitBtn = document.getElementById("submitBtn");
-const toggleLabel = document.getElementById("toggleLabel");
-const toggleAction = document.getElementById("toggleAction");
-const messageDiv = document.getElementById("message");
-const usernameInput = document.getElementById("username");
-const passwordInput = document.getElementById("password");
-
-// toggle form mode
-toggleAction.addEventListener("click", () => {
-    isLogin = !isLogin;
-
-    formTitle.textContent = isLogin ? "Login" : "Create Account";
-    submitBtn.textContent = isLogin ? "Login" : "Register";
-    toggleLabel.textContent = isLogin
-        ? "Don't have an account? "
-        : "Already have an account? ";
-    toggleAction.textContent = isLogin ? "Register" : "Login";
-
-    // clear old messages
-    messageDiv.textContent = "";
-});
-
-// handle login/register submit
-document.getElementById("authForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const username = usernameInput.value;
-    const password = passwordInput.value;
-
-    const endpoint = isLogin ? "/login" : "/register";
-
-    try {
-        const res = await fetch(endpoint, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password })
-        });
-
-        const data = await res.json();
-
-        // show response message
-        messageDiv.textContent = data.message;
-        messageDiv.className = "message " + (data.success ? "success" : "error");
-
-        if (data.success) {
-            if (isLogin) {
-                // store session info client-side
-                localStorage.setItem("username", username);
-                localStorage.setItem("role", data.role || "user");
-
-                window.location.href = "/dashboard";
-            } else {
-                // after register, switch back to login
-                toggleAction.click();
-
-                messageDiv.textContent = "Account created! Please login.";
-                messageDiv.className = "message success";
-            }
-        }
-    } catch (err) {
-        messageDiv.textContent = "Connection error.";
-        messageDiv.className = "message error";
+    if (localStorage.getItem("username")) {
+        window.location.href = "/dashboard";
     }
-});
+
+    let isLogin = true;
+
+    const formTitle = document.getElementById("formTitle");
+    const submitBtn = document.getElementById("submitBtn");
+    const toggleLabel = document.getElementById("toggleLabel");
+    const toggleAction = document.getElementById("toggleAction");
+    const messageDiv = document.getElementById("message");
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+
+    const infoOverlay = document.getElementById("infoOverlay");
+    const openInfoBtn = document.getElementById("openInfoBtn");
+    const closeInfoBtn = document.getElementById("closeInfoBtn");
+    const loginInfoBtn = document.getElementById("loginInfoBtn");
+    const appInfoBtn = document.getElementById("appInfoBtn");
+    const infoTitle = document.getElementById("infoTitle");
+    const infoText = document.getElementById("infoText");
+
+    const loginInfoContent = {
+        title: "Login Information",
+        text:
+            "Welcome to Turn4Turn's Game Cataloging Website, " +
+            "where you are able to View/List what games are for Sale in many Various Ways.\n\n" +
+            " - If you are a new user who wishes to view the games that are available in the Catalogue, \n" +
+            "   1. First Register for an Account by pressing the Register button.\n" +
+            "   2. Create an account by making a custom username and password. \n" +
+            "   3. Click Register. \n" +
+            "   4. Login with your custom username and password from before. \n\n" +
+            " - If you are a publisher who wishes to adjust/update the availability of the games in the Catalogue,\n" +
+            "   1. Request access for the proper login credentials from an admin of the Application.\n" +
+            "   2. Click the Publisher Login Button.\n" +
+            "   3. Log into the Application with the give credentials.\n\n" +
+            " - If you are an admin who wishes to adjust the system in any way, \n" +
+            "   1. Request access for the proper login credentials from another admin of the Application.\n" +
+            "   2. Click the Admin Login Button.\n" +
+            "   3. Log into the Application with the give credentials.\n\n" +
+            "Special Notes/Good Reminders:\n" +
+            " - Remember to Save any Adjustments made In Order to Preserve Changes That Are Made.\n" +
+            " - Any Changes Made are not Reversible and will need to be Readjusted once Saved."
+    };
+
+    const appInfoContent = {
+        title: "Website User Information",
+        text:
+            "After logging in, The Website shows the User all of the Available Games in the Catalogue from a Variety Of Different Publishers And Genres.\n" +
+            "The Website also features additional quality of life features that allow the users to have a better in-depth look at every game, or provide a better user experience overall.\n\n" +
+            "To be able to help the User better find what they are looking for, The Application features various way for the user to be able to search and sort for what they are looking for.\n" +
+            "This includes: \n" +
+            " - A Search Bar that Searches for Game Titles Based on the Name Inputted By the User. \n" +
+            " - A Sorting System that allows the User to change how the games are sorted and displayed Alphabetically (A-Z) in various different ways such as Developers, Genres, Title Names, ETC. \n" +
+            " - An Advance Filtering System that Allows the User to Filter out what Games a Viewable by Genre, Age Rating, Platform, and Whether a game is Multiplayer, or Singleplayer. \n\n" +
+            "After finding the game the user is looking for, they are able to interact with it in a few ways.\n" +
+            "The user can:\n" +
+            " - Double Click the entry to be able to get a better detailed view of the Game, it's Description, Pricing, and Any Extra Details related to that game.\n" +
+            " - Add it to their Favourites by pressing the Add Favourite Button.\n\n" +
+            "Lastly, the User is also given a few Quality of Life items which allow them to be able to use the Application comfortably and to their convenience.\n" +
+            " - The user is able to Toggle Dark Mode by pressing the Dark Mode button, which switches the application theme from a light background to something darker and easier for the eyes.\n" +
+            " - The user is able to save Entries to their favourites list by pressing the Add Favourite button, then is able to view the games they have added by pressing the Favourites button.\n" +
+            " - The user is able to increase the list details of the entries by pressing Show More, which shows more details for each game within the main menu.\n" +
+            " - The user is able to decrease the list details of the entries by pressing Show Less, which reduces the amount of details that the user is able to see in the main menu.\n" +
+            " - The user can clear the search bar by pressing the Clear button.\n" +
+            "Once the user is done browsing, they can press the Logout button to Logout, which brings them back to the Main Menu."
+    };
+
+    function setInfoSection(section) {
+        infoTitle.textContent = section.title;
+        infoText.textContent = section.text;
+
+        loginInfoBtn.classList.remove("active");
+        appInfoBtn.classList.remove("active");
+
+        if (section === loginInfoContent) {
+            loginInfoBtn.classList.add("active");
+        } else {
+            appInfoBtn.classList.add("active");
+        }
+    }
+
+    openInfoBtn.addEventListener("click", () => {
+        setInfoSection(loginInfoContent);
+        infoOverlay.classList.add("active");
+    });
+
+    closeInfoBtn.addEventListener("click", () => {
+        infoOverlay.classList.remove("active");
+    });
+
+    infoOverlay.addEventListener("click", (e) => {
+        if (e.target === infoOverlay) {
+            infoOverlay.classList.remove("active");
+        }
+    });
+
+    loginInfoBtn.addEventListener("click", () => {
+        setInfoSection(loginInfoContent);
+    });
+
+    appInfoBtn.addEventListener("click", () => {
+        setInfoSection(appInfoContent);
+    });
+
+    toggleAction.addEventListener("click", () => {
+        isLogin = !isLogin;
+
+        formTitle.textContent = isLogin ? "Login" : "Create Account";
+        submitBtn.textContent = isLogin ? "Login" : "Register";
+        toggleLabel.textContent = isLogin
+            ? "Don't have an account? "
+            : "Already have an account? ";
+        toggleAction.textContent = isLogin ? "Register" : "Login";
+
+        messageDiv.textContent = "";
+    });
+
+    document.getElementById("authForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const username = usernameInput.value;
+        const password = passwordInput.value;
+        const endpoint = isLogin ? "/login" : "/register";
+
+        try {
+            const res = await fetch(endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await res.json();
+
+            messageDiv.textContent = data.message;
+            messageDiv.className = "message " + (data.success ? "success" : "error");
+
+            if (data.success) {
+                if (isLogin) {
+                    localStorage.setItem("username", username);
+                    localStorage.setItem("role", data.role || "user");
+                    window.location.href = "/dashboard";
+                } else {
+                    toggleAction.click();
+                    messageDiv.textContent = "Account created! Please login.";
+                    messageDiv.className = "message success";
+                }
+            }
+        } catch (err) {
+            messageDiv.textContent = "Connection error.";
+            messageDiv.className = "message error";
+        }
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && infoOverlay.classList.contains("active")) {
+            infoOverlay.classList.remove("active");
+        }
+    });
 </script>
 
 </body>
