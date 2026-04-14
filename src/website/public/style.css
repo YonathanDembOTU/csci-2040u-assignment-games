@@ -259,6 +259,8 @@ select:focus {
     border: 1px solid #2f3542;
     border-radius: 12px;
     padding: 18px;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .info-panel h3 {
