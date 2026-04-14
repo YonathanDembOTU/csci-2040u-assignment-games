@@ -5,7 +5,10 @@
     "genre": "Action Adventure",
     "image": "/images/botw.jpg",
     "description": "An open-world action-adventure game in which players control Link and explore the kingdom of Hyrule, solving puzzles and battling enemies to defeat Calamity Ganon.",
-    "platforms": ["Nintendo Switch", "Wii U"],
+    "platforms": [
+      "Nintendo Switch",
+      "Wii U"
+    ],
     "ageRating": "E10+",
     "releaseDate": "2017-03-03",
     "price": 59.99,
@@ -18,7 +21,13 @@
     "genre": "Action RPG",
     "image": "/images/elden_ring.jpg",
     "description": "An action RPG set in the Lands Between where players explore a vast open world, battle enemies, and uncover lore while seeking to become Elden Lord.",
-    "platforms": ["PC", "PlayStation 4", "PlayStation 5", "Xbox One", "Xbox Series X|S"],
+    "platforms": [
+      "PC",
+      "PlayStation 4",
+      "PlayStation 5",
+      "Xbox One",
+      "Xbox Series X|S"
+    ],
     "ageRating": "M",
     "releaseDate": "2022-02-25",
     "price": 59.99,
@@ -31,7 +40,12 @@
     "genre": "Metroidvania",
     "image": "/images/hollow_knight.jpg",
     "description": "A 2D action-adventure game where players explore the ruined kingdom of Hallownest, gaining abilities and battling enemies.",
-    "platforms": ["PC", "Nintendo Switch", "PlayStation 4", "Xbox One"],
+    "platforms": [
+      "PC",
+      "Nintendo Switch",
+      "PlayStation 4",
+      "Xbox One"
+    ],
     "ageRating": "E10+",
     "releaseDate": "2017-02-24",
     "price": 14.99,
@@ -44,7 +58,11 @@
     "genre": "Open World",
     "image": "/images/rdr2.jpg",
     "description": "An open-world western game following Arthur Morgan, featuring story missions, exploration, and interactions in a detailed world.",
-    "platforms": ["PC", "PlayStation 4", "Xbox One"],
+    "platforms": [
+      "PC",
+      "PlayStation 4",
+      "Xbox One"
+    ],
     "ageRating": "M",
     "releaseDate": "2018-10-26",
     "price": 59.99,
@@ -57,7 +75,12 @@
     "genre": "Roguelike",
     "image": "/images/hades.jpg",
     "description": "A roguelike dungeon crawler where players attempt to escape the Underworld as Zagreus using various weapons and abilities.",
-    "platforms": ["PC", "Nintendo Switch", "PlayStation", "Xbox"],
+    "platforms": [
+      "PC",
+      "Nintendo Switch",
+      "PlayStation",
+      "Xbox"
+    ],
     "ageRating": "T",
     "releaseDate": "2020-09-17",
     "price": 24.99,
@@ -70,7 +93,12 @@
     "genre": "RPG",
     "image": "/images/disco_elysium.jpg",
     "description": "A role-playing game featuring a detective solving a murder case through dialogue and skill-based choices.",
-    "platforms": ["PC", "Switch", "PlayStation", "Xbox"],
+    "platforms": [
+      "PC",
+      "Switch",
+      "PlayStation",
+      "Xbox"
+    ],
     "ageRating": "M",
     "releaseDate": "2019-10-15",
     "price": 39.99,
@@ -83,7 +111,12 @@
     "genre": "Puzzle",
     "image": "/images/portal2.jpg",
     "description": "A puzzle-platform game where players solve challenges using portals and physics mechanics.",
-    "platforms": ["PC", "PlayStation 3", "Xbox 360", "Nintendo Switch"],
+    "platforms": [
+      "PC",
+      "PlayStation 3",
+      "Xbox 360",
+      "Nintendo Switch"
+    ],
     "ageRating": "E10+",
     "releaseDate": "2011-04-19",
     "price": 9.99,
@@ -96,7 +129,12 @@
     "genre": "Platformer",
     "image": "/images/celeste.jpg",
     "description": "A platformer about climbing Celeste Mountain, featuring precise controls and challenging levels.",
-    "platforms": ["PC", "Nintendo Switch", "PlayStation 4", "Xbox One"],
+    "platforms": [
+      "PC",
+      "Nintendo Switch",
+      "PlayStation 4",
+      "Xbox One"
+    ],
     "ageRating": "E10+",
     "releaseDate": "2018-01-25",
     "price": 19.99,
@@ -109,21 +147,31 @@
     "genre": "Sandbox",
     "image": "/images/minecraft.jpg",
     "description": "A sandbox game where players build, explore, and survive in a procedurally generated world.",
-    "platforms": ["PC", "Nintendo Switch", "PlayStation", "Xbox", "Mobile"],
+    "platforms": [
+      "PC",
+      "Nintendo Switch",
+      "PlayStation",
+      "Xbox",
+      "Mobile"
+    ],
     "ageRating": "E10+",
     "releaseDate": "2011-11-18",
     "price": 29.99,
     "video": "https://www.youtube.com/watch?v=MmB9b5njVbA",
     "purchaseLink": "https://www.minecraft.net/en-us/store/minecraft-java-bedrock-edition-pc"
   },
-
   {
     "title": "The Witcher 3: Wild Hunt",
     "year": "2015",
     "genre": "RPG",
     "image": "/images/witcher3.jpg",
     "description": "An open-world RPG following Geralt of Rivia as he searches for his missing adopted daughter.",
-    "platforms": ["PC", "PlayStation", "Xbox", "Switch"],
+    "platforms": [
+      "PC",
+      "PlayStation",
+      "Xbox",
+      "Switch"
+    ],
     "ageRating": "M",
     "releaseDate": "2015-05-19",
     "price": 39.99,
@@ -136,7 +184,10 @@
     "genre": "Action Adventure",
     "image": "/images/god_of_war.jpg",
     "description": "An action-adventure game following Kratos and his son Atreus on a journey through Norse mythology.",
-    "platforms": ["PlayStation", "PC"],
+    "platforms": [
+      "PlayStation",
+      "PC"
+    ],
     "ageRating": "M",
     "releaseDate": "2018-04-20",
     "price": 49.99,
@@ -149,7 +200,11 @@
     "genre": "Action RPG",
     "image": "/images/darksouls3.jpg",
     "description": "A dark fantasy action RPG featuring challenging combat and interconnected world design.",
-    "platforms": ["PC", "PlayStation", "Xbox"],
+    "platforms": [
+      "PC",
+      "PlayStation",
+      "Xbox"
+    ],
     "ageRating": "M",
     "releaseDate": "2016-04-12",
     "price": 59.99,
@@ -162,7 +217,11 @@
     "genre": "Open World",
     "image": "/images/gta5.png",
     "description": "An open-world game set in Los Santos where players follow three criminals planning and executing heists.",
-    "platforms": ["PC", "PlayStation", "Xbox"],
+    "platforms": [
+      "PC",
+      "PlayStation",
+      "Xbox"
+    ],
     "ageRating": "M",
     "releaseDate": "2013-09-17",
     "price": 29.99,
@@ -175,21 +234,30 @@
     "genre": "RPG",
     "image": "/images/skyrim.jpg",
     "description": "An open-world RPG where players control the Dragonborn and explore the province of Skyrim.",
-    "platforms": ["PC", "PlayStation", "Xbox", "Switch"],
+    "platforms": [
+      "PC",
+      "PlayStation",
+      "Xbox",
+      "Switch"
+    ],
     "ageRating": "M",
     "releaseDate": "2011-11-11",
     "price": 39.99,
     "video": "https://www.youtube.com/watch?v=JSRtYpNRoN0",
     "purchaseLink": "https://store.steampowered.com/app/489830/The_Elder_Scrolls_V_Skyrim_Special_Edition/"
   },
-
   {
     "title": "Overwatch",
     "year": "2016",
     "genre": "Shooter",
     "image": "/images/overwatch.jpg",
     "description": "A team-based multiplayer first-person shooter with hero-based gameplay.",
-    "platforms": ["PC", "PlayStation", "Xbox", "Switch"],
+    "platforms": [
+      "PC",
+      "PlayStation",
+      "Xbox",
+      "Switch"
+    ],
     "ageRating": "T",
     "releaseDate": "2016-05-24",
     "price": 0,
@@ -202,7 +270,11 @@
     "genre": "Battle Royale",
     "image": "/images/fortnite.jpg",
     "description": "A battle royale game where players compete to be the last person standing while building structures.",
-    "platforms": ["PC", "Console", "Mobile"],
+    "platforms": [
+      "PC",
+      "Console",
+      "Mobile"
+    ],
     "ageRating": "T",
     "releaseDate": "2017-07-21",
     "price": 0,
@@ -215,7 +287,10 @@
     "genre": "Battle Royale",
     "image": "/images/apex.jpg",
     "description": "A squad-based battle royale shooter featuring unique characters with special abilities.",
-    "platforms": ["PC", "Console"],
+    "platforms": [
+      "PC",
+      "Console"
+    ],
     "ageRating": "T",
     "releaseDate": "2019-02-04",
     "price": 0,
@@ -228,7 +303,9 @@
     "genre": "MOBA",
     "image": "/images/lol.jpg",
     "description": "A multiplayer online battle arena game where teams compete to destroy the enemy base.",
-    "platforms": ["PC"],
+    "platforms": [
+      "PC"
+    ],
     "ageRating": "T",
     "releaseDate": "2009-10-27",
     "price": 0,
@@ -241,21 +318,26 @@
     "genre": "Shooter",
     "image": "/images/valorant.jpg",
     "description": "A tactical first-person shooter with character-based abilities and team play.",
-    "platforms": ["PC"],
+    "platforms": [
+      "PC"
+    ],
     "ageRating": "T",
     "releaseDate": "2020-06-02",
     "price": 0,
     "video": "https://www.youtube.com/watch?v=e_E9W2vsRbQ",
     "purchaseLink": "https://playvalorant.com/"
   },
-
   {
     "title": "Cyberpunk 2077",
     "year": "2020",
     "genre": "RPG",
     "image": "/images/cyberpunk.jpg",
     "description": "An open-world RPG set in Night City where players take on the role of V, a mercenary.",
-    "platforms": ["PC", "PlayStation", "Xbox"],
+    "platforms": [
+      "PC",
+      "PlayStation",
+      "Xbox"
+    ],
     "ageRating": "M",
     "releaseDate": "2020-12-10",
     "price": 59.99,
@@ -268,7 +350,11 @@
     "genre": "Action Adventure",
     "image": "/images/sekiro.webp",
     "description": "An action-adventure game focused on sword combat and stealth set in feudal Japan.",
-    "platforms": ["PC", "PlayStation", "Xbox"],
+    "platforms": [
+      "PC",
+      "PlayStation",
+      "Xbox"
+    ],
     "ageRating": "M",
     "releaseDate": "2019-03-22",
     "price": 59.99,
@@ -276,12 +362,14 @@
     "purchaseLink": "https://store.steampowered.com/app/814380/Sekiro_Shadows_Die_Twice/"
   },
   {
-    "title": "Bloodborne",
+    "title": "MARIO!!!!",
     "year": "2015",
     "genre": "Action RPG",
-    "image": "/images/bloodborne.webp",
+    "image": "/images/mario_____1776128474524.jpg",
     "description": "An action RPG set in a gothic world where players hunt monsters and uncover secrets.",
-    "platforms": ["PlayStation"],
+    "platforms": [
+      "PlayStation"
+    ],
     "ageRating": "M",
     "releaseDate": "2015-03-24",
     "price": 19.99,
@@ -294,7 +382,11 @@
     "genre": "Action RPG",
     "image": "/images/mhw.jpg",
     "description": "An action RPG where players hunt large monsters in a living ecosystem.",
-    "platforms": ["PC", "PlayStation", "Xbox"],
+    "platforms": [
+      "PC",
+      "PlayStation",
+      "Xbox"
+    ],
     "ageRating": "T",
     "releaseDate": "2018-01-26",
     "price": 29.99,
@@ -307,7 +399,11 @@
     "genre": "Horror",
     "image": "/images/re2.png",
     "description": "A survival horror game where players navigate Raccoon City during a zombie outbreak.",
-    "platforms": ["PC", "PlayStation", "Xbox"],
+    "platforms": [
+      "PC",
+      "PlayStation",
+      "Xbox"
+    ],
     "ageRating": "M",
     "releaseDate": "2019-01-25",
     "price": 39.99,

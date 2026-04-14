@@ -1,0 +1,17 @@
+GameID,Title,Developer,Publisher,ReleaseYear,Genre,Platform,ESRBRating,PriceUSD,MetacriticScore,Multiplayer,SinglePlayer,DownloadSizeGB,Description
+1,The Witcher 3: Wild Hunt,CD Projekt Red,CD Projekt,2015,Action RPG,PC | PlayStation 4 | Xbox One,M,39.99,93,No,Yes,50,"Open-world fantasy RPG focused on monster hunting, story choices, and exploration."
+2,Red Dead Redemption 2,Rockstar Studios,Rockstar Games,2018,Action Adventure,PC | PlayStation 4 | Xbox One,M,59.99,97,Yes,Yes,120,"Western open-world adventure with cinematic missions, exploration, and multiplayer modes."
+3,Elden Ring,FromSoftware,Bandai Namco Entertainment,2022,Action RPG,PC | PlayStation 5 | Xbox Series X/S,M,59.99,96,Yes,Yes,60,"Dark fantasy action RPG with challenging combat, open regions, and deep build variety."
+4,Grand Theft Auto V,Rockstar North,Rockstar Games,2013,Action Adventure,PC | PlayStation 5 | Xbox Series X/S,M,29.99,96,Yes,Yes,95,"Open-world crime sandbox with story missions, heists, and online multiplayer."
+5,Minecraft,Mojang Studios,Xbox Game Studios,2011,Sandbox,PC | Nintendo Switch | PlayStation 4,E10+,29.99,93,Yes,Yes,2,"Creative sandbox game built around survival, crafting, exploration, and building."
+6,Fortnite,Epic Games,Epic Games,2017,Battle Royale,PC | PlayStation 5 | Xbox Series X/S | Nintendo Switch,T,0.00,81,Yes,Yes,30,"Fast-paced battle royale with building mechanics, seasonal updates, and live events."
+7,The Legend of Zelda: Breath of the Wild,Nintendo EPD,Nintendo,2017,Action Adventure,Nintendo Switch,W10+,59.99,97,No,Yes,14,"Open-world adventure emphasizing discovery, physics-based puzzles, and freedom."
+8,Call of Duty: Modern Warfare II,Infinity Ward,Activision,2022,First-Person Shooter,PC | PlayStation 5 | Xbox Series X/S,M,69.99,78,Yes,Yes,125,Modern military shooter with cinematic campaigns and competitive online modes.
+9,God of War (2018),Santa Monica Studio,Sony Interactive Entertainment,2018,Action Adventure,PlayStation 4 | PC,M,49.99,94,No,Yes,45,"Story-driven action adventure mixing mythic combat, exploration, and character drama."
+10,Overwatch,Blizzard Entertainment,Blizzard Entertainment,2016,Hero Shooter,PC | PlayStation 4 | Xbox One,T,39.99,91,Yes,No,30,Team-based hero shooter built around distinct character abilities and objective play.
+11,Stardew Valley,ConcernedApe,ConcernedApe,2016,Simulation RPG,PC | Nintendo Switch | PlayStation 4,E10+,14.99,89,Yes,Yes,1,"Relaxed farming and life sim with relationships, mining, and co-op support."
+12,Cyberpunk 2077,CD Projekt Red,CD Projekt,2020,Action RPG,PC | PlayStation 5 | Xbox Series X/S,M,59.99,86,No,Yes,70,"Futuristic open-world RPG centered on story choices, combat builds, and exploration."
+13,Apex Legends,Respawn Entertainment,Electronic Arts,2019,Battle Royale,PC | PlayStation 5 | Xbox Series X/S | Nintendo Switch,T,0.00,88,Yes,No,60,"Squad-based battle royale with unique legends, movement, and ability-driven teamwork."
+14,Dark Souls III,FromSoftware,Bandai Namco Entertainment,2016,Action RPG,PC | PlayStation 4 | Xbox One,M,59.99,89,Yes,Yes,25,"Challenging action RPG with careful combat, boss fights, and interconnected areas."
+15,Hades,Supergiant Games,Supergiant Games,2020,Roguelike,PC | Nintendo Switch | PlayStation 5,T,24.99,93,No,Yes,15,"Fast-paced roguelike dungeon crawler with repeat runs, upgrades, and strong narrative progression."
+pokemon,Pokemon Ultra Sun,Game Freak,Nintendo,2017,RPG,Nintendo 3DS,E,59.99,84,Yes,Yes,3.6,"Creature-collecting RPG with turn-based battles, exploration, and team building."
