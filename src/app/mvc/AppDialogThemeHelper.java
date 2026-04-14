@@ -21,7 +21,7 @@ import java.awt.event.MouseEvent;
  */
 public class AppDialogThemeHelper {
     /**
-     * Immutable container for all colors used by the helper window theme system.
+     * Immutable container holding all color values for a specific UI theme (light or dark) used by the helper window theme system.
      * <p>
      * Each instance represents one complete palette for either light mode or
      * dark mode so styling methods can read a single source of truth.

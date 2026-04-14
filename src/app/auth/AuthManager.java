@@ -23,7 +23,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Manages application authentication, account persistence, and role-based session creation.
+ * Manages application authentication, account persistence, and role-based
+ * session creation.
  */
 public class AuthManager {
     /**
@@ -36,7 +37,8 @@ public class AuthManager {
     }
 
     /**
-     * Stores the authenticated user context that the controller uses to enforce permissions.
+     * Stores the authenticated user context that the controller uses to enforce
+     * permissions.
      */
     public static class UserSession {
         private final UserRole role;
@@ -77,9 +79,10 @@ public class AuthManager {
         }
 
         /**
-         * Returns whether admin.
+         * Checks whether the current user has the ADMIN role.
          *
-         * @return {@code true} when the requested condition is met; otherwise {@code false}
+         * @return {@code true} when the requested condition is met; otherwise
+         *         {@code false}
          */
         public boolean isAdmin() {
             return role == UserRole.ADMIN;
@@ -88,7 +91,8 @@ public class AuthManager {
         /**
          * Returns whether publisher.
          *
-         * @return {@code true} when the requested condition is met; otherwise {@code false}
+         * @return {@code true} when the requested condition is met; otherwise
+         *         {@code false}
          */
         public boolean isPublisher() {
             return role == UserRole.PUBLISHER;
@@ -97,7 +101,8 @@ public class AuthManager {
         /**
          * Returns whether guest.
          *
-         * @return {@code true} when the requested condition is met; otherwise {@code false}
+         * @return {@code true} when the requested condition is met; otherwise
+         *         {@code false}
          */
         public boolean isGuest() {
             return role == UserRole.GUEST;
@@ -106,7 +111,8 @@ public class AuthManager {
         /**
          * Returns whether modify.
          *
-         * @return {@code true} when the requested condition is met; otherwise {@code false}
+         * @return {@code true} when the requested condition is met; otherwise
+         *         {@code false}
          */
         public boolean canModify() {
             return role == UserRole.ADMIN || role == UserRole.PUBLISHER;
@@ -114,7 +120,8 @@ public class AuthManager {
     }
 
     /**
-     * Represents a single stored account record used by the authentication subsystem.
+     * Represents a single stored account record used by the authentication
+     * subsystem.
      */
     private static class Account {
         private final String username;
@@ -134,9 +141,13 @@ public class AuthManager {
     private static final String USERS_FILE_NAME = "data/users.enc";
     private static final String KEY_FILE_NAME = "config/secret.key";
 
-    // Stores all login accounts in memory
+    // In-memory cache of all user accounts loaded from encrypted storage
     private static final Map<String, Account> accounts = new HashMap<>();
 
+    /**
+     * Ensures encryption key exists, then loads or initializes account storage.
+     * Falls back to default accounts if loading fails.
+     */
     static {
         initializeAccountStorage();
     }
@@ -236,8 +247,7 @@ public class AuthManager {
                             username,
                             password,
                             UserRole.PUBLISHER,
-                            publisherName
-                    ));
+                            publisherName));
                 }
             }
         } catch (IOException e) {
@@ -378,8 +388,10 @@ public class AuthManager {
     /**
      * Ensures that the encryption key file exists on disk.
      *
-     * @throws IOException if the operation cannot be completed successfully
-     * @throws GeneralSecurityException if the operation cannot be completed successfully
+     * @throws IOException              if the operation cannot be completed
+     *                                  successfully
+     * @throws GeneralSecurityException if the operation cannot be completed
+     *                                  successfully
      */
     private static void ensureKeyFileExists() throws IOException, GeneralSecurityException {
         File keyFile = new File(KEY_FILE_NAME);
@@ -413,8 +425,10 @@ public class AuthManager {
     /**
      * Saves the current account map to the encrypted account file.
      *
-     * @throws IOException if the operation cannot be completed successfully
-     * @throws GeneralSecurityException if the operation cannot be completed successfully
+     * @throws IOException              if the operation cannot be completed
+     *                                  successfully
+     * @throws GeneralSecurityException if the operation cannot be completed
+     *                                  successfully
      */
     private static void saveAccountsToEncryptedFile() throws IOException, GeneralSecurityException {
         StringBuilder plainText = new StringBuilder();
@@ -438,8 +452,10 @@ public class AuthManager {
     /**
      * Loads the account map from the encrypted account file.
      *
-     * @throws IOException if the operation cannot be completed successfully
-     * @throws GeneralSecurityException if the operation cannot be completed successfully
+     * @throws IOException              if the operation cannot be completed
+     *                                  successfully
+     * @throws GeneralSecurityException if the operation cannot be completed
+     *                                  successfully
      */
     private static void loadAccountsFromEncryptedFile() throws IOException, GeneralSecurityException {
         File usersFile = new File(USERS_FILE_NAME);
@@ -489,7 +505,8 @@ public class AuthManager {
      *
      * @return the resulting string value
      *
-     * @throws GeneralSecurityException if the operation cannot be completed successfully
+     * @throws GeneralSecurityException if the operation cannot be completed
+     *                                  successfully
      */
     private static String encrypt(String plainText, SecretKey secretKey) throws GeneralSecurityException {
         Cipher cipher = Cipher.getInstance("AES");
@@ -502,11 +519,12 @@ public class AuthManager {
      * Decrypts the supplied encrypted value.
      *
      * @param encryptedText the encrypted value to decrypt
-     * @param secretKey the secret key value
+     * @param secretKey     the secret key value
      *
      * @return the resulting string value
      *
-     * @throws GeneralSecurityException if the operation cannot be completed successfully
+     * @throws GeneralSecurityException if the operation cannot be completed
+     *                                  successfully
      */
     private static String decrypt(String encryptedText, SecretKey secretKey) throws GeneralSecurityException {
         Cipher cipher = Cipher.getInstance("AES");
@@ -518,7 +536,8 @@ public class AuthManager {
     /**
      * Performs the make publisher username operation.
      *
-     * @param publisherName the publisher name to enforce when the publisher field is locked
+     * @param publisherName the publisher name to enforce when the publisher field
+     *                      is locked
      *
      * @return the resulting string value
      */
@@ -625,11 +644,13 @@ public class AuthManager {
     /**
      * Shows the dialog used to create a new publisher account.
      *
-     * @param username the username involved in the operation
-     * @param publisherName the publisher name to enforce when the publisher field is locked
-     * @param password the password involved in the operation
+     * @param username      the username involved in the operation
+     * @param publisherName the publisher name to enforce when the publisher field
+     *                      is locked
+     * @param password      the password involved in the operation
      *
-     * @return {@code true} when the requested condition is met; otherwise {@code false}
+     * @return {@code true} when the requested condition is met; otherwise
+     *         {@code false}
      */
     public static boolean addPublisherUser(String username, String publisherName, String password) {
         if (username == null || username.trim().isEmpty()) {
@@ -663,10 +684,11 @@ public class AuthManager {
     /**
      * Updates the stored password for the requested publisher user.
      *
-     * @param username the username involved in the operation
+     * @param username    the username involved in the operation
      * @param newPassword the new password value
      *
-     * @return {@code true} when the requested condition is met; otherwise {@code false}
+     * @return {@code true} when the requested condition is met; otherwise
+     *         {@code false}
      */
     public static boolean updatePublisherPassword(String username, String newPassword) {
         if (username == null || username.trim().isEmpty()) {

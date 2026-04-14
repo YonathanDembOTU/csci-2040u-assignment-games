@@ -34,7 +34,8 @@ import java.util.Locale;
 import java.util.TreeSet;
 
 public class DataController {
-    // Multi-platform values are stored inside one CSV cell using | as a separator.
+    // Multiple platform values are stored in a single CSV cell using "|" as a
+    // separator.
     private static final String MULTI_VALUE_SEPARATOR = "|";
     private static final String RAWG_API_BASE_URL = "https://api.rawg.io/api";
     private static final String RAWG_ATTRIBUTION_URL = "https://rawg.io/";
@@ -146,7 +147,7 @@ public class DataController {
     }
 
     /**
-     * Loads the CSV file used by the application on startup.
+     * Loads the main data CSV file into the model and initializes UI state.
      */
     private void loadFile() {
         File dataFile = new File("data/data.csv");
@@ -254,6 +255,11 @@ public class DataController {
         refreshVisibleTable();
     }
 
+    /**
+     * Applies all active search and filter criteria, rebuilds the visible table
+     * data,
+     * and updates the UI with the filtered results.
+     */
     private void refreshVisibleTable() {
         String[] allColumns = model.getColumns();
         if (allColumns == null || allColumns.length == 0) {
@@ -332,7 +338,6 @@ public class DataController {
         updateWindowTitle();
     }
 
-
     private String formatDisplayValue(String columnName, String rawValue) {
         if (rawValue == null) {
             return "";
@@ -358,6 +363,9 @@ public class DataController {
         return rawValue;
     }
 
+    /**
+     * Checks whether a row matches the current text search filter.
+     */
     private boolean matchesTextFilter(String[] row, int filterColIdx, String filterText) {
         if (filterText.isEmpty() || filterColIdx == -1) {
             return true;
@@ -377,6 +385,9 @@ public class DataController {
         return false;
     }
 
+    /**
+     * Checks whether a row matches the selected value in a filter dropdown.
+     */
     private boolean matchesComboFilter(String[] row, String columnName, JComboBox<String> combo) {
         String selectedValue = (String) combo.getSelectedItem();
         if (selectedValue == null || selectedValue.equalsIgnoreCase("All")) {
@@ -502,7 +513,8 @@ public class DataController {
     }
 
     private boolean canViewRow(String[] row) {
-        // Publishers can browse all games, but can only modify games owned by their publisher.
+        // Publishers can browse all games, but can only modify games owned by their
+        // publisher.
         return true;
     }
 
@@ -669,10 +681,10 @@ public class DataController {
         Cursor previousCursor = view.getCursor();
         view.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            List<RawgImportDialogHelper.SearchCandidate> similarMatches =
-                    fetchRawgSearchCandidates(gameName, RawgImportDialogHelper.MAX_SIMILAR_CHOICES);
-            RawgImportDialogHelper.SearchCandidate selected =
-                    RawgImportDialogHelper.promptToChooseSimilarMatch(view, gameName, similarMatches);
+            List<RawgImportDialogHelper.SearchCandidate> similarMatches = fetchRawgSearchCandidates(gameName,
+                    RawgImportDialogHelper.MAX_SIMILAR_CHOICES);
+            RawgImportDialogHelper.SearchCandidate selected = RawgImportDialogHelper.promptToChooseSimilarMatch(view,
+                    gameName, similarMatches);
             if (selected == null) {
                 return null;
             }
@@ -756,7 +768,6 @@ public class DataController {
         favouritesHelper.toggleFavourite(model.getColumns(), model.getRow(selectedModelIndex));
     }
 
-
     private String resolveRawgApiKey() {
         String propertyKey = System.getProperty(RAWG_API_KEY_PROPERTY);
         if (propertyKey != null && !propertyKey.isBlank()) {
@@ -809,8 +820,10 @@ public class DataController {
         data.developer = joinWithComma(extractNamesFromObjectArray(detailsJson, "developers"));
         data.publisher = joinWithComma(extractNamesFromObjectArray(detailsJson, "publishers"));
         data.genre = normalizeMultiValueCell(String.join(" | ", extractNamesFromObjectArray(detailsJson, "genres")));
-        data.platform = normalizeMultiValueCell(String.join(" | ", extractNestedNamesFromObjectArray(detailsJson, "platforms", "platform")));
-        data.esrbRating = normalizeEsrbRating(extractJsonString(extractJsonRawValue(detailsJson, "esrb_rating"), "name"));
+        data.platform = normalizeMultiValueCell(
+                String.join(" | ", extractNestedNamesFromObjectArray(detailsJson, "platforms", "platform")));
+        data.esrbRating = normalizeEsrbRating(
+                extractJsonString(extractJsonRawValue(detailsJson, "esrb_rating"), "name"));
         data.metacriticScore = extractJsonPrimitive(detailsJson, "metacritic");
         data.multiplayer = determineMultiplayerFlag(detailsJson);
         data.singlePlayer = determineSinglePlayerFlag(detailsJson);
@@ -829,8 +842,10 @@ public class DataController {
         data.description = cleanupText(extractJsonString(resultObject, "slug"));
         data.releaseYear = extractReleaseYear(extractJsonString(resultObject, "released"));
         data.genre = normalizeMultiValueCell(String.join(" | ", extractNamesFromObjectArray(resultObject, "genres")));
-        data.platform = normalizeMultiValueCell(String.join(" | ", extractNestedNamesFromObjectArray(resultObject, "platforms", "platform")));
-        data.esrbRating = normalizeEsrbRating(extractJsonString(extractJsonRawValue(resultObject, "esrb_rating"), "name"));
+        data.platform = normalizeMultiValueCell(
+                String.join(" | ", extractNestedNamesFromObjectArray(resultObject, "platforms", "platform")));
+        data.esrbRating = normalizeEsrbRating(
+                extractJsonString(extractJsonRawValue(resultObject, "esrb_rating"), "name"));
         data.metacriticScore = extractJsonPrimitive(resultObject, "metacritic");
         data.publisher = "RAWG";
         data.multiplayer = "N/A";
@@ -880,13 +895,16 @@ public class DataController {
     }
 
     private String determineMultiplayerFlag(String json) {
-        return containsTag(json, "multiplayer") || containsTag(json, "co-op") || containsTag(json, "massively multiplayer")
-                ? "Yes" : "No";
+        return containsTag(json, "multiplayer") || containsTag(json, "co-op")
+                || containsTag(json, "massively multiplayer")
+                        ? "Yes"
+                        : "No";
     }
 
     private String determineSinglePlayerFlag(String json) {
         return containsTag(json, "singleplayer") || containsTag(json, "single-player")
-                ? "Yes" : "No";
+                ? "Yes"
+                : "No";
     }
 
     private boolean containsTag(String json, String wantedTag) {
@@ -1047,7 +1065,8 @@ public class DataController {
             int score = 1;
             if (normalizedCandidate.equals(normalizedWanted)) {
                 score = 3;
-            } else if (normalizedCandidate.startsWith(normalizedWanted) || normalizedWanted.startsWith(normalizedCandidate)) {
+            } else if (normalizedCandidate.startsWith(normalizedWanted)
+                    || normalizedWanted.startsWith(normalizedCandidate)) {
                 score = 2;
             }
 
@@ -1068,7 +1087,8 @@ public class DataController {
                 .header("Accept", "application/json")
                 .build();
 
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        HttpResponse<String> response = httpClient.send(request,
+                HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         if (response.statusCode() >= 200 && response.statusCode() < 300) {
             return response.body();
         }
