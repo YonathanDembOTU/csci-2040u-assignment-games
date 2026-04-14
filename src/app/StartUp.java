@@ -279,8 +279,8 @@ public class StartUp extends JFrame {
      * Provides functionality for the Instructions Panel.
      */
     private void showInstructionsDialog() {
-        JDialog dialog = new JDialog(this, "Developer Instructions", true);
-        dialog.setSize(560, 420);
+        JDialog dialog = new JDialog(this, "User Instructions", true);
+        dialog.setSize(1280, 720);
         dialog.setLocationRelativeTo(this);
         dialog.setLayout(new BorderLayout(10, 10));
 
@@ -288,7 +288,7 @@ public class StartUp extends JFrame {
         contentPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         contentPanel.setBackground(neutralGrey);
 
-        JLabel titleLabel = new JLabel("Developer Instructions");
+        JLabel titleLabel = new JLabel("User Instructions");
         titleLabel.setFont(new Font("Inter", Font.BOLD, 22));
         titleLabel.setForeground(textDark);
 
@@ -297,8 +297,10 @@ public class StartUp extends JFrame {
         instructionsArea.setLineWrap(true);
         instructionsArea.setWrapStyleWord(true);
         instructionsArea.setFont(new Font("Inter", Font.PLAIN, 14));
-        instructionsArea.setText(
-                "Welcome to Turn4Turn's Game Cataloguing Application, " +
+        instructionsArea.setBackground(Color.WHITE);
+        instructionsArea.setForeground(textDark);
+
+        String loginInfo = "Welcome to Turn4Turn's Game Cataloguing Application, " +
                         "where you are able to View/List what games are for Sale in many Various Ways.\n\n" +
                         " - If you are a guest who wishes to view the games that are available in the Catalogue, \n" +
                         "   1. Click the Guest Access Button.\n\n" +
@@ -313,24 +315,80 @@ public class StartUp extends JFrame {
                         "Special Notes/Good Reminders:\n" +
                         " - Ensure that data.csv exists in the project.\n" +
                         " - Remember to Save any Adjustments made In Order to Preserve Changes That Are Made.\n" +
-                        " - Any Changes Made are not Reversible and will need to be Readjusted once Saved."
-        );
+                        " - Any Changes Made are not Reversible and will need to be Readjusted once Saved.";
+
+        String basicAppInfo = "At a Guest Level, The Application shows the User all of the Available Games in the Catalogue from a Variety Of Different Publishers And Genres.\n" +
+                "The Application also features additional quality of life features that allow the users to have a better in-depth look at every game, or provide a better user experience overall.\n\n" +
+                "To be able to help the User better find what they are looking for, The Application features various way for the user to be able to search and sort for what they are looking for.\n" +
+                "This includes: \n" +
+                " - A Search Bar that Searches for Game Titles Based on the Name Inputted By the User. \n" +
+                " - A Sorting System that allows the User to change how the games are sorted and displayed Alphabetically (A-Z) in various different ways such as Developers, Genres, Title Names, ETC. \n" +
+                " - An Advance Filtering System that Allows the User to Filter out what Games a Viewable by Genre, Age Rating, Platform, and Whether a game is Multiplayer, or Singleplayer. \n\n" +
+                "After finding the game the user is looking for, they are able to interact with it in a few ways.\n" +
+                "The user can:\n" +
+                " - Double Click the entry to be able to get a better detailed view of the Game, it's Description, Pricing, and Any Extra Details related to that game.\n" +
+                " - Add it to their Favourites by pressing the Add Favourite Button.\n\n" +
+                "Lastly, the User is also given a few Quality of Life items which allow them to be able to use the Application comfortably and to their convenience.\n" +
+                " - The user is able to Toggle Dark Mode by pressing the Dark Mode button, which switches the application theme from a light background to something darker and easier for the eyes.\n" +
+                " - The user is able to save Entries to their favourites list by pressing the Add Favourite button, then is able to view the games they have added by pressing the Favourites button.\n" +
+                " - The user is able to increase the list details of the entries by pressing Show More, which shows more details for each game within the main menu.\n" +
+                " - The user is able to decrease the list details of the entries by pressing Show Less, which reduces the amount of details that the user is able to see in the main menu.\n" +
+                " - The user can clear the search bar by pressing the Clear button.\n" +
+                "Once the user is done browsing, they can press the Logout button to Logout, which brings them back to the Main Menu.";
+
+        String FAQInfo = "The following are a few Questions that the user Might find themselves asking while using the Application: \n" +
+                " Q. As an Admin/Publisher, I have no idea how to login because I was never given the credentials to login. What is my respective login info/How can I get my login info? \n" +
+                " A. In order to get the login info for your respective access level, you will need to contact the developers of the applications, who will create and grant the credentials to you upon request. \n\n" +
+                " Q. As an Admin, I am trying to login with the info given to me by the admin. However, it is not working and results in a failed login. What am I doing wrong? \n" +
+                " A. The most likely answer is that the admin has yet to implement your login into the database which may be causing the issue. Be patient and give us time to update the database. Double check as well that your login credentials match with what the Admin has provided you. \n\n" +
+                " Q. As a Guest, I have tried searching for a specific game, yet I cannot find it. Is the game not yet implemented into the catalogue? \n" +
+                " A. Most likely yes, the game may have yet to be added to the catalogue by the publishers. Give them time to implement the information for their game and rest assured, your favourite game will be added for your viewing in the Catalogue. \n\n" +
+                " Q. As a Guest, I cannot find and therefore, use the advanced filters. Where are can I find them?\n" +
+                " A. Press the Filters button, which opens up a drop down view for you that shows you all of the filters in one place for your convenience.\n\n" +
+                " Q. As an Admin/Publisher, I accidentally saved changes that I did not want to. Is there a way to go back and undo what is done?" +
+                " A. At the moment no, There is no undo option. Be careful of what and when you save and if you do save unwanted changes, you will have to redo your lost work.";
+
+        instructionsArea.setText(loginInfo);
 
         JScrollPane scrollPane = new JScrollPane(instructionsArea);
+        scrollPane.setPreferredSize(new Dimension(580, 260));
 
+        JButton loginInfoButton = createMenuButton("Login Info", buttonGrey, buttonBorder);
+        JButton basicAppInfoButton = createMenuButton("User Application Info", buttonGrey, buttonBorder);
+        JButton FAQInfoButton = createMenuButton("Frequently Asked Questions", buttonGrey, buttonBorder);
         JButton closeButton = createMenuButton("Close", buttonGrey, buttonBorder);
+
+        loginInfoButton.setForeground(textDark);
+        basicAppInfoButton.setForeground(textDark);
+        FAQInfoButton.setForeground(textDark);
         closeButton.setForeground(textDark);
+
+        loginInfoButton.addActionListener(e -> instructionsArea.setText(loginInfo));
+        basicAppInfoButton.addActionListener(e -> instructionsArea.setText(basicAppInfo));
+        FAQInfoButton.addActionListener(e -> instructionsArea.setText(FAQInfo));
         closeButton.addActionListener(e -> dialog.dispose());
+
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setOpaque(false);
+        topPanel.add(titleLabel, BorderLayout.NORTH);
+
+        JPanel infoButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        infoButtonPanel.setOpaque(false);
+        infoButtonPanel.add(loginInfoButton);
+        infoButtonPanel.add(basicAppInfoButton);
+        infoButtonPanel.add(FAQInfoButton);
+
+        topPanel.add(infoButtonPanel, BorderLayout.SOUTH);
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.setOpaque(false);
         bottomPanel.add(closeButton);
 
-        contentPanel.add(titleLabel, BorderLayout.NORTH);
+        contentPanel.add(topPanel, BorderLayout.NORTH);
         contentPanel.add(scrollPane, BorderLayout.CENTER);
         contentPanel.add(bottomPanel, BorderLayout.SOUTH);
 
-        dialog.add(contentPanel);
+        dialog.add(contentPanel, BorderLayout.CENTER);
         dialog.setVisible(true);
     }
 
