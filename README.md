@@ -67,8 +67,8 @@ Examples from current data:
 * This file is located within `src\app\mvc`.
 
 ## How to Run the Website
-* To run the website, enter the src/website folder, and run `npm install`
-* From there, run `node server.js`, and go to `localhost:3000` in your browser.
+* To run the website, open your computer terminal, navigate to the src/website folder, and type `npm install`
+* From there, type `node server.js`, and go to `localhost:3000` in your browser.
 
 ---
 
